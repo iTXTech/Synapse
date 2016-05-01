@@ -19,15 +19,15 @@
  *
 */
 
-namespace pocketmine\network;
+namespace synapse\network;
 
-use pocketmine\event\player\PlayerCreationEvent;
-use pocketmine\network\protocol\DataPacket;
-use pocketmine\network\protocol\Info as ProtocolInfo;
-use pocketmine\network\protocol\Info;
-use pocketmine\Player;
-use pocketmine\Server;
-use pocketmine\utils\MainLogger;
+use synapse\event\player\PlayerCreationEvent;
+use synapse\network\protocol\DataPacket;
+use synapse\network\protocol\Info as ProtocolInfo;
+use synapse\network\protocol\Info;
+use synapse\Player;
+use synapse\Server;
+use synapse\utils\MainLogger;
 use raklib\protocol\EncapsulatedPacket;
 use raklib\RakLib;
 use raklib\server\RakLibServer;
@@ -140,7 +140,7 @@ class RakLibInterface implements ServerInstance, AdvancedSourceInterface{
 					}
 				}
 			}catch(\Throwable $e){
-				if(\pocketmine\DEBUG > 1 and isset($pk)){
+				if(\synapse\DEBUG > 1 and isset($pk)){
 					$logger = $this->server->getLogger();
 					$logger->debug("Packet " . get_class($pk) . " 0x" . bin2hex($packet->buffer));
 					$logger->logException($e);
@@ -187,7 +187,7 @@ class RakLibInterface implements ServerInstance, AdvancedSourceInterface{
 		$this->interface->sendOption("name",
 			"MCPE;" . addcslashes($name, ";") . ";" .
 			ProtocolInfo::CURRENT_PROTOCOL . ";" .
-			\pocketmine\MINECRAFT_VERSION_NETWORK . ";" .
+			\synapse\MINECRAFT_VERSION_NETWORK . ";" .
 			$poc . ";" .
 			$pc
 		);

@@ -19,12 +19,12 @@
  *
 */
 
-namespace pocketmine\command;
+namespace synapse\command;
 
 interface PluginIdentifiableCommand{
 
 	/**
-	 * @return \pocketmine\plugin\Plugin
+	 * @return \synapse\plugin\Plugin
 	 */
 	public function getPlugin();
 }

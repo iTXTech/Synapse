@@ -19,25 +19,25 @@
  *
 */
 
-namespace pocketmine\plugin;
+namespace synapse\plugin;
 
-use pocketmine\command\defaults\TimingsCommand;
-use pocketmine\command\PluginCommand;
-use pocketmine\command\SimpleCommandMap;
-use pocketmine\event\Event;
-use pocketmine\event\EventPriority;
-use pocketmine\event\HandlerList;
-use pocketmine\event\Listener;
-use pocketmine\event\Timings;
-use pocketmine\event\TimingsHandler;
-use pocketmine\permission\Permissible;
-use pocketmine\permission\Permission;
-use pocketmine\Server;
-use pocketmine\utils\MainLogger;
-use pocketmine\utils\PluginException;
+use synapse\command\defaults\TimingsCommand;
+use synapse\command\PluginCommand;
+use synapse\command\SimpleCommandMap;
+use synapse\event\Event;
+use synapse\event\EventPriority;
+use synapse\event\HandlerList;
+use synapse\event\Listener;
+use synapse\event\Timings;
+use synapse\event\TimingsHandler;
+use synapse\permission\Permissible;
+use synapse\permission\Permission;
+use synapse\Server;
+use synapse\utils\MainLogger;
+use synapse\utils\PluginException;
 
-use pocketmine\event\entity\EntityDamageByEntityEvent;
-use pocketmine\event\entity\EntityDeathEvent;
+use synapse\event\entity\EntityDamageByEntityEvent;
+use synapse\event\entity\EntityDeathEvent;
 
 /**
  * Manages all the plugins, Permissions and Permissibles
@@ -203,7 +203,7 @@ class PluginManager{
 						$description = $loader->getPluginDescription($file);
 						if($description instanceof PluginDescription){
 							$name = $description->getName();
-							if(stripos($name, "pocketmine") !== false or stripos($name, "minecraft") !== false or stripos($name, "mojang") !== false){
+							if(stripos($name, "synapse") !== false or stripos($name, "minecraft") !== false or stripos($name, "mojang") !== false){
 								$this->server->getLogger()->error($this->server->getLanguage()->translateString("pocketmine.plugin.loadError", [$name, "%pocketmine.plugin.restrictedName"]));
 								continue;
 							}elseif(strpos($name, " ") !== false){

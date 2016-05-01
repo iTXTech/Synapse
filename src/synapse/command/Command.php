@@ -22,13 +22,13 @@
 /**
  * Command handling related classes
  */
-namespace pocketmine\command;
+namespace synapse\command;
 
-use pocketmine\event\TextContainer;
-use pocketmine\event\TimingsHandler;
-use pocketmine\event\TranslationContainer;
-use pocketmine\Server;
-use pocketmine\utils\TextFormat;
+use synapse\event\TextContainer;
+use synapse\event\TimingsHandler;
+use synapse\event\TranslationContainer;
+use synapse\Server;
+use synapse\utils\TextFormat;
 
 abstract class Command{
 	/** @var string */

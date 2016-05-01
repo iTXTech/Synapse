@@ -19,11 +19,11 @@
  *
 */
 
-namespace pocketmine\command\defaults;
+namespace synapse\command\defaults;
 
-use pocketmine\command\CommandSender;
-use pocketmine\utils\TextFormat;
-use pocketmine\utils\Utils;
+use synapse\command\CommandSender;
+use synapse\utils\TextFormat;
+use synapse\utils\Utils;
 
 class StatusCommand extends VanillaCommand{
 
@@ -48,7 +48,7 @@ class StatusCommand extends VanillaCommand{
 		$sender->sendMessage(TextFormat::GREEN . "---- " . TextFormat::WHITE . "%pocketmine.command.status.title" . TextFormat::GREEN . " ----");
 		$sender->sendMessage(TextFormat::GOLD . "%pocketmine.command.status.player" . TextFormat::GREEN ." ". \count($sender->getServer()->getOnlinePlayers()) . "/" . $sender->getServer()->getMaxPlayers());
 
-		$time = microtime(true) - \pocketmine\START_TIME;
+		$time = microtime(true) - \synapse\START_TIME;
 
 		$seconds = floor($time % 60);
 		$minutes = null;

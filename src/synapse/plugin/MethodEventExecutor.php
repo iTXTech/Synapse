@@ -19,10 +19,10 @@
  *
 */
 
-namespace pocketmine\plugin;
+namespace synapse\plugin;
 
-use pocketmine\event\Event;
-use pocketmine\event\Listener;
+use synapse\event\Event;
+use synapse\event\Listener;
 
 class MethodEventExecutor implements EventExecutor{
 

@@ -22,8 +22,8 @@
 /**
  * Various Utilities used around the code
  */
-namespace pocketmine\utils;
-use pocketmine\entity\Entity;
+namespace synapse\utils;
+use synapse\entity\Entity;
 
 class Binary{
 	const BIG_ENDIAN = 0x00;

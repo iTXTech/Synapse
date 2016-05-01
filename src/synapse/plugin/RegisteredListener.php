@@ -19,12 +19,12 @@
  *
 */
 
-namespace pocketmine\plugin;
+namespace synapse\plugin;
 
-use pocketmine\event\Cancellable;
-use pocketmine\event\Event;
-use pocketmine\event\Listener;
-use pocketmine\event\TimingsHandler;
+use synapse\event\Cancellable;
+use synapse\event\Event;
+use synapse\event\Listener;
+use synapse\event\TimingsHandler;
 
 class RegisteredListener{
 

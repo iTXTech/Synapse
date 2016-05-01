@@ -19,7 +19,7 @@
  *
 */
 
-namespace pocketmine\network;
+namespace synapse\network;
 
 use raklib\protocol\EncapsulatedPacket;
 

@@ -19,10 +19,10 @@
  *
 */
 
-namespace pocketmine\plugin;
+namespace synapse\plugin;
 
-use pocketmine\permission\Permission;
-use pocketmine\utils\PluginException;
+use synapse\permission\Permission;
+use synapse\utils\PluginException;
 
 class PluginDescription{
 	private $name;
@@ -73,7 +73,7 @@ class PluginDescription{
 			$this->geniapi = !is_array($plugin["geniapi"]) ? [$plugin["geniapi"]] : $plugin["geniapi"];
 		}
 
-		if(stripos($this->main, "pocketmine\\") === 0){
+		if(stripos($this->main, "synapse\\") === 0){
 			throw new PluginException("Invalid PluginDescription main, cannot start within the PocketMine namespace");
 		}
 

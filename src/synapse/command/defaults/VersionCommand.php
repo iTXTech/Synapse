@@ -19,13 +19,13 @@
  *
 */
 
-namespace pocketmine\command\defaults;
+namespace synapse\command\defaults;
 
-use pocketmine\command\CommandSender;
-use pocketmine\event\TranslationContainer;
-use pocketmine\network\protocol\Info;
-use pocketmine\plugin\Plugin;
-use pocketmine\utils\TextFormat;
+use synapse\command\CommandSender;
+use synapse\event\TranslationContainer;
+use synapse\network\protocol\Info;
+use synapse\plugin\Plugin;
+use synapse\utils\TextFormat;
 
 class VersionCommand extends VanillaCommand{
 

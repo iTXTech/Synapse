@@ -19,12 +19,12 @@
  *
 */
 
-namespace pocketmine\plugin;
+namespace synapse\plugin;
 
-use pocketmine\event\plugin\PluginDisableEvent;
-use pocketmine\event\plugin\PluginEnableEvent;
-use pocketmine\Server;
-use pocketmine\utils\PluginException;
+use synapse\event\plugin\PluginDisableEvent;
+use synapse\event\plugin\PluginEnableEvent;
+use synapse\Server;
+use synapse\utils\PluginException;
 
 /**
  * Simple script loader, not for plugin development

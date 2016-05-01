@@ -19,7 +19,7 @@
  *
 */
 
-namespace pocketmine\utils;
+namespace synapse\utils;
 
 
 /**
@@ -31,7 +31,7 @@ class VersionString{
 	private $minor;
 	private $development = false;
 
-	public function __construct($version = \pocketmine\VERSION){
+	public function __construct($version = \synapse\VERSION){
 		if(is_int($version)){
 			$this->minor = $version & 0x1F;
 			$this->major = ($version >> 5) & 0x0F;

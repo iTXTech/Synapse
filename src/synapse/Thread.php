@@ -19,7 +19,7 @@
  *
 */
 
-namespace pocketmine;
+namespace synapse;
 
 /**
  * This class must be extended by all custom threading classes
@@ -43,9 +43,9 @@ abstract class Thread extends \Thread{
 
 	public function registerClassLoader(){
 		if(!interface_exists("ClassLoader", false)){
-			require(\pocketmine\PATH . "src/spl/ClassLoader.php");
-			require(\pocketmine\PATH . "src/spl/BaseClassLoader.php");
-			require(\pocketmine\PATH . "src/pocketmine/CompatibleClassLoader.php");
+			require(\synapse\PATH . "src/spl/ClassLoader.php");
+			require(\synapse\PATH . "src/spl/BaseClassLoader.php");
+			require(\synapse\PATH . "src/pocketmine/CompatibleClassLoader.php");
 		}
 		if($this->classLoader !== null){
 			$this->classLoader->register(true);

@@ -19,10 +19,10 @@
  *
 */
 
-namespace pocketmine\plugin;
+namespace synapse\plugin;
 
 use LogLevel;
-use pocketmine\Server;
+use synapse\Server;
 
 class PluginLogger implements \AttachableLogger{
 

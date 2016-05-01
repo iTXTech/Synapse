@@ -19,20 +19,20 @@
  *
 */
 
-namespace pocketmine\plugin;
+namespace synapse\plugin;
 
-use pocketmine\command\Command;
-use pocketmine\command\CommandSender;
-use pocketmine\command\PluginIdentifiableCommand;
-use pocketmine\Server;
-use pocketmine\utils\Config;
+use synapse\command\Command;
+use synapse\command\CommandSender;
+use synapse\command\PluginIdentifiableCommand;
+use synapse\Server;
+use synapse\utils\Config;
 
 abstract class PluginBase implements Plugin{
 
 	/** @var PluginLoader */
 	private $loader;
 
-	/** @var \pocketmine\Server */
+	/** @var \synapse\Server */
 	private $server;
 
 	/** @var bool */

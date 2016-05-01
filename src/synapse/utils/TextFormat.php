@@ -19,7 +19,7 @@
  *
 */
 
-namespace pocketmine\utils;
+namespace synapse\utils;
 
 /**
  * Class used to handle Minecraft chat format, and convert it to other formats like ANSI or HTML

@@ -19,7 +19,7 @@
  *
 */
 
-namespace pocketmine\utils;
+namespace synapse\utils;
 
 abstract class Terminal{
 	public static $FORMAT_BOLD = "";

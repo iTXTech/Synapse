@@ -19,7 +19,7 @@
  *
 */
 
-namespace pocketmine\command;
+namespace synapse\command;
 
 
 interface CommandExecutor{

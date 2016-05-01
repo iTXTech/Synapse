@@ -19,7 +19,7 @@
  *
 */
 
-namespace pocketmine;
+namespace synapse;
 
 class ThreadManager extends \Volatile{
 

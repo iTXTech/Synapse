@@ -19,7 +19,7 @@
  *
 */
 
-namespace pocketmine\utils;
+namespace synapse\utils;
 
 class UUID{
 

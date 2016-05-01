@@ -19,11 +19,11 @@
  *
 */
 
-namespace pocketmine\utils;
+namespace synapse\utils;
 
 use LogLevel;
-use pocketmine\Thread;
-use pocketmine\Worker;
+use synapse\Thread;
+use synapse\Worker;
 
 class MainLogger extends \AttachableThreadedLogger{
 	protected $logFile;
@@ -37,7 +37,7 @@ class MainLogger extends \AttachableThreadedLogger{
 	private $consoleCallback;
 
 	/** Extra Settings */
-	protected $write = true;
+	protected $write = false;
 
 	public $shouldSendMsg = "";
 	public $shouldRecordMsg = false;
@@ -158,9 +158,9 @@ class MainLogger extends \AttachableThreadedLogger{
 		if(($pos = strpos($errstr, "\n")) !== false){
 			$errstr = substr($errstr, 0, $pos);
 		}
-		$errfile = \pocketmine\cleanPath($errfile);
+		$errfile = \synapse\cleanPath($errfile);
 		$this->log($type, get_class($e) . ": \"$errstr\" ($errno) in \"$errfile\" at line $errline");
-		foreach(@\pocketmine\getTrace(1, $trace) as $i => $line){
+		foreach(@\synapse\getTrace(1, $trace) as $i => $line){
 			$this->debug($line);
 		}
 	}

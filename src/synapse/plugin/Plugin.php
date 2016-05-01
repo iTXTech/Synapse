@@ -22,9 +22,9 @@
 /**
  * Plugin related classes
  */
-namespace pocketmine\plugin;
+namespace synapse\plugin;
 
-use pocketmine\command\CommandExecutor;
+use synapse\command\CommandExecutor;
 
 
 /**
@@ -84,7 +84,7 @@ interface Plugin extends CommandExecutor{
 	public function getResources();
 
 	/**
-	 * @return \pocketmine\utils\Config
+	 * @return \synapse\utils\Config
 	 */
 	public function getConfig();
 
@@ -95,7 +95,7 @@ interface Plugin extends CommandExecutor{
 	public function reloadConfig();
 
 	/**
-	 * @return \pocketmine\Server
+	 * @return \synapse\Server
 	 */
 	public function getServer();
 

@@ -22,7 +22,7 @@
 /**
  * Network-related classes
  */
-namespace pocketmine\network;
+namespace synapse\network;
 
 interface AdvancedSourceInterface extends SourceInterface{
 

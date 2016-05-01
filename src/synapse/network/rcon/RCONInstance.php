@@ -19,11 +19,11 @@
  *
 */
 
-namespace pocketmine\network\rcon;
+namespace synapse\network\rcon;
 
-use pocketmine\Thread;
-use pocketmine\utils\Binary;
-use pocketmine\utils\MainLogger;
+use synapse\Thread;
+use synapse\utils\Binary;
+use synapse\utils\MainLogger;
 
 class RCONInstance extends Thread{
 	public $stop;

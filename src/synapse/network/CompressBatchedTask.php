@@ -19,11 +19,11 @@
  *
 */
 
-namespace pocketmine\network;
+namespace synapse\network;
 
-use pocketmine\Player;
-use pocketmine\scheduler\AsyncTask;
-use pocketmine\Server;
+use synapse\Player;
+use synapse\scheduler\AsyncTask;
+use synapse\Server;
 
 class CompressBatchedTask extends AsyncTask{
 

@@ -22,8 +22,8 @@
 /**
  * Various Utilities used around the code
  */
-namespace pocketmine\utils;
-use pocketmine\ThreadManager;
+namespace synapse\utils;
+use synapse\ThreadManager;
 
 /**
  * Big collection of functions

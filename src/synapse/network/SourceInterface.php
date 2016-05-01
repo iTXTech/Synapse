@@ -22,10 +22,10 @@
 /**
  * Network-related classes
  */
-namespace pocketmine\network;
+namespace synapse\network;
 
-use pocketmine\network\protocol\DataPacket;
-use pocketmine\Player;
+use synapse\network\protocol\DataPacket;
+use synapse\Player;
 
 /**
  * Classes that implement this interface will be able to be attached to players

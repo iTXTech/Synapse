@@ -22,69 +22,69 @@
 /**
  * Network-related classes
  */
-namespace pocketmine\network;
+namespace synapse\network;
 
-use pocketmine\network\protocol\AddEntityPacket;
-use pocketmine\network\protocol\AddItemEntityPacket;
-use pocketmine\network\protocol\AddPaintingPacket;
-use pocketmine\network\protocol\AddPlayerPacket;
-use pocketmine\network\protocol\AdventureSettingsPacket;
-use pocketmine\network\protocol\AnimatePacket;
-use pocketmine\network\protocol\BatchPacket;
-use pocketmine\network\protocol\ChunkRadiusUpdatePacket;
-use pocketmine\network\protocol\ContainerClosePacket;
-use pocketmine\network\protocol\ContainerOpenPacket;
-use pocketmine\network\protocol\ContainerSetContentPacket;
-use pocketmine\network\protocol\ContainerSetDataPacket;
-use pocketmine\network\protocol\ContainerSetSlotPacket;
-use pocketmine\network\protocol\CraftingDataPacket;
-use pocketmine\network\protocol\CraftingEventPacket;
-use pocketmine\network\protocol\ChangeDimensionPacket;
-use pocketmine\network\protocol\DataPacket;
-use pocketmine\network\protocol\DropItemPacket;
-use pocketmine\network\protocol\FullChunkDataPacket;
-use pocketmine\network\protocol\Info;
-use pocketmine\network\protocol\ItemFrameDropItemPacket;
-use pocketmine\network\protocol\RequestChunkRadiusPacket;
-use pocketmine\network\protocol\SetEntityLinkPacket;
-use pocketmine\network\protocol\BlockEntityDataPacket;
-use pocketmine\network\protocol\EntityEventPacket;
-use pocketmine\network\protocol\ExplodePacket;
-use pocketmine\network\protocol\HurtArmorPacket;
-use pocketmine\network\protocol\Info as ProtocolInfo;
-use pocketmine\network\protocol\InteractPacket;
-use pocketmine\network\protocol\LevelEventPacket;
-use pocketmine\network\protocol\DisconnectPacket;
-use pocketmine\network\protocol\LoginPacket;
-use pocketmine\network\protocol\PlayStatusPacket;
-use pocketmine\network\protocol\TextPacket;
-use pocketmine\network\protocol\MoveEntityPacket;
-use pocketmine\network\protocol\MovePlayerPacket;
-use pocketmine\network\protocol\PlayerActionPacket;
-use pocketmine\network\protocol\MobArmorEquipmentPacket;
-use pocketmine\network\protocol\MobEquipmentPacket;
-use pocketmine\network\protocol\RemoveBlockPacket;
-use pocketmine\network\protocol\RemoveEntityPacket;
-use pocketmine\network\protocol\RemovePlayerPacket;
-use pocketmine\network\protocol\RespawnPacket;
-use pocketmine\network\protocol\SetDifficultyPacket;
-use pocketmine\network\protocol\SetEntityDataPacket;
-use pocketmine\network\protocol\SetEntityMotionPacket;
-use pocketmine\network\protocol\SetHealthPacket;
-use pocketmine\network\protocol\SetPlayerGameTypePacket;
-use pocketmine\network\protocol\SetSpawnPositionPacket;
-use pocketmine\network\protocol\SetTimePacket;
-use pocketmine\network\protocol\StartGamePacket;
-use pocketmine\network\protocol\TakeItemEntityPacket;
-use pocketmine\network\protocol\BlockEventPacket;
-use pocketmine\network\protocol\UpdateBlockPacket;
-use pocketmine\network\protocol\UseItemPacket;
-use pocketmine\network\protocol\PlayerListPacket;
-use pocketmine\network\protocol\PlayerInputPacket;
-use pocketmine\Player;
-use pocketmine\Server;
-use pocketmine\utils\Binary;
-use pocketmine\utils\MainLogger;
+use synapse\network\protocol\AddEntityPacket;
+use synapse\network\protocol\AddItemEntityPacket;
+use synapse\network\protocol\AddPaintingPacket;
+use synapse\network\protocol\AddPlayerPacket;
+use synapse\network\protocol\AdventureSettingsPacket;
+use synapse\network\protocol\AnimatePacket;
+use synapse\network\protocol\BatchPacket;
+use synapse\network\protocol\ChunkRadiusUpdatePacket;
+use synapse\network\protocol\ContainerClosePacket;
+use synapse\network\protocol\ContainerOpenPacket;
+use synapse\network\protocol\ContainerSetContentPacket;
+use synapse\network\protocol\ContainerSetDataPacket;
+use synapse\network\protocol\ContainerSetSlotPacket;
+use synapse\network\protocol\CraftingDataPacket;
+use synapse\network\protocol\CraftingEventPacket;
+use synapse\network\protocol\ChangeDimensionPacket;
+use synapse\network\protocol\DataPacket;
+use synapse\network\protocol\DropItemPacket;
+use synapse\network\protocol\FullChunkDataPacket;
+use synapse\network\protocol\Info;
+use synapse\network\protocol\ItemFrameDropItemPacket;
+use synapse\network\protocol\RequestChunkRadiusPacket;
+use synapse\network\protocol\SetEntityLinkPacket;
+use synapse\network\protocol\BlockEntityDataPacket;
+use synapse\network\protocol\EntityEventPacket;
+use synapse\network\protocol\ExplodePacket;
+use synapse\network\protocol\HurtArmorPacket;
+use synapse\network\protocol\Info as ProtocolInfo;
+use synapse\network\protocol\InteractPacket;
+use synapse\network\protocol\LevelEventPacket;
+use synapse\network\protocol\DisconnectPacket;
+use synapse\network\protocol\LoginPacket;
+use synapse\network\protocol\PlayStatusPacket;
+use synapse\network\protocol\TextPacket;
+use synapse\network\protocol\MoveEntityPacket;
+use synapse\network\protocol\MovePlayerPacket;
+use synapse\network\protocol\PlayerActionPacket;
+use synapse\network\protocol\MobArmorEquipmentPacket;
+use synapse\network\protocol\MobEquipmentPacket;
+use synapse\network\protocol\RemoveBlockPacket;
+use synapse\network\protocol\RemoveEntityPacket;
+use synapse\network\protocol\RemovePlayerPacket;
+use synapse\network\protocol\RespawnPacket;
+use synapse\network\protocol\SetDifficultyPacket;
+use synapse\network\protocol\SetEntityDataPacket;
+use synapse\network\protocol\SetEntityMotionPacket;
+use synapse\network\protocol\SetHealthPacket;
+use synapse\network\protocol\SetPlayerGameTypePacket;
+use synapse\network\protocol\SetSpawnPositionPacket;
+use synapse\network\protocol\SetTimePacket;
+use synapse\network\protocol\StartGamePacket;
+use synapse\network\protocol\TakeItemEntityPacket;
+use synapse\network\protocol\BlockEventPacket;
+use synapse\network\protocol\UpdateBlockPacket;
+use synapse\network\protocol\UseItemPacket;
+use synapse\network\protocol\PlayerListPacket;
+use synapse\network\protocol\PlayerInputPacket;
+use synapse\Player;
+use synapse\Server;
+use synapse\utils\Binary;
+use synapse\utils\MainLogger;
 
 class Network {
 
@@ -164,7 +164,7 @@ class Network {
 				$interface->process();
 			} catch (\Throwable $e) {
 				$logger = $this->server->getLogger();
-				if (\pocketmine\DEBUG > 1) {
+				if (\synapse\DEBUG > 1) {
 					if ($logger instanceof MainLogger) {
 						$logger->logException($e);
 					}
@@ -259,7 +259,7 @@ class Network {
 				}
 			}
 		} catch (\Throwable $e) {
-			if (\pocketmine\DEBUG > 1) {
+			if (\synapse\DEBUG > 1) {
 				$logger = $this->server->getLogger();
 				if ($logger instanceof MainLogger) {
 					$logger->debug("BatchPacket " . " 0x" . bin2hex($packet->payload));

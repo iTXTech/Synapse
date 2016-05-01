@@ -19,10 +19,10 @@
  *
 */
 
-namespace pocketmine\command\defaults;
+namespace synapse\command\defaults;
 
-use pocketmine\command\Command;
-use pocketmine\command\CommandSender;
+use synapse\command\Command;
+use synapse\command\CommandSender;
 
 abstract class VanillaCommand extends Command{
 	const MAX_COORD = 30000000;

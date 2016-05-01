@@ -19,71 +19,71 @@
  *
 */
 
-namespace pocketmine\command;
+namespace synapse\command;
 
-use pocketmine\command\defaults\BanCommand;
-use pocketmine\command\defaults\BanIpCommand;
-use pocketmine\command\defaults\BanListCommand;
-use pocketmine\command\defaults\BiomeCommand;
-use pocketmine\command\defaults\CaveCommand;
-use pocketmine\command\defaults\ChunkInfoCommand;
-use pocketmine\command\defaults\DefaultGamemodeCommand;
-use pocketmine\command\defaults\DeopCommand;
-use pocketmine\command\defaults\DifficultyCommand;
-use pocketmine\command\defaults\DumpMemoryCommand;
-use pocketmine\command\defaults\EffectCommand;
-use pocketmine\command\defaults\EnchantCommand;
-use pocketmine\command\defaults\GamemodeCommand;
-use pocketmine\command\defaults\GarbageCollectorCommand;
-use pocketmine\command\defaults\GiveCommand;
-use pocketmine\command\defaults\HelpCommand;
-use pocketmine\command\defaults\KickCommand;
-use pocketmine\command\defaults\KillCommand;
-use pocketmine\command\defaults\ListCommand;
-use pocketmine\command\defaults\LoadPluginCommand;
-use pocketmine\command\defaults\LvdatCommand;
-use pocketmine\command\defaults\MeCommand;
-use pocketmine\command\defaults\OpCommand;
-use pocketmine\command\defaults\PardonCommand;
-use pocketmine\command\defaults\PardonIpCommand;
-use pocketmine\command\defaults\ParticleCommand;
-use pocketmine\command\defaults\PluginsCommand;
-use pocketmine\command\defaults\ReloadCommand;
-use pocketmine\command\defaults\SaveCommand;
-use pocketmine\command\defaults\SaveOffCommand;
-use pocketmine\command\defaults\SaveOnCommand;
-use pocketmine\command\defaults\SayCommand;
-use pocketmine\command\defaults\SeedCommand;
-use pocketmine\command\defaults\SetBlockCommand;
-use pocketmine\command\defaults\SetWorldSpawnCommand;
-use pocketmine\command\defaults\SpawnpointCommand;
-use pocketmine\command\defaults\StatusCommand;
-use pocketmine\command\defaults\StopCommand;
-use pocketmine\command\defaults\SummonCommand;
-use pocketmine\command\defaults\TeleportCommand;
-use pocketmine\command\defaults\TellCommand;
-use pocketmine\command\defaults\TimeCommand;
-use pocketmine\command\defaults\TimingsCommand;
-use pocketmine\command\defaults\VanillaCommand;
-use pocketmine\command\defaults\VersionCommand;
-use pocketmine\command\defaults\WhitelistCommand;
-use pocketmine\command\defaults\XpCommand;
-use pocketmine\command\defaults\FillCommand;
-use pocketmine\event\TranslationContainer;
-use pocketmine\Player;
-use pocketmine\Server;
-use pocketmine\utils\MainLogger;
-use pocketmine\utils\TextFormat;
+use synapse\command\defaults\BanCommand;
+use synapse\command\defaults\BanIpCommand;
+use synapse\command\defaults\BanListCommand;
+use synapse\command\defaults\BiomeCommand;
+use synapse\command\defaults\CaveCommand;
+use synapse\command\defaults\ChunkInfoCommand;
+use synapse\command\defaults\DefaultGamemodeCommand;
+use synapse\command\defaults\DeopCommand;
+use synapse\command\defaults\DifficultyCommand;
+use synapse\command\defaults\DumpMemoryCommand;
+use synapse\command\defaults\EffectCommand;
+use synapse\command\defaults\EnchantCommand;
+use synapse\command\defaults\GamemodeCommand;
+use synapse\command\defaults\GarbageCollectorCommand;
+use synapse\command\defaults\GiveCommand;
+use synapse\command\defaults\HelpCommand;
+use synapse\command\defaults\KickCommand;
+use synapse\command\defaults\KillCommand;
+use synapse\command\defaults\ListCommand;
+use synapse\command\defaults\LoadPluginCommand;
+use synapse\command\defaults\LvdatCommand;
+use synapse\command\defaults\MeCommand;
+use synapse\command\defaults\OpCommand;
+use synapse\command\defaults\PardonCommand;
+use synapse\command\defaults\PardonIpCommand;
+use synapse\command\defaults\ParticleCommand;
+use synapse\command\defaults\PluginsCommand;
+use synapse\command\defaults\ReloadCommand;
+use synapse\command\defaults\SaveCommand;
+use synapse\command\defaults\SaveOffCommand;
+use synapse\command\defaults\SaveOnCommand;
+use synapse\command\defaults\SayCommand;
+use synapse\command\defaults\SeedCommand;
+use synapse\command\defaults\SetBlockCommand;
+use synapse\command\defaults\SetWorldSpawnCommand;
+use synapse\command\defaults\SpawnpointCommand;
+use synapse\command\defaults\StatusCommand;
+use synapse\command\defaults\StopCommand;
+use synapse\command\defaults\SummonCommand;
+use synapse\command\defaults\TeleportCommand;
+use synapse\command\defaults\TellCommand;
+use synapse\command\defaults\TimeCommand;
+use synapse\command\defaults\TimingsCommand;
+use synapse\command\defaults\VanillaCommand;
+use synapse\command\defaults\VersionCommand;
+use synapse\command\defaults\WhitelistCommand;
+use synapse\command\defaults\XpCommand;
+use synapse\command\defaults\FillCommand;
+use synapse\event\TranslationContainer;
+use synapse\Player;
+use synapse\Server;
+use synapse\utils\MainLogger;
+use synapse\utils\TextFormat;
 
-use pocketmine\command\defaults\MakeServerCommand;
-use pocketmine\command\defaults\ExtractPluginCommand;
-use pocketmine\command\defaults\ExtractPharCommand;
-use pocketmine\command\defaults\MakePluginCommand;
-use pocketmine\command\defaults\BancidbynameCommand;
-use pocketmine\command\defaults\BanipbynameCommand;
-use pocketmine\command\defaults\BanCidCommand;
-use pocketmine\command\defaults\PardonCidCommand;
-use pocketmine\command\defaults\WeatherCommand;
+use synapse\command\defaults\MakeServerCommand;
+use synapse\command\defaults\ExtractPluginCommand;
+use synapse\command\defaults\ExtractPharCommand;
+use synapse\command\defaults\MakePluginCommand;
+use synapse\command\defaults\BancidbynameCommand;
+use synapse\command\defaults\BanipbynameCommand;
+use synapse\command\defaults\BanCidCommand;
+use synapse\command\defaults\PardonCidCommand;
+use synapse\command\defaults\WeatherCommand;
 
 class SimpleCommandMap implements CommandMap{
 
@@ -101,73 +101,10 @@ class SimpleCommandMap implements CommandMap{
 	}
 
 	private function setDefaultCommands(){
-		$this->register("pocketmine", new WeatherCommand("weather"));
-
-		$this->register("pocketmine", new BanCidCommand("bancid"));
-		$this->register("pocketmine", new PardonCidCommand("pardoncid"));
-		$this->register("pocketmine", new BancidbynameCommand("bancidbyname"));
-		$this->register("pocketmine", new BanipbynameCommand("banipbyname"));
-
-		$this->register("pocketmine", new ExtractPharCommand("extractphar"));
-		$this->register("pocketmine", new ExtractPluginCommand("extractplugin"));
-		$this->register("pocketmine", new MakePluginCommand("makeplugin"));
-		$this->register("pocketmine", new MakeServerCommand("ms"));
-		//$this->register("pocketmine", new MakeServerCommand("makeserver"));
-		$this->register("pocketmine", new ExtractPluginCommand("ep"));
-		$this->register("pocketmine", new MakePluginCommand("mp"));
-
-		$this->register("pocketmine", new LoadPluginCommand("loadplugin"));
-
-		$this->register("pocketmine", new LvdatCommand("lvdat"));
-		$this->register("pocketmine", new BiomeCommand("biome"));
-		$this->register("pocketmine", new CaveCommand("cave"));
-		$this->register("pocketmine", new ChunkInfoCommand("chunkinfo"));
-
-		$this->register("pocketmine", new VersionCommand("version"));
-		$this->register("pocketmine", new FillCommand("fill"));
-		$this->register("pocketmine", new PluginsCommand("plugins"));
-		$this->register("pocketmine", new SeedCommand("seed"));
-		$this->register("pocketmine", new HelpCommand("help"));
-		$this->register("pocketmine", new StopCommand("stop"));
-		$this->register("pocketmine", new TellCommand("tell"));
-		$this->register("pocketmine", new DefaultGamemodeCommand("defaultgamemode"));
-		$this->register("pocketmine", new BanCommand("ban"));
-		$this->register("pocketmine", new BanIpCommand("ban-ip"));
-		$this->register("pocketmine", new BanListCommand("banlist"));
-		$this->register("pocketmine", new PardonCommand("pardon"));
-		$this->register("pocketmine", new PardonIpCommand("pardon-ip"));
-		$this->register("pocketmine", new SayCommand("say"));
-		$this->register("pocketmine", new MeCommand("me"));
-		$this->register("pocketmine", new ListCommand("list"));
-		$this->register("pocketmine", new DifficultyCommand("difficulty"));
-		$this->register("pocketmine", new KickCommand("kick"));
-		$this->register("pocketmine", new OpCommand("op"));
-		$this->register("pocketmine", new DeopCommand("deop"));
-		$this->register("pocketmine", new WhitelistCommand("whitelist"));
-		$this->register("pocketmine", new SaveOnCommand("save-on"));
-		$this->register("pocketmine", new SaveOffCommand("save-off"));
-		$this->register("pocketmine", new SaveCommand("save-all"));
-		$this->register("pocketmine", new GiveCommand("give"));
-		$this->register("pocketmine", new EffectCommand("effect"));
-		$this->register("pocketmine", new EnchantCommand("enchant"));
-		$this->register("pocketmine", new ParticleCommand("particle"));
-		$this->register("pocketmine", new GamemodeCommand("gamemode"));
-		$this->register("pocketmine", new KillCommand("kill"));
-		$this->register("pocketmine", new SpawnpointCommand("spawnpoint"));
-		$this->register("pocketmine", new SetWorldSpawnCommand("setworldspawn"));
-		$this->register("pocketmine", new SummonCommand("summon"));
-		$this->register("pocketmine", new TeleportCommand("tp"));
-		$this->register("pocketmine", new TimeCommand("time"));
-		$this->register("pocketmine", new TimingsCommand("timings"));
-		$this->register("pocketmine", new ReloadCommand("reload"));
-		$this->register("pocketmine", new XpCommand("xp"));
-		$this->register("pocketmine", new SetBlockCommand("setblock"));
-
-		if($this->server->getProperty("debug.commands", false)){
-			$this->register("pocketmine", new StatusCommand("status"));
-			$this->register("pocketmine", new GarbageCollectorCommand("gc"));
-			$this->register("pocketmine", new DumpMemoryCommand("dumpmemory"));
-		}
+		$this->register("synapse", new VersionCommand("version"));
+		$this->register("synapse", new StopCommand("stop"));
+		$this->register("synapse", new StatusCommand("status"));
+		//$this->register("synapse", new GarbageCollectorCommand("gc"));
 	}
 
 

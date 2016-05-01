@@ -1,15 +1,15 @@
 <?php
-namespace pocketmine\plugin;
+namespace synapse\plugin;
 
-use pocketmine\event\plugin\PluginDisableEvent;
-use pocketmine\event\plugin\PluginEnableEvent;
-use pocketmine\plugin\Plugin;
-use pocketmine\plugin\PluginBase;
-use pocketmine\plugin\PluginDescription;
-use pocketmine\plugin\PluginLoader;
-use pocketmine\Server;
-use pocketmine\utils\MainLogger;
-use pocketmine\utils\TextFormat;
+use synapse\event\plugin\PluginDisableEvent;
+use synapse\event\plugin\PluginEnableEvent;
+use synapse\plugin\Plugin;
+use synapse\plugin\PluginBase;
+use synapse\plugin\PluginDescription;
+use synapse\plugin\PluginLoader;
+use synapse\Server;
+use synapse\utils\MainLogger;
+use synapse\utils\TextFormat;
 
 class FolderPluginLoader implements PluginLoader{
 

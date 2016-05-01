@@ -19,12 +19,12 @@
  *
 */
 
-namespace pocketmine\command;
+namespace synapse\command;
 
-use pocketmine\Thread;
-use pocketmine\ThreadManager;
-use pocketmine\utils\MainLogger;
-use pocketmine\utils\Utils;
+use synapse\Thread;
+use synapse\ThreadManager;
+use synapse\utils\MainLogger;
+use synapse\utils\Utils;
 
 class CommandReader extends Thread{
 	private $readline;

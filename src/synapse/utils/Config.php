@@ -19,9 +19,9 @@
  *
 */
 
-namespace pocketmine\utils;
-use pocketmine\scheduler\FileWriteTask;
-use pocketmine\Server;
+namespace synapse\utils;
+use synapse\scheduler\FileWriteTask;
+use synapse\Server;
 
 
 /**
@@ -210,7 +210,7 @@ class Config{
 			}catch(\Throwable $e){
 				$logger = Server::getInstance()->getLogger();
 				$logger->critical("Could not save Config " . $this->file . ": " . $e->getMessage());
-				if(\pocketmine\DEBUG > 1 and $logger instanceof MainLogger){
+				if(\synapse\DEBUG > 1 and $logger instanceof MainLogger){
 					$logger->logException($e);
 				}
 			}

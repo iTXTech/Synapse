@@ -19,7 +19,7 @@
  *
 */
 
-namespace pocketmine;
+namespace synapse;
 
 class CompatibleClassLoader extends \BaseClassLoader{
 

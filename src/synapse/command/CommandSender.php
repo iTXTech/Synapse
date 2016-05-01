@@ -19,9 +19,9 @@
  *
 */
 
-namespace pocketmine\command;
+namespace synapse\command;
 
-use pocketmine\permission\Permissible;
+use synapse\permission\Permissible;
 
 interface CommandSender extends Permissible{
 
@@ -31,7 +31,7 @@ interface CommandSender extends Permissible{
 	public function sendMessage($message);
 
 	/**
-	 * @return \pocketmine\Server
+	 * @return \synapse\Server
 	 */
 	public function getServer();
 
