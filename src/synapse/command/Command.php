@@ -60,9 +60,6 @@ abstract class Command{
 	protected $usageMessage;
 
 	/** @var string */
-	private $permission = null;
-
-	/** @var string */
 	private $permissionMessage = null;
 
 	/** @var TimingsHandler */
@@ -80,8 +77,6 @@ abstract class Command{
 		$this->label = $name;
 		$this->description = $description;
 		$this->usageMessage = $usageMessage === null ? "/" . $name : $usageMessage;
-		$this->aliases = $aliases;
-		$this->activeAliases = (array) $aliases;
 		$this->timings = new TimingsHandler("** Command: " . $name);
 	}
 
@@ -99,58 +94,6 @@ abstract class Command{
 	 */
 	public function getName() : string{
 		return $this->name;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getPermission(){
-		return $this->permission;
-	}
-
-	/**
-	 * @param string|null $permission
-	 */
-	public function setPermission($permission){
-		$this->permission = $permission;
-	}
-
-	/**
-	 * @param CommandSender $target
-	 *
-	 * @return bool
-	 */
-	public function testPermission(CommandSender $target){
-		if($this->testPermissionSilent($target)){
-			return true;
-		}
-
-		if($this->permissionMessage === null){
-			$target->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.permission"));
-		}elseif($this->permissionMessage !== ""){
-			$target->sendMessage(str_replace("<permission>", $this->permission, $this->permissionMessage));
-		}
-
-		return false;
-	}
-
-	/**
-	 * @param CommandSender $target
-	 *
-	 * @return bool
-	 */
-	public function testPermissionSilent(CommandSender $target){
-		if($this->permission === null or $this->permission === ""){
-			return true;
-		}
-
-		foreach(explode(";", $this->permission) as $permission){
-			if($target->hasPermission($permission)){
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	/**

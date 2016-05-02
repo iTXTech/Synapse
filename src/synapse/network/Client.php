@@ -21,38 +21,6 @@
  
 namespace synapse;
 
-use synapse\network\protocol\mcpe\DataPacket;
-use synapse\network\protocol\mcpe\Info;
-
-class Player{
-	/** @var DataPacket */
-	private $cachedLoginPacket;
-	private $name;
-	private $address;
-	private $port;
-	private $currentServerIp;
-	private $currentServerPort;
-
-	public function __construct(){
-	}
+class Client{
 	
-	public function handleDataPacket(DataPacket $pk){
-		switch($pk::NETWORK_ID){
-			case Info::LOGIN_PACKET:
-				$this->cachedLoginPacket = $pk;
-				break;
-		}
-	}
-
-	public function getName() : string{
-
-	}
-	
-	public function transfer(Client $client){
-
-	}
-
-	public function sendPacket(DataPacket $pk, $direct = false){
-		
-	}
 }

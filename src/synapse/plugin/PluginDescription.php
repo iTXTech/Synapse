@@ -91,14 +91,6 @@ class PluginDescription{
 		if(isset($plugin["prefix"])){
 			$this->prefix = $plugin["prefix"];
 		}
-		if(isset($plugin["load"])){
-			$order = strtoupper($plugin["load"]);
-			if(!defined(PluginLoadOrder::class . "::" . $order)){
-				throw new PluginException("Invalid PluginDescription load");
-			}else{
-				$this->order = constant(PluginLoadOrder::class . "::" . $order);
-			}
-		}
 		$this->authors = [];
 		if(isset($plugin["author"])){
 			$this->authors[] = $plugin["author"];

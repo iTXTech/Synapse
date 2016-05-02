@@ -24,7 +24,7 @@
  */
 namespace synapse\network;
 
-use synapse\network\protocol\DataPacket;
+use synapse\network\protocol\mcpe\DataPacket;
 use synapse\Player;
 
 /**

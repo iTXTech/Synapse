@@ -21,14 +21,11 @@
 
 namespace synapse\event;
 
-
-use synapse\entity\Entity;
-use synapse\network\protocol\DataPacket;
+use synapse\network\protocol\mcpe\DataPacket;
 use synapse\Player;
 use synapse\plugin\PluginManager;
 use synapse\scheduler\PluginTask;
 use synapse\scheduler\TaskHandler;
-use synapse\tile\Tile;
 
 abstract class Timings{
 
@@ -193,38 +190,6 @@ abstract class Timings{
 		}
 
 		return self::$pluginTaskTimingMap[$name];
-	}
-
-	/**
-	 * @param Entity $entity
-	 *
-	 * @return TimingsHandler
-	 */
-	public static function getEntityTimings(Entity $entity){
-		$entityType = (new \ReflectionClass($entity))->getShortName();
-		if(!isset(self::$entityTypeTimingMap[$entityType])){
-			if($entity instanceof Player){
-				self::$entityTypeTimingMap[$entityType] = new TimingsHandler("** tickEntity - EntityPlayer", self::$tickEntityTimer);
-			}else{
-				self::$entityTypeTimingMap[$entityType] = new TimingsHandler("** tickEntity - " . $entityType, self::$tickEntityTimer);
-			}
-		}
-
-		return self::$entityTypeTimingMap[$entityType];
-	}
-
-	/**
-	 * @param Tile $tile
-	 *
-	 * @return TimingsHandler
-	 */
-	public static function getTileEntityTimings(Tile $tile){
-		$tileType = (new \ReflectionClass($tile))->getShortName();
-		if(!isset(self::$tileEntityTypeTimingMap[$tileType])){
-			self::$tileEntityTypeTimingMap[$tileType] = new TimingsHandler("** tickTileEntity - " . $tileType, self::$tickTileEntityTimer);
-		}
-
-		return self::$tileEntityTypeTimingMap[$tileType];
 	}
 
 	/**
