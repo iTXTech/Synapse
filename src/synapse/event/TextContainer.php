@@ -19,25 +19,32 @@
  *
 */
 
-namespace synapse\command;
+namespace synapse\event;
 
+class TextContainer{
 
-interface CommandSender{
+	/** @var string $text */
+	protected $text;
 
-	/**
-	 * @param string $message
-	 */
-	public function sendMessage($message);
+	public function __construct($text){
+		$this->text = $text;
+	}
 
-	/**
-	 * @return \synapse\Server
-	 */
-	public function getServer();
+	public function setText($text){
+		$this->text = $text;
+	}
 
 	/**
 	 * @return string
 	 */
-	public function getName();
+	public function getText(){
+		return $this->text;
+	}
 
-
+	/**
+	 * @return string
+	 */
+	public function __toString(){
+		return $this->getText();
+	}
 }

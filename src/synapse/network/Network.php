@@ -24,63 +24,63 @@
  */
 namespace synapse\network;
 
-use synapse\network\protocol\AddEntityPacket;
-use synapse\network\protocol\AddItemEntityPacket;
-use synapse\network\protocol\AddPaintingPacket;
-use synapse\network\protocol\AddPlayerPacket;
-use synapse\network\protocol\AdventureSettingsPacket;
-use synapse\network\protocol\AnimatePacket;
-use synapse\network\protocol\BatchPacket;
-use synapse\network\protocol\ChunkRadiusUpdatePacket;
-use synapse\network\protocol\ContainerClosePacket;
-use synapse\network\protocol\ContainerOpenPacket;
-use synapse\network\protocol\ContainerSetContentPacket;
-use synapse\network\protocol\ContainerSetDataPacket;
-use synapse\network\protocol\ContainerSetSlotPacket;
-use synapse\network\protocol\CraftingDataPacket;
-use synapse\network\protocol\CraftingEventPacket;
-use synapse\network\protocol\ChangeDimensionPacket;
-use synapse\network\protocol\DataPacket;
-use synapse\network\protocol\DropItemPacket;
-use synapse\network\protocol\FullChunkDataPacket;
-use synapse\network\protocol\Info;
-use synapse\network\protocol\ItemFrameDropItemPacket;
-use synapse\network\protocol\RequestChunkRadiusPacket;
-use synapse\network\protocol\SetEntityLinkPacket;
-use synapse\network\protocol\BlockEntityDataPacket;
-use synapse\network\protocol\EntityEventPacket;
-use synapse\network\protocol\ExplodePacket;
-use synapse\network\protocol\HurtArmorPacket;
-use synapse\network\protocol\Info as ProtocolInfo;
-use synapse\network\protocol\InteractPacket;
-use synapse\network\protocol\LevelEventPacket;
-use synapse\network\protocol\DisconnectPacket;
-use synapse\network\protocol\LoginPacket;
-use synapse\network\protocol\PlayStatusPacket;
-use synapse\network\protocol\TextPacket;
-use synapse\network\protocol\MoveEntityPacket;
-use synapse\network\protocol\MovePlayerPacket;
-use synapse\network\protocol\PlayerActionPacket;
-use synapse\network\protocol\MobArmorEquipmentPacket;
-use synapse\network\protocol\MobEquipmentPacket;
-use synapse\network\protocol\RemoveBlockPacket;
-use synapse\network\protocol\RemoveEntityPacket;
-use synapse\network\protocol\RemovePlayerPacket;
-use synapse\network\protocol\RespawnPacket;
-use synapse\network\protocol\SetDifficultyPacket;
-use synapse\network\protocol\SetEntityDataPacket;
-use synapse\network\protocol\SetEntityMotionPacket;
-use synapse\network\protocol\SetHealthPacket;
-use synapse\network\protocol\SetPlayerGameTypePacket;
-use synapse\network\protocol\SetSpawnPositionPacket;
-use synapse\network\protocol\SetTimePacket;
-use synapse\network\protocol\StartGamePacket;
-use synapse\network\protocol\TakeItemEntityPacket;
-use synapse\network\protocol\BlockEventPacket;
-use synapse\network\protocol\UpdateBlockPacket;
-use synapse\network\protocol\UseItemPacket;
-use synapse\network\protocol\PlayerListPacket;
-use synapse\network\protocol\PlayerInputPacket;
+use synapse\network\protocol\mcpe\AddEntityPacket;
+use synapse\network\protocol\mcpe\AddItemEntityPacket;
+use synapse\network\protocol\mcpe\AddPaintingPacket;
+use synapse\network\protocol\mcpe\AddPlayerPacket;
+use synapse\network\protocol\mcpe\AdventureSettingsPacket;
+use synapse\network\protocol\mcpe\AnimatePacket;
+use synapse\network\protocol\mcpe\BatchPacket;
+use synapse\network\protocol\mcpe\ChunkRadiusUpdatePacket;
+use synapse\network\protocol\mcpe\ContainerClosePacket;
+use synapse\network\protocol\mcpe\ContainerOpenPacket;
+use synapse\network\protocol\mcpe\ContainerSetContentPacket;
+use synapse\network\protocol\mcpe\ContainerSetDataPacket;
+use synapse\network\protocol\mcpe\ContainerSetSlotPacket;
+use synapse\network\protocol\mcpe\CraftingDataPacket;
+use synapse\network\protocol\mcpe\CraftingEventPacket;
+use synapse\network\protocol\mcpe\ChangeDimensionPacket;
+use synapse\network\protocol\mcpe\DataPacket;
+use synapse\network\protocol\mcpe\DropItemPacket;
+use synapse\network\protocol\mcpe\FullChunkDataPacket;
+use synapse\network\protocol\mcpe\Info;
+use synapse\network\protocol\mcpe\ItemFrameDropItemPacket;
+use synapse\network\protocol\mcpe\RequestChunkRadiusPacket;
+use synapse\network\protocol\mcpe\SetEntityLinkPacket;
+use synapse\network\protocol\mcpe\BlockEntityDataPacket;
+use synapse\network\protocol\mcpe\EntityEventPacket;
+use synapse\network\protocol\mcpe\ExplodePacket;
+use synapse\network\protocol\mcpe\HurtArmorPacket;
+use synapse\network\protocol\mcpe\Info as ProtocolInfo;
+use synapse\network\protocol\mcpe\InteractPacket;
+use synapse\network\protocol\mcpe\LevelEventPacket;
+use synapse\network\protocol\mcpe\DisconnectPacket;
+use synapse\network\protocol\mcpe\LoginPacket;
+use synapse\network\protocol\mcpe\PlayStatusPacket;
+use synapse\network\protocol\mcpe\TextPacket;
+use synapse\network\protocol\mcpe\MoveEntityPacket;
+use synapse\network\protocol\mcpe\MovePlayerPacket;
+use synapse\network\protocol\mcpe\PlayerActionPacket;
+use synapse\network\protocol\mcpe\MobArmorEquipmentPacket;
+use synapse\network\protocol\mcpe\MobEquipmentPacket;
+use synapse\network\protocol\mcpe\RemoveBlockPacket;
+use synapse\network\protocol\mcpe\RemoveEntityPacket;
+use synapse\network\protocol\mcpe\RemovePlayerPacket;
+use synapse\network\protocol\mcpe\RespawnPacket;
+use synapse\network\protocol\mcpe\SetDifficultyPacket;
+use synapse\network\protocol\mcpe\SetEntityDataPacket;
+use synapse\network\protocol\mcpe\SetEntityMotionPacket;
+use synapse\network\protocol\mcpe\SetHealthPacket;
+use synapse\network\protocol\mcpe\SetPlayerGameTypePacket;
+use synapse\network\protocol\mcpe\SetSpawnPositionPacket;
+use synapse\network\protocol\mcpe\SetTimePacket;
+use synapse\network\protocol\mcpe\StartGamePacket;
+use synapse\network\protocol\mcpe\TakeItemEntityPacket;
+use synapse\network\protocol\mcpe\BlockEventPacket;
+use synapse\network\protocol\mcpe\UpdateBlockPacket;
+use synapse\network\protocol\mcpe\UseItemPacket;
+use synapse\network\protocol\mcpe\PlayerListPacket;
+use synapse\network\protocol\mcpe\PlayerInputPacket;
 use synapse\Player;
 use synapse\Server;
 use synapse\utils\Binary;
@@ -89,25 +89,6 @@ use synapse\utils\MainLogger;
 class Network {
 
 	public static $BATCH_THRESHOLD = 512;
-
-	/** @deprecated */
-	const CHANNEL_NONE = 0;
-	/** @deprecated */
-	const CHANNEL_PRIORITY = 1; //Priority channel, only to be used when it matters
-	/** @deprecated */
-	const CHANNEL_WORLD_CHUNKS = 2; //Chunk sending
-	/** @deprecated */
-	const CHANNEL_MOVEMENT = 3; //Movement sending
-	/** @deprecated */
-	const CHANNEL_BLOCKS = 4; //Block updates or explosions
-	/** @deprecated */
-	const CHANNEL_WORLD_EVENTS = 5; //Entity, level or tile entity events
-	/** @deprecated */
-	const CHANNEL_ENTITY_SPAWNING = 6; //Entity spawn/despawn channel
-	/** @deprecated */
-	const CHANNEL_TEXT = 7; //Chat and other text stuff
-	/** @deprecated */
-	const CHANNEL_END = 31;
 
 	/** @var \SplFixedArray */
 	private $packetPool;

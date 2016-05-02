@@ -19,25 +19,25 @@
  *
 */
 
-namespace synapse\command;
+namespace synapse\scheduler;
 
+class FileWriteTask extends AsyncTask{
 
-interface CommandSender{
+	private $path;
+	private $contents;
+	private $flags;
 
-	/**
-	 * @param string $message
-	 */
-	public function sendMessage($message);
+	public function __construct($path, $contents, $flags = 0){
+		$this->path = $path;
+		$this->contents = $contents;
+		$this->flags = (int) $flags;
+	}
 
-	/**
-	 * @return \synapse\Server
-	 */
-	public function getServer();
+	public function onRun(){
+		try{
+			file_put_contents($this->path, $this->contents, (int) $this->flags);
+		}catch (\Throwable $e){
 
-	/**
-	 * @return string
-	 */
-	public function getName();
-
-
+		}
+	}
 }

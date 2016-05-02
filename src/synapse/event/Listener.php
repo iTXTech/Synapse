@@ -19,25 +19,8 @@
  *
 */
 
-namespace synapse\command;
+namespace synapse\event;
 
-
-interface CommandSender{
-
-	/**
-	 * @param string $message
-	 */
-	public function sendMessage($message);
-
-	/**
-	 * @return \synapse\Server
-	 */
-	public function getServer();
-
-	/**
-	 * @return string
-	 */
-	public function getName();
-
+interface Listener{
 
 }

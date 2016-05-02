@@ -19,25 +19,11 @@
  *
 */
 
-namespace synapse\command;
+namespace synapse\utils;
 
+class ReversePriorityQueue extends \SplPriorityQueue{
 
-interface CommandSender{
-
-	/**
-	 * @param string $message
-	 */
-	public function sendMessage($message);
-
-	/**
-	 * @return \synapse\Server
-	 */
-	public function getServer();
-
-	/**
-	 * @return string
-	 */
-	public function getName();
-
-
+	public function compare($priority1, $priority2){
+		return (int) -($priority1 - $priority2);
+	}
 }

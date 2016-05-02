@@ -21,13 +21,10 @@
 
 namespace synapse\network;
 
-use synapse\event\player\PlayerCreationEvent;
-use synapse\network\protocol\DataPacket;
-use synapse\network\protocol\Info as ProtocolInfo;
-use synapse\network\protocol\Info;
+use synapse\network\protocol\mcpe\DataPacket;
+use synapse\network\protocol\mcpe\Info as ProtocolInfo;
 use synapse\Player;
 use synapse\Server;
-use synapse\utils\MainLogger;
 use raklib\protocol\EncapsulatedPacket;
 use raklib\RakLib;
 use raklib\server\RakLibServer;

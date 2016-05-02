@@ -13,8 +13,8 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @author synapse Team
+ * @link http://www.synapse.net/
  *
  *
 */
@@ -22,7 +22,6 @@
 namespace synapse\command;
 
 use synapse\Thread;
-use synapse\ThreadManager;
 use synapse\utils\MainLogger;
 use synapse\utils\Utils;
 
@@ -102,7 +101,10 @@ class CommandReader extends Thread{
 			$e = null;
 			if(stream_select($r, $w, $e, 0, 200000) > 0){
 				if(feof($this->stdin)){
-					break;
+					$this->stdin = fopen("php://stdin", "r");
+					if(!is_resource($this->stdin)){
+						break;
+					}
 				}
 				$this->readLine();
 			}

@@ -19,25 +19,30 @@
  *
 */
 
-namespace synapse\command;
+namespace synapse\scheduler;
 
+use synapse\plugin\Plugin;
 
-interface CommandSender{
+/**
+ * Base class for plugin tasks. Allows the Server to delete them easily when needed
+ */
+abstract class PluginTask extends Task{
 
-	/**
-	 * @param string $message
-	 */
-	public function sendMessage($message);
-
-	/**
-	 * @return \synapse\Server
-	 */
-	public function getServer();
+	/** @var Plugin */
+	protected $owner;
 
 	/**
-	 * @return string
+	 * @param Plugin $owner
 	 */
-	public function getName();
+	public function __construct(Plugin $owner){
+		$this->owner = $owner;
+	}
 
+	/**
+	 * @return Plugin
+	 */
+	public final function getOwner(){
+		return $this->owner;
+	}
 
 }

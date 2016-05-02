@@ -73,7 +73,7 @@ namespace synapse {
 	ini_set("memory_limit", -1);
 	define('synapse\START_TIME', microtime(true));
 
-	$opts = getopt("", ["data:", "plugins:", "no-wizard", "enable-profiler"]);
+	$opts = getopt("", ["data:", "plugins:"]);
 
 	define('synapse\DATA', isset($opts["data"]) ? $opts["data"] . DIRECTORY_SEPARATOR : \getcwd() . DIRECTORY_SEPARATOR);
 	define('synapse\PLUGIN_PATH', isset($opts["plugins"]) ? $opts["plugins"] . DIRECTORY_SEPARATOR : \getcwd() . DIRECTORY_SEPARATOR . "plugins" . DIRECTORY_SEPARATOR);
@@ -385,7 +385,7 @@ namespace synapse {
 	@ini_set("opcache.mmap_base", bin2hex(Utils::getRandomBytes(8, false))); //Fix OPCache address errors
 
 	ThreadManager::init();
-	$server = new Server($autoloader, $logger, \pocketmine\PATH, \pocketmine\DATA, \pocketmine\PLUGIN_PATH, $lang);
+	$server = new Server($autoloader, $logger, \synapse\PATH, \synapse\DATA, \synapse\PLUGIN_PATH);
 
 	$logger->info("Stopping other threads");
 
@@ -398,6 +398,8 @@ namespace synapse {
 	$logger->join();
 
 	echo "Server has stopped" . Terminal::$FORMAT_RESET . "\n";
+
+	@kill(getmygid());
 
 	exit(0);
 }

@@ -21,7 +21,6 @@
 
 namespace synapse\plugin;
 
-use synapse\permission\Permission;
 use synapse\utils\PluginException;
 
 class PluginDescription{
@@ -37,14 +36,6 @@ class PluginDescription{
 	private $authors = [];
 	private $website = null;
 	private $prefix = null;
-	private $order = PluginLoadOrder::POSTWORLD;
-
-	private $geniapi;
-
-	/**
-	 * @var Permission[]
-	 */
-	private $permissions = [];
 
 	/**
 	 * @param string|array $yamlString
@@ -116,10 +107,6 @@ class PluginDescription{
 			foreach($plugin["authors"] as $author){
 				$this->authors[] = $author;
 			}
-		}
-
-		if(isset($plugin["permissions"])){
-			$this->permissions = Permission::loadPermissions($plugin["permissions"]);
 		}
 	}
 
@@ -198,20 +185,6 @@ class PluginDescription{
 	 */
 	public function getName() : string{
 		return $this->name;
-	}
-
-	/**
-	 * @return int
-	 */
-	public function getOrder(){
-		return $this->order;
-	}
-
-	/**
-	 * @return Permission[]
-	 */
-	public function getPermissions(){
-		return $this->permissions;
 	}
 
 	/**

@@ -19,25 +19,12 @@
  *
 */
 
-namespace synapse\command;
+namespace synapse\scheduler;
 
+class GarbageCollectionTask extends AsyncTask{
 
-interface CommandSender{
-
-	/**
-	 * @param string $message
-	 */
-	public function sendMessage($message);
-
-	/**
-	 * @return \synapse\Server
-	 */
-	public function getServer();
-
-	/**
-	 * @return string
-	 */
-	public function getName();
-
-
+	public function onRun(){
+		gc_enable();
+		gc_collect_cycles();
+	}
 }

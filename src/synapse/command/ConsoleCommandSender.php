@@ -22,67 +22,12 @@
 namespace synapse\command;
 
 use synapse\event\TextContainer;
-use synapse\permission\PermissibleBase;
-use synapse\permission\PermissionAttachment;
-use synapse\plugin\Plugin;
 use synapse\Server;
 use synapse\utils\MainLogger;
 
 class ConsoleCommandSender implements CommandSender{
 
-	private $perm;
-
 	public function __construct(){
-		$this->perm = new PermissibleBase($this);
-	}
-
-	/**
-	 * @param \synapse\permission\Permission|string $name
-	 *
-	 * @return bool
-	 */
-	public function isPermissionSet($name){
-		return $this->perm->isPermissionSet($name);
-	}
-
-	/**
-	 * @param \synapse\permission\Permission|string $name
-	 *
-	 * @return bool
-	 */
-	public function hasPermission($name){
-		return $this->perm->hasPermission($name);
-	}
-
-	/**
-	 * @param Plugin $plugin
-	 * @param string $name
-	 * @param bool   $value
-	 *
-	 * @return \synapse\permission\PermissionAttachment
-	 */
-	public function addAttachment(Plugin $plugin, $name = null, $value = null){
-		return $this->perm->addAttachment($plugin, $name, $value);
-	}
-
-	/**
-	 * @param PermissionAttachment $attachment
-	 *
-	 * @return void
-	 */
-	public function removeAttachment(PermissionAttachment $attachment){
-		$this->perm->removeAttachment($attachment);
-	}
-
-	public function recalculatePermissions(){
-		$this->perm->recalculatePermissions();
-	}
-
-	/**
-	 * @return \synapse\permission\PermissionAttachmentInfo[]
-	 */
-	public function getEffectivePermissions(){
-		return $this->perm->getEffectivePermissions();
 	}
 
 	/**
