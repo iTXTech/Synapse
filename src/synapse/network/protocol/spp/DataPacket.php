@@ -15,18 +15,14 @@
  * (at your option) any later version.
  *
  * @author iTX Technologies
- * @link https://mcper.cn
+ * @link https://itxtech.org
  *
  */
+ 
+namespace synapse\network\protocol\spp;
 
-namespace synapse\network\protocol\synapse;
+use synapse\network\protocol\mcpe\DataPacket as MCPEDataPacket;
 
-class Info{
-	const CURRENT_PROTOCOL = 1;
-
-	const HEARTBEAT_PACKET = 0x01;
-	const CONNECT_PACKET = 0x02;
-	const DISCONNECT_PACKET = 0x03;
-	const TRANSFER_PACKET = 0x04;
-	const REDIRECT_PACKET = 0x05;
+abstract class DataPacket extends MCPEDataPacket{
+	
 }

@@ -34,14 +34,9 @@ class StopCommand extends VanillaCommand{
 			"%pocketmine.command.stop.description",
 			"%commands.stop.usage"
 		);
-		$this->setPermission("pocketmine.command.stop");
 	}
 
 	public function execute(CommandSender $sender, $currentAlias, array $args){
-		if(!$this->testPermission($sender)){
-			return true;
-		}
-
 		$msg = "";
 		if(isset($args[0])){
 			$msg = $args[0];

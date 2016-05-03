@@ -166,20 +166,6 @@ abstract class Command{
 	}
 
 	/**
-	 * @return string[]
-	 */
-	public function getAliases(){
-		return $this->activeAliases;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getPermissionMessage(){
-		return $this->permissionMessage;
-	}
-
-	/**
 	 * @return string
 	 */
 	public function getDescription(){
@@ -192,17 +178,7 @@ abstract class Command{
 	public function getUsage(){
 		return $this->usageMessage;
 	}
-
-	/**
-	 * @param string[] $aliases
-	 */
-	public function setAliases(array $aliases){
-		$this->aliases = $aliases;
-		if(!$this->isRegistered()){
-			$this->activeAliases = (array) $aliases;
-		}
-	}
-
+	
 	/**
 	 * @param string $description
 	 */
@@ -211,55 +187,10 @@ abstract class Command{
 	}
 
 	/**
-	 * @param string $permissionMessage
-	 */
-	public function setPermissionMessage($permissionMessage){
-		$this->permissionMessage = $permissionMessage;
-	}
-
-	/**
 	 * @param string $usage
 	 */
 	public function setUsage($usage){
 		$this->usageMessage = $usage;
-	}
-
-	/**
-	 * @param CommandSender $source
-	 * @param string        $message
-	 * @param bool          $sendToSource
-	 */
-	public static function broadcastCommandMessage(CommandSender $source, $message, $sendToSource = true){
-		if($message instanceof TextContainer){
-			$m = clone $message;
-			$result = "[".$source->getName().": ".($source->getServer()->getLanguage()->get($m->getText()) !== $m->getText() ? "%" : "") . $m->getText() ."]";
-
-			$users = $source->getServer()->getPluginManager()->getPermissionSubscriptions(Server::BROADCAST_CHANNEL_ADMINISTRATIVE);
-			$colored = TextFormat::GRAY . TextFormat::ITALIC . $result;
-
-			$m->setText($result);
-			$result = clone $m;
-			$m->setText($colored);
-			$colored = clone $m;
-		}else{
-			$users = $source->getServer()->getPluginManager()->getPermissionSubscriptions(Server::BROADCAST_CHANNEL_ADMINISTRATIVE);
-			$result = new TranslationContainer("chat.type.admin", [$source->getName(), $message]);
-			$colored = new TranslationContainer(TextFormat::GRAY . TextFormat::ITALIC . "%chat.type.admin", [$source->getName(), $message]);
-		}
-
-		if($sendToSource === true and !($source instanceof ConsoleCommandSender)){
-			$source->sendMessage($message);
-		}
-
-		foreach($users as $user){
-			if($user instanceof CommandSender){
-				if($user instanceof ConsoleCommandSender){
-					$user->sendMessage($result);
-				}elseif($user !== $source){
-					$user->sendMessage($colored);
-				}
-			}
-		}
 	}
 
 	/**

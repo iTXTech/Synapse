@@ -15,28 +15,29 @@
  * (at your option) any later version.
  *
  * @author iTX Technologies
- * @link https://mcper.cn
+ * @link https://itxtech.org
  *
  */
+ 
+namespace synapse\network\protocol\spp;
 
-namespace synapse\network\protocol\mcpe;
+use synapse\utils\UUID;
 
-class ItemFrameDropItemPacket extends DataPacket{
+class RedirectPacket extends DataPacket{
+	const NETWORK_ID = Info::REDIRECT_PACKET;
 
-	const NETWORK_ID = Info::ITEM_FRAME_DROP_ITEM_PACKET;
-
-	public $x;
-	public $y;
-	public $z;
-	public $dropItem;
-
-	public function decode(){
-		$this->z = $this->getInt();
-		$this->y = $this->getInt();
-		$this->x = $this->getInt();
-		$this->dropItem = $this->getSlot();
-	}
+	/** @var UUID */
+	public $uuid;
+	public $mcpebuffer;
 
 	public function encode(){
+		$this->reset();
+		$this->putUUID($this->uuid);
+		$this->putString($this->mcpebuffer);
+	}
+
+	public function decode(){
+		$this->uuid = $this->getUUID();
+		$this->mcpebuffer = $this->getString();
 	}
 }

@@ -23,7 +23,7 @@ namespace synapse\command\defaults;
 
 use synapse\command\CommandSender;
 use synapse\event\TranslationContainer;
-use synapse\network\protocol\Info;
+use synapse\network\protocol\mcpe\Info;
 use synapse\plugin\Plugin;
 use synapse\utils\TextFormat;
 
@@ -36,23 +36,18 @@ class VersionCommand extends VanillaCommand{
 			"%pocketmine.command.version.usage",
 			["ver", "about"]
 		);
-		$this->setPermission("pocketmine.command.version");
 	}
 
 	public function execute(CommandSender $sender, $currentAlias, array $args){
-		if(!$this->testPermission($sender)){
-			return \true;
-		}
 
 		if(\count($args) === 0){
 			$sender->sendMessage(new TranslationContainer("pocketmine.server.info.extended", [
 				$sender->getServer()->getName(),
-				$sender->getServer()->getPocketMineVersion(),
+				$sender->getServer()->getSynapseVersion(),
 				$sender->getServer()->getCodename(),
 				$sender->getServer()->getApiVersion(),
 				$sender->getServer()->getVersion(),
 				Info::CURRENT_PROTOCOL,
-				$sender->getServer()->getiTXApiVersion()
 			]));
 		}else{
 			$pluginName = \implode(" ", $args);
@@ -78,7 +73,7 @@ class VersionCommand extends VanillaCommand{
 			}
 		}
 
-		return \true;
+		return true;
 	}
 
 	private function describeToSender(Plugin $plugin, CommandSender $sender){
@@ -93,11 +88,11 @@ class VersionCommand extends VanillaCommand{
 			$sender->sendMessage("Website: " . $desc->getWebsite());
 		}
 
-		if(\count($authors = $desc->getAuthors()) > 0){
-			if(\count($authors) === 1){
-				$sender->sendMessage("Author: " . \implode(", ", $authors));
+		if(count($authors = $desc->getAuthors()) > 0){
+			if(count($authors) === 1){
+				$sender->sendMessage("Author: " . implode(", ", $authors));
 			}else{
-				$sender->sendMessage("Authors: " . \implode(", ", $authors));
+				$sender->sendMessage("Authors: " . implode(", ", $authors));
 			}
 		}
 	}

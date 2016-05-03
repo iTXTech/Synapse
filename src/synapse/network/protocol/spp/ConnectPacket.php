@@ -15,22 +15,30 @@
  * (at your option) any later version.
  *
  * @author iTX Technologies
- * @link https://mcper.cn
+ * @link https://itxtech.org
  *
  */
+ 
+namespace synapse\network\protocol\spp;
 
-namespace synapse\network\protocol\mcpe;
+class ConnectPacket extends DataPacket{
+	const NETWORK_ID = Info::CONNECT_PACKET;
 
-class RequestChunkRadiusPacket extends DataPacket{
-	const NETWORK_ID = Info::REQUEST_CHUNK_RADIUS_PACKET;
-
-	public $radius;
-
-	public function decode(){
-		$this->radius = $this->getInt();
-	}
+	public $protocol = Info::CURRENT_PROTOCOL;
+	public $maxPlayers;
+	public $encodedPassword;
 
 	public function encode(){
-
+		$this->reset();
+		$this->putInt($this->protocol);
+		$this->putInt($this->maxPlayers);
+		$this->putString($this->encodedPassword);
 	}
+
+	public function decode(){
+		$this->protocol = $this->getInt();
+		$this->maxPlayers = $this->getInt();
+		$this->encodedPassword = $this->getString();
+	}
+
 }

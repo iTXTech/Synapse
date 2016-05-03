@@ -1,4 +1,5 @@
 <?php
+
 /*
  *
  *  ____            _        _   __  __ _                  __  __ ____  
@@ -17,11 +18,8 @@
  * 
  *
 */
+
 namespace synapse\utils;
-#include <rules/DataPacket.h>
-#ifndef COMPILE
-#endif
-use synapse\item\Item;
 
 class BinaryStream extends \stdClass{
 	public $offset;
@@ -181,47 +179,6 @@ class BinaryStream extends \stdClass{
 
 	public function putUUID(UUID $uuid){
 		$this->put($uuid->toBinary());
-	}
-
-	public function getSlot(){
-		$id = $this->getSignedShort();
-
-		if($id <= 0){
-			return Item::get(0, 0, 0);
-		}
-
-		$cnt = $this->getByte();
-
-		$data = $this->getShort();
-
-		$nbtLen = $this->getLShort();
-
-		$nbt = "";
-
-		if($nbtLen > 0){
-			$nbt = $this->get($nbtLen);
-		}
-		return Item::get(
-			$id,
-			$data,
-			$cnt,
-			$nbt
-		);
-	}
-
-	public function putSlot(Item $item){
-		if($item->getId() === 0){
-			$this->putShort(0);
-			return;
-		}
-
-		$this->putShort($item->getId());
-		$this->putByte($item->getCount());
-		$this->putShort($item->getDamage() === null ? -1 : $item->getDamage());
-		$nbt = $item->getCompoundTag();
-		$this->putLShort(strlen($nbt));
-		$this->put($nbt);
-
 	}
 
 	public function getString(){

@@ -122,15 +122,7 @@ class SimpleCommandMap implements CommandMap{
 		$fallbackPrefix = strtolower(trim($fallbackPrefix));
 
 		$registered = $this->registerAlias($command, false, $fallbackPrefix, $label);
-
-		$aliases = $command->getAliases();
-		foreach($aliases as $index => $alias){
-			if(!$this->registerAlias($command, true, $fallbackPrefix, $alias)){
-				unset($aliases[$index]);
-			}
-		}
-		$command->setAliases($aliases);
-
+		
 		if(!$registered){
 			$command->setLabel($fallbackPrefix . ":" . $label);
 		}

@@ -33,14 +33,9 @@ class StatusCommand extends VanillaCommand{
 			"%pocketmine.command.status.description",
 			"%pocketmine.command.status.usage"
 		);
-		$this->setPermission("pocketmine.command.status");
 	}
 
 	public function execute(CommandSender $sender, $currentAlias, array $args){
-		if(!$this->testPermission($sender)){
-			return true;
-		}
-
 		$mUsage = Utils::getMemoryUsage(true);
 		$rUsage = Utils::getRealMemoryUsage();
 

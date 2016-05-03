@@ -88,6 +88,7 @@ class Server{
 	private $isRunning = true;
 
 	private $dispatchSignals = false;
+	private $identifiers = [];
 
 	public function __construct(\ClassLoader $autoloader, \ThreadedLogger $logger, $filePath, $dataPath, $pluginPath){
 		self::$instance = $this;
@@ -128,6 +129,8 @@ class Server{
 			$this->baseLang = new BaseLang($this->getConfig("lang", BaseLang::FALLBACK_LANGUAGE));
 			$this->logger->info($this->getLanguage()->translateString("language.selected", [$this->getLanguage()->getName(), $this->getLanguage()->getLang()]));
 
+			$this->maxPlayers = $this->getConfig("max-players", 20);
+			
 			$this->logger->info($this->getLanguage()->translateString("synapse.server.start", [TextFormat::AQUA . $this->getVersion(). TextFormat::WHITE]));
 
 			if(($poolSize = $this->getConfig("async-workers", "auto")) === "auto"){
@@ -201,10 +204,14 @@ class Server{
 		}
 	}
 
+	public function addPlayer($identifier, Player $player){
+		$this->players[$identifier] = $player;
+		$this->identifiers[spl_object_hash($player)] = $identifier;
+	}
+
 	public function getQueryInformation(){
 		return $this->queryRegenerateTask;
 	}
-
 
 	public function updateQuery(){
 		try{
@@ -374,7 +381,7 @@ class Server{
 
 		if(($this->tickCounter & 0b1111) === 0){
 			$this->titleTick();
-			$this->maxTick = 20;
+			$this->maxTick = 100;
 			$this->maxUse = 0;
 
 			if(($this->tickCounter & 0b111111111) === 0){
@@ -391,7 +398,7 @@ class Server{
 		Timings::$serverTickTimer->stopTiming();
 
 		$now = microtime(true);
-		$tick = min(20, 1 / max(0.001, $now - $tickTime));
+		$tick = min(100, 1 / max(0.001, $now - $tickTime));
 		$use = min(1, ($now - $tickTime) / 0.05);
 
 		//TimingsHandler::tick($tick <= $this->profilingTickRate);

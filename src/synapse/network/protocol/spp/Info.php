@@ -19,20 +19,14 @@
  *
  */
 
-namespace synapse\network\protocol\mcpe;
+namespace synapse\network\protocol\spp;
 
+class Info{
+	const CURRENT_PROTOCOL = 1;
 
-class ChunkRadiusUpdatePacket extends DataPacket{
-	const NETWORK_ID = Info::CHUNK_RADIUS_UPDATE_PACKET;
-
-	public $radius;
-
-	public function decode(){
-
-	}
-
-	public function encode(){
-		$this->reset();
-		$this->putInt($this->radius);
-	}
+	const HEARTBEAT_PACKET = 0x01;
+	const CONNECT_PACKET = 0x02;
+	const DISCONNECT_PACKET = 0x03;
+	const TRANSFER_PACKET = 0x04;
+	const REDIRECT_PACKET = 0x05;
 }
