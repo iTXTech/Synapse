@@ -15,19 +15,26 @@
  * (at your option) any later version.
  *
  * @author iTX Technologies
- * @link https://mcper.cn
+ * @link https://itxtech.org
  *
  */
-
+ 
 namespace synapse\network\protocol\spp;
 
-class Info{
-	const CURRENT_PROTOCOL = 1;
+class PlayerLoginPacket extends DataPacket{
+	const NETWORK_ID = Info::PLAYER_LOGIN_PACKET;
 
-	const HEARTBEAT_PACKET = 0x01;
-	const CONNECT_PACKET = 0x02;
-	const DISCONNECT_PACKET = 0x03;
-	const REDIRECT_PACKET = 0x04;
-	const PLAYER_LOGIN_PACKET = 0x05;
-	//const TRANSFER_PACKET = 0x06;
+	public $isFirstTime;
+	public $cachedLoginPacket;
+
+	public function encode(){
+		$this->reset();
+		$this->putByte($this->isFirstTime ? 0 : 1);
+		$this->putString($this->cachedLoginPacket);
+	}
+
+	public function decode(){
+		$this->isFirstTime = ($this->getByte() == 0) ? true : false;
+		$this->cachedLoginPacket = $this->getString();
+	}
 }
