@@ -18,7 +18,7 @@
  * @link https://itxtech.org
  *
  */
- 
+
 namespace synapse\network;
 
 use synapse\Server;
@@ -26,13 +26,13 @@ use synapse\Thread;
 use synapse\utils\Binary;
 
 class SynapseSocket extends Thread{
-	/** @var Server  */
+	/** @var Server */
 	private $server;
 	private $ip;
 	private $port;
 	private $socket;
 	private $stop = false;
-	private $clients =[];
+	private $clients = [];
 
 	public function __construct(Server $server, $ip, int $port){
 		$this->server = $server;
@@ -81,6 +81,22 @@ class SynapseSocket extends Thread{
 		return true;
 	}
 
+	public function disconnect($cli){
+		$client = &$cli["client"];
+		@socket_set_option($client, SOL_SOCKET, SO_LINGER, ["l_onoff" => 1, "l_linger" => 1]);
+		@socket_shutdown($client, 2);
+		@socket_set_block($client);
+		@socket_read($client, 1);
+		@socket_close($client);
+		unset($this->clients[self::clientHash($client)]);
+	}
+
+	public static function clientHash($client){
+		socket_getpeername($client, $addr, $port);
+		$i = explode($addr, ".");
+		return ($i[0]. $i[1]. $i[2]. $i[3]. $port);
+	}
+
 	public function run(){
 		while(!$this->stop){
 			$r = [$socket = $this->socket];
@@ -90,9 +106,37 @@ class SynapseSocket extends Thread{
 				if(($client = socket_accept($this->socket)) !== false){
 					socket_set_block($client);
 					socket_set_option($client, SOL_SOCKET, SO_KEEPALIVE, 1);
-					$this->clients[] = $client;
+					socket_getpeername($client, $addr, $port);
+					$this->clients[self::clientHash($client)] = [
+						"client" => $client,
+						"addr" => $addr,
+						"port" => $port,
+						"timeout" => microtime(true) + 5,
+					];
+				}
+			}
+
+			foreach($this->clients as $cli){
+				$client = &$cli["client"];
+				if($client !== null and !$this->stop){
+					if($cli["timeout"] < microtime(true)){ //Timeout
+						$this->disconnect($cli);
+						continue;
+					}
+					$p = $this->readPacket($client, $buffer);
+					if($p === false){
+						$this->disconnect($cli);
+						continue;
+					}elseif($p === null){
+						continue;
+					}
+
 				}
 			}
 		}
+	}
+
+	public function getThreadName(){
+		return "SynapseServer";
 	}
 }
