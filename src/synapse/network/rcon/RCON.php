@@ -113,11 +113,7 @@ class RCON{
 					$response = new RemoteConsoleCommandSender();
 					$command = $this->workers[$n]->cmd;
 
-					$this->server->getPluginManager()->callEvent($ev = new RemoteServerCommandEvent($response, $command));
-
-					if(!$ev->isCancelled()){
-						$this->server->dispatchCommand($ev->getSender(), $ev->getCommand());
-					}
+						$this->server->dispatchCommand($response, $command);
 
 					$this->workers[$n]->response = $response->getMessage();
 					$this->workers[$n]->synchronized(function(RCONInstance $thread){

@@ -93,7 +93,7 @@ class RakLibInterface implements ServerInstance, AdvancedSourceInterface{
 			unset($this->identifiers[spl_object_hash($player)]);
 			unset($this->players[$identifier]);
 			unset($this->identifiersACK[$identifier]);
-			$player->close($player->getLeaveMessage(), $reason);
+			$player->close($reason);
 		}
 	}
 

@@ -22,5 +22,32 @@
 namespace synapse;
 
 class Client{
+	/** @var Server */
+	private $server;
+	private $ip;
+	private $port;
+	/** @var Player[] */
+	private $player = [];
 	
+	public function __construct(Server $server, $ip, int $port){
+		$this->server = $server;
+		$this->ip = $ip;
+		$this->port = $port;
+	}
+
+	public function getIp(){
+		return $this->ip;
+	}
+
+	public function getPort() : int{
+		return $this->port;
+	}
+
+	public function addPlayer(Player $player){
+		$this->player[$player->getUUID()->toBinary()] = $player;
+	}
+
+	public function removePlayer(Player $player){
+		unset($this->player[$player->getUUID()->toBinary()]);
+	}
 }

@@ -22,29 +22,32 @@
 namespace synapse\network;
 
 use synapse\Server;
+use synapse\Thread;
+use synapse\utils\Binary;
 
-class SynapseSocket{
+class SynapseSocket extends Thread{
 	/** @var Server  */
 	private $server;
 	private $ip;
 	private $port;
 	private $socket;
+	private $stop = false;
+	private $clients =[];
 
 	public function __construct(Server $server, $ip, int $port){
 		$this->server = $server;
 		$this->ip = $ip;
 		$this->port = $port;
-		$this->socket = socket_create(AF_INET, SOCK_DGRAM, SOL_TCP);
-		//socket_set_option($this->socket, SOL_SOCKET, SO_BROADCAST, 1); //Allow sending broadcast messages
-		if(@socket_bind($this->socket, $ip, $port) === true){
-			socket_set_option($this->socket, SOL_SOCKET, SO_REUSEADDR, 0);
-			$this->setSendBuffer(1024 * 1024 * 8)->setRecvBuffer(1024 * 1024 * 8);
-		}else{
-			$server->getLogger()->critical("**** FAILED TO BIND TO " . $ip . ":" . $port . "!");
-			$server->getLogger()->critical("Perhaps a server is already running on that port?");
-			exit(1);
+		$this->socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+		if($this->socket === false or !socket_bind($this->socket, $ip, (int) $port) or !socket_listen($this->socket)){
+			$this->server->getLogger()->critical("Synapse Server can't be started: " . socket_strerror(socket_last_error()));
+			return;
 		}
-		socket_set_nonblock($this->socket);
+		socket_set_block($this->socket);
+
+		socket_getsockname($this->socket, $addr, $port);
+		$this->server->getLogger()->info("Synapse Server is listening on $addr:$port");
+		$this->start();
 	}
 
 	public function getSocket(){
@@ -55,47 +58,41 @@ class SynapseSocket{
 		socket_close($this->socket);
 	}
 
-	/**
-	 * @param string &$buffer
-	 * @param string &$source
-	 * @param int    &$port
-	 *
-	 * @return int
-	 */
-	public function readPacket(&$buffer, &$source, &$port){
-		return socket_recvfrom($this->socket, $buffer, 65535, 0, $source, $port);
+	public function writePacket($client, $buffer){
+		return socket_write($client, Binary::writeLInt(strlen($buffer)) . $buffer);
 	}
 
-	/**
-	 * @param string $buffer
-	 * @param string $dest
-	 * @param int    $port
-	 *
-	 * @return int
-	 */
-	public function writePacket($buffer, $dest, $port){
-		return socket_sendto($this->socket, $buffer, strlen($buffer), 0, $dest, $port);
+	public function readPacket($client, &$buffer){
+		socket_set_nonblock($client);
+		$d = @socket_read($client, 4);
+		if($this->stop === true){
+			return false;
+		}elseif($d === false){
+			return null;
+		}elseif($d === "" or strlen($d) < 4){
+			return false;
+		}
+		socket_set_block($client);
+		$size = Binary::readLInt($d);
+		if($size < 0 or $size > 65535){
+			return false;
+		}
+		$buffer = rtrim(socket_read($client, $size + 2)); //Strip two null bytes
+		return true;
 	}
 
-	/**
-	 * @param int $size
-	 *
-	 * @return $this
-	 */
-	public function setSendBuffer($size){
-		@socket_set_option($this->socket, SOL_SOCKET, SO_SNDBUF, $size);
-
-		return $this;
-	}
-
-	/**
-	 * @param int $size
-	 *
-	 * @return $this
-	 */
-	public function setRecvBuffer($size){
-		@socket_set_option($this->socket, SOL_SOCKET, SO_RCVBUF, $size);
-
-		return $this;
+	public function run(){
+		while(!$this->stop){
+			$r = [$socket = $this->socket];
+			$w = null;
+			$e = null;
+			if(socket_select($r, $w, $e, 0) === 1){
+				if(($client = socket_accept($this->socket)) !== false){
+					socket_set_block($client);
+					socket_set_option($client, SOL_SOCKET, SO_KEEPALIVE, 1);
+					$this->clients[] = $client;
+				}
+			}
+		}
 	}
 }

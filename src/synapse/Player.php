@@ -23,6 +23,7 @@ namespace synapse;
 
 use synapse\network\protocol\mcpe\DataPacket;
 use synapse\network\protocol\mcpe\Info;
+use synapse\utils\UUID;
 
 class Player{
 	/** @var DataPacket */
@@ -32,6 +33,8 @@ class Player{
 	private $port;
 	private $currentServerIp;
 	private $currentServerPort;
+	/** @var UUID */
+	private $uuid;
 
 	public function __construct(){
 	}
@@ -42,6 +45,10 @@ class Player{
 				$this->cachedLoginPacket = $pk;
 				break;
 		}
+	}
+
+	public function getUUID(){
+		return $this->uuid;
 	}
 
 	public function getName() : string{

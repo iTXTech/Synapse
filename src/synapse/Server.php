@@ -115,6 +115,7 @@ class Server{
 				"motd" => "Minecraft: PE Server",
 				"server-port" => 19132,
 				"synapse-port" => 10305,
+				"password" => mt_rand(0, PHP_INT_MAX),
 				"lang" => "eng",
 				"async-workers" => "auto",
 				"enable-profiling" => false,
@@ -202,6 +203,10 @@ class Server{
 		}catch(\Throwable $e){
 			$this->exceptionHandler($e);
 		}
+	}
+
+	public function comparePassword($pass){
+		
 	}
 
 	public function addPlayer($identifier, Player $player){
