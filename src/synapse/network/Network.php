@@ -26,6 +26,7 @@ namespace synapse\network;
 
 use synapse\network\protocol\mcpe\BatchPacket;
 use synapse\network\protocol\mcpe\DataPacket;
+use synapse\network\protocol\mcpe\GenericPacket;
 use synapse\network\protocol\mcpe\Info as ProtocolInfo;
 use synapse\network\protocol\mcpe\LoginPacket;
 use synapse\Player;
@@ -208,7 +209,7 @@ class Network {
 		if ($class !== null) {
 			return clone $class;
 		}
-		return null;
+		return new GenericPacket();
 	}
 
 

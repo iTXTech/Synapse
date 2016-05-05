@@ -29,12 +29,12 @@ class PlayerLoginPacket extends DataPacket{
 
 	public function encode(){
 		$this->reset();
-		$this->putByte($this->isFirstTime ? 0 : 1);
+		$this->putByte($this->isFirstTime ? 1 : 0);
 		$this->putString($this->cachedLoginPacket);
 	}
 
 	public function decode(){
-		$this->isFirstTime = ($this->getByte() == 0) ? true : false;
+		$this->isFirstTime = ($this->getByte() == 1) ? true : false;
 		$this->cachedLoginPacket = $this->getString();
 	}
 }

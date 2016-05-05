@@ -81,8 +81,7 @@ class SynapseSocket extends Thread{
 		return true;
 	}
 
-	public function disconnect($cli){
-		$client = &$cli["client"];
+	public function disconnect($client){
 		@socket_set_option($client, SOL_SOCKET, SO_LINGER, ["l_onoff" => 1, "l_linger" => 1]);
 		@socket_shutdown($client, 2);
 		@socket_set_block($client);
@@ -107,12 +106,16 @@ class SynapseSocket extends Thread{
 					socket_set_block($client);
 					socket_set_option($client, SOL_SOCKET, SO_KEEPALIVE, 1);
 					socket_getpeername($client, $addr, $port);
-					$this->clients[self::clientHash($client)] = [
-						"client" => $client,
-						"addr" => $addr,
-						"port" => $port,
-						"timeout" => microtime(true) + 5,
-					];
+					if(!isset($this->clients[$hash = self::clientHash($client)])){
+						$this->clients[$hash] = [
+							"client" => $client,
+							"addr" => $addr,
+							"port" => $port,
+							"timeout" => microtime(true) + 5,
+						];
+					}else{
+						$this->clients[$hash]["timeout"] = microtime(true) + 5;
+					}
 				}
 			}
 
@@ -120,12 +123,12 @@ class SynapseSocket extends Thread{
 				$client = &$cli["client"];
 				if($client !== null and !$this->stop){
 					if($cli["timeout"] < microtime(true)){ //Timeout
-						$this->disconnect($cli);
+						$this->disconnect($client);
 						continue;
 					}
 					$p = $this->readPacket($client, $buffer);
 					if($p === false){
-						$this->disconnect($cli);
+						$this->disconnect($client);
 						continue;
 					}elseif($p === null){
 						continue;

@@ -19,30 +19,14 @@
  *
  */
  
-namespace synapse\network;
+namespace synapse\network\protocol\mcpe;
 
-use synapse\network\protocol\mcpe\DataPacket;
-use synapse\Server;
-
-class SynapseInterface{
-	private $server;
-	private $ip;
-	private $port;
-	/** @var SynapseSocket */
-	private $socket;
-	
-	public function __construct(Server $server, $ip, int $port){
-		$this->server = $server;
-		$this->ip = $ip;
-		$this->port = $port;
-		$this->socket = new SynapseSocket($server, $ip, $port);
-	}
-
-	public function process(){
+class GenericPacket extends DataPacket{
+	public function encode(){
 
 	}
 
-	public function handlePacket(DataPacket $pk){
-
+	public function decode(){
+		
 	}
 }

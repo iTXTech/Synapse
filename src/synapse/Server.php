@@ -33,6 +33,7 @@ use synapse\network\Network;
 use synapse\network\query\QueryHandler;
 use synapse\network\RakLibInterface;
 use synapse\network\rcon\RCON;
+use synapse\network\SynapseInterface;
 use synapse\network\upnp\UPnP;
 use synapse\plugin\FolderPluginLoader;
 use synapse\plugin\PharPluginLoader;
@@ -89,6 +90,11 @@ class Server{
 
 	private $dispatchSignals = false;
 	private $identifiers = [];
+
+	/** @var SynapseInterface */
+	private $synapseInterface;
+	/** @var Client[] */
+	private $clients = [];
 
 	public function __construct(\ClassLoader $autoloader, \ThreadedLogger $logger, $filePath, $dataPath, $pluginPath){
 		self::$instance = $this;
@@ -193,6 +199,7 @@ class Server{
 			$this->queryRegenerateTask = new QueryRegenerateEvent($this, 5);
 
 			$this->network->registerInterface(new RakLibInterface($this));
+			$this->synapseInterface = new SynapseInterface($this, $this->getIp(), $this->getSynapsePort());
 
 			$this->pluginManager->loadPlugins($this->pluginPath);
 
@@ -205,8 +212,37 @@ class Server{
 		}
 	}
 
+	public function addClient(Client $client){
+		$this->clients[spl_object_hash($client)] = $client;
+	}
+
+	public function removeClient(Client $client){
+		unset($this->clients[spl_object_hash($client)]);
+	}
+
+	public function getClients(){
+		return $this->clients;
+	}
+
+	public function getSynapsePort() : int{
+		return $this->getConfig("synapse-port", 10305);
+	}
+
+
+	public function handlePacket($address, $port, $payload){
+		try{
+			if(strlen($payload) > 2 and substr($payload, 0, 2) === "\xfe\xfd" and $this->queryHandler instanceof QueryHandler){
+				$this->queryHandler->handle($address, $port, $payload);
+			}
+		}catch(\Throwable $e){
+			$this->exceptionHandler($e);
+			$this->getNetwork()->blockAddress($address, 600);
+		}
+		//TODO: add raw packet events
+	}
+
 	public function comparePassword($pass){
-		
+
 	}
 
 	public function addPlayer($identifier, Player $player){
@@ -367,6 +403,7 @@ class Server{
 
 		Timings::$connectionTimer->startTiming();
 		$this->network->processInterfaces();
+		$this->synapseInterface->process();
 
 		if($this->rcon !== null){
 			$this->rcon->check();
@@ -510,10 +547,6 @@ class Server{
 	 */
 	public function getCommandMap(){
 		return $this->commandMap;
-	}
-
-	public function registerClient(Client $client){
-
 	}
 
 	public function getPluginManager(){

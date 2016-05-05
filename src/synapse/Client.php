@@ -27,7 +27,7 @@ class Client{
 	private $ip;
 	private $port;
 	/** @var Player[] */
-	private $player = [];
+	private $players = [];
 	
 	public function __construct(Server $server, $ip, int $port){
 		$this->server = $server;
@@ -44,10 +44,16 @@ class Client{
 	}
 
 	public function addPlayer(Player $player){
-		$this->player[$player->getUUID()->toBinary()] = $player;
+		$this->players[$player->getUUID()->toBinary()] = $player;
 	}
 
 	public function removePlayer(Player $player){
-		unset($this->player[$player->getUUID()->toBinary()]);
+		unset($this->players[$player->getUUID()->toBinary()]);
+	}
+
+	public function close(){
+		foreach($this->players as $player){
+			$player->close("Server Closed");
+		}
 	}
 }

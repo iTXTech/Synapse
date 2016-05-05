@@ -24,14 +24,10 @@ namespace synapse\network\protocol\spp;
 class HeartbeatPacket extends DataPacket{
 	const NETWORK_ID = Info::HEARTBEAT_PACKET;
 
-	public $playerCount;
-
 	public function encode(){
-	$this->reset();
-		$this->putInt($this->playerCount);
+
 	}
 
 	public function decode(){
-		$this->playerCount = $this->getInt();
 	}
 }
