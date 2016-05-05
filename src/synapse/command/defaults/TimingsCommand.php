@@ -33,10 +33,10 @@ class TimingsCommand extends VanillaCommand{
 	public function __construct($name){
 		parent::__construct(
 			$name,
-			"%pocketmine.command.timings.description",
-			"%pocketmine.command.timings.usage"
+			"%synapse.command.timings.description",
+			"%synapse.command.timings.usage"
 		);
-		$this->setPermission("pocketmine.command.timings");
+		$this->setPermission("synapse.command.timings");
 	}
 
 	public function execute(CommandSender $sender, $currentAlias, array $args){
@@ -55,17 +55,17 @@ class TimingsCommand extends VanillaCommand{
 		if($mode === "on"){
 			$sender->getServer()->getPluginManager()->setUseTimings(true);
 			TimingsHandler::reload();
-			$sender->sendMessage(new TranslationContainer("pocketmine.command.timings.enable"));
+			$sender->sendMessage(new TranslationContainer("synapse.command.timings.enable"));
 
 			return true;
 		}elseif($mode === "off"){
 			$sender->getServer()->getPluginManager()->setUseTimings(false);
-			$sender->sendMessage(new TranslationContainer("pocketmine.command.timings.disable"));
+			$sender->sendMessage(new TranslationContainer("synapse.command.timings.disable"));
 			return true;
 		}
 
 		if(!$sender->getServer()->getPluginManager()->useTimings()){
-			$sender->sendMessage(new TranslationContainer("pocketmine.command.timings.timingsDisabled"));
+			$sender->sendMessage(new TranslationContainer("synapse.command.timings.timingsDisabled"));
 
 			return true;
 		}
@@ -74,7 +74,7 @@ class TimingsCommand extends VanillaCommand{
 
 		if($mode === "reset"){
 			TimingsHandler::reload();
-			$sender->sendMessage(new TranslationContainer("pocketmine.command.timings.reset"));
+			$sender->sendMessage(new TranslationContainer("synapse.command.timings.reset"));
 		}elseif($mode === "merged" or $mode === "report" or $paste){
 
 			$sampleTime = microtime(true) - self::$timingStart;
@@ -118,18 +118,18 @@ class TimingsCommand extends VanillaCommand{
 				$data = curl_exec($ch);
 				curl_close($ch);
 				if(preg_match('#^Location: http://paste\\.ubuntu\\.com/([0-9]{1,})/#m', $data, $matches) == 0){
-					$sender->sendMessage(new TranslationContainer("pocketmine.command.timings.pasteError"));
+					$sender->sendMessage(new TranslationContainer("synapse.command.timings.pasteError"));
 
 					return true;
 				}
 
 
-				$sender->sendMessage(new TranslationContainer("pocketmine.command.timings.timingsUpload", ["http://paste.ubuntu.com/" . $matches[1] . "/"]));
-				$sender->sendMessage(new TranslationContainer("pocketmine.command.timings.timingsRead", ["http://timings.aikar.co/?url=" . $matches[1]]));
+				$sender->sendMessage(new TranslationContainer("synapse.command.timings.timingsUpload", ["http://paste.ubuntu.com/" . $matches[1] . "/"]));
+				$sender->sendMessage(new TranslationContainer("synapse.command.timings.timingsRead", ["http://timings.aikar.co/?url=" . $matches[1]]));
 				fclose($fileTimings);
 			}else{
 				fclose($fileTimings);
-				$sender->sendMessage(new TranslationContainer("pocketmine.command.timings.timingsWrite", [$timings]));
+				$sender->sendMessage(new TranslationContainer("synapse.command.timings.timingsWrite", [$timings]));
 			}
 		}
 

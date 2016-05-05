@@ -32,10 +32,10 @@ class BanIpCommand extends VanillaCommand{
 	public function __construct($name){
 		parent::__construct(
 			$name,
-			"%pocketmine.command.ban.ip.description",
+			"%synapse.command.ban.ip.description",
 			"%commands.banip.usage"
 		);
-		$this->setPermission("pocketmine.command.ban.ip");
+		$this->setPermission("synapse.command.ban.ip");
 	}
 
 	public function execute(CommandSender $sender, $currentAlias, array $args){

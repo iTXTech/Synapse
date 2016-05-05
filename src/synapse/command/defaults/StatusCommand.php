@@ -30,8 +30,8 @@ class StatusCommand extends VanillaCommand{
 	public function __construct($name){
 		parent::__construct(
 			$name,
-			"%pocketmine.command.status.description",
-			"%pocketmine.command.status.usage"
+			"%synapse.command.status.description",
+			"%synapse.command.status.usage"
 		);
 	}
 
@@ -40,8 +40,8 @@ class StatusCommand extends VanillaCommand{
 		$rUsage = Utils::getRealMemoryUsage();
 
 		$server = $sender->getServer();
-		$sender->sendMessage(TextFormat::GREEN . "---- " . TextFormat::WHITE . "%pocketmine.command.status.title" . TextFormat::GREEN . " ----");
-		$sender->sendMessage(TextFormat::GOLD . "%pocketmine.command.status.player" . TextFormat::GREEN ." ". \count($sender->getServer()->getOnlinePlayers()) . "/" . $sender->getServer()->getMaxPlayers());
+		$sender->sendMessage(TextFormat::GREEN . "---- " . TextFormat::WHITE . "%synapse.command.status.title" . TextFormat::GREEN . " ----");
+		$sender->sendMessage(TextFormat::GOLD . "%synapse.command.status.player" . TextFormat::GREEN ." ". \count($sender->getServer()->getOnlinePlayers()) . "/" . $sender->getServer()->getMaxPlayers());
 
 		$time = microtime(true) - \synapse\START_TIME;
 
@@ -63,12 +63,12 @@ class StatusCommand extends VanillaCommand{
 		$uptime = ($minutes !== null ?
 				($hours !== null ?
 					($days !== null ?
-						"$days %pocketmine.command.status.days "
-						: "") . "$hours %pocketmine.command.status.hours "
-					: "") . "$minutes %pocketmine.command.status.minutes "
-				: "") . "$seconds %pocketmine.command.status.seconds";
+						"$days %synapse.command.status.days "
+						: "") . "$hours %synapse.command.status.hours "
+					: "") . "$minutes %synapse.command.status.minutes "
+				: "") . "$seconds %synapse.command.status.seconds";
 
-		$sender->sendMessage(TextFormat::GOLD . "%pocketmine.command.status.uptime " . TextFormat::RED . $uptime);
+		$sender->sendMessage(TextFormat::GOLD . "%synapse.command.status.uptime " . TextFormat::RED . $uptime);
 
 		$tpsColor = TextFormat::GREEN;
 		if($server->getTicksPerSecondAverage() < 10){
@@ -84,29 +84,29 @@ class StatusCommand extends VanillaCommand{
 			$tpsColour = TextFormat::RED;
 		}
 
-		$sender->sendMessage(TextFormat::GOLD . "%pocketmine.command.status.AverageTPS " . $tpsColor . $server->getTicksPerSecondAverage() . " (" . $server->getTickUsageAverage() . "%)");
-		$sender->sendMessage(TextFormat::GOLD . "%pocketmine.command.status.CurrentTPS " . $tpsColour . $server->getTicksPerSecond() . " (" . $server->getTickUsage() . "%)");
+		$sender->sendMessage(TextFormat::GOLD . "%synapse.command.status.AverageTPS " . $tpsColor . $server->getTicksPerSecondAverage() . " (" . $server->getTickUsageAverage() . "%)");
+		$sender->sendMessage(TextFormat::GOLD . "%synapse.command.status.CurrentTPS " . $tpsColour . $server->getTicksPerSecond() . " (" . $server->getTickUsage() . "%)");
 
-		$sender->sendMessage(TextFormat::GOLD . "%pocketmine.command.status.Networkupload " . TextFormat::RED . \round($server->getNetwork()->getUpload() / 1024, 2) . " kB/s");
-		$sender->sendMessage(TextFormat::GOLD . "%pocketmine.command.status.Networkdownload " . TextFormat::RED . \round($server->getNetwork()->getDownload() / 1024, 2) . " kB/s");
+		$sender->sendMessage(TextFormat::GOLD . "%synapse.command.status.Networkupload " . TextFormat::RED . \round($server->getNetwork()->getUpload() / 1024, 2) . " kB/s");
+		$sender->sendMessage(TextFormat::GOLD . "%synapse.command.status.Networkdownload " . TextFormat::RED . \round($server->getNetwork()->getDownload() / 1024, 2) . " kB/s");
 
-		$sender->sendMessage(TextFormat::GOLD . "%pocketmine.command.status.Threadcount " . TextFormat::RED . Utils::getThreadCount());
+		$sender->sendMessage(TextFormat::GOLD . "%synapse.command.status.Threadcount " . TextFormat::RED . Utils::getThreadCount());
 
-		$sender->sendMessage(TextFormat::GOLD . "%pocketmine.command.status.Mainmemory " . TextFormat::RED . number_format(round(($mUsage[0] / 1024) / 1024, 2)) . " MB.");
-		$sender->sendMessage(TextFormat::GOLD . "%pocketmine.command.status.Totalmemory " . TextFormat::RED . number_format(round(($mUsage[1] / 1024) / 1024, 2)) . " MB.");
-		$sender->sendMessage(TextFormat::GOLD . "%pocketmine.command.status.Totalvirtualmemory " . TextFormat::RED . number_format(round(($mUsage[2] / 1024) / 1024, 2)) . " MB.");
-		$sender->sendMessage(TextFormat::GOLD . "%pocketmine.command.status.Heapmemory " . TextFormat::RED . number_format(round(($rUsage[0] / 1024) / 1024, 2)) . " MB.");
-		$sender->sendMessage(TextFormat::GOLD . "%pocketmine.command.status.Maxmemorysystem " . TextFormat::RED . number_format(round(($mUsage[2] / 1024) / 1024, 2)) . " MB.");
+		$sender->sendMessage(TextFormat::GOLD . "%synapse.command.status.Mainmemory " . TextFormat::RED . number_format(round(($mUsage[0] / 1024) / 1024, 2)) . " MB.");
+		$sender->sendMessage(TextFormat::GOLD . "%synapse.command.status.Totalmemory " . TextFormat::RED . number_format(round(($mUsage[1] / 1024) / 1024, 2)) . " MB.");
+		$sender->sendMessage(TextFormat::GOLD . "%synapse.command.status.Totalvirtualmemory " . TextFormat::RED . number_format(round(($mUsage[2] / 1024) / 1024, 2)) . " MB.");
+		$sender->sendMessage(TextFormat::GOLD . "%synapse.command.status.Heapmemory " . TextFormat::RED . number_format(round(($rUsage[0] / 1024) / 1024, 2)) . " MB.");
+		$sender->sendMessage(TextFormat::GOLD . "%synapse.command.status.Maxmemorysystem " . TextFormat::RED . number_format(round(($mUsage[2] / 1024) / 1024, 2)) . " MB.");
 
 		if($server->getProperty("memory.global-limit") > 0){
-			$sender->sendMessage(TextFormat::GOLD . "%pocketmine.command.status.Maxmemorymanager " . TextFormat::RED . number_format(round($server->getProperty("memory.global-limit"), 2)) . " MB.");
+			$sender->sendMessage(TextFormat::GOLD . "%synapse.command.status.Maxmemorymanager " . TextFormat::RED . number_format(round($server->getProperty("memory.global-limit"), 2)) . " MB.");
 		}
 		foreach($server->getLevels() as $level){
-			$sender->sendMessage(TextFormat::GOLD . "%pocketmine.command.status.World \"" . $level->getFolderName() . "\"" . ($level->getFolderName() !== $level->getName() ? " (" . $level->getName() . ")" : "") . ": " .
-				TextFormat::RED . number_format(count($level->getChunks())) . TextFormat::GREEN . " %pocketmine.command.status.chunks " .
-				TextFormat::RED . number_format(count($level->getEntities())) . TextFormat::GREEN . " %pocketmine.command.status.entities " .
-				TextFormat::RED . number_format(count($level->getTiles())) . TextFormat::GREEN . " %pocketmine.command.status.tiles " .
-				"%pocketmine.command.status.Time " . (($level->getTickRate() > 1 or $level->getTickRateTime() > 40) ? TextFormat::RED : TextFormat::YELLOW) . round($level->getTickRateTime(), 2) . "%pocketmine.command.status.ms" . ($level->getTickRate() > 1 ? " (tick rate " . $level->getTickRate() . ")" : "")
+			$sender->sendMessage(TextFormat::GOLD . "%synapse.command.status.World \"" . $level->getFolderName() . "\"" . ($level->getFolderName() !== $level->getName() ? " (" . $level->getName() . ")" : "") . ": " .
+				TextFormat::RED . number_format(count($level->getChunks())) . TextFormat::GREEN . " %synapse.command.status.chunks " .
+				TextFormat::RED . number_format(count($level->getEntities())) . TextFormat::GREEN . " %synapse.command.status.entities " .
+				TextFormat::RED . number_format(count($level->getTiles())) . TextFormat::GREEN . " %synapse.command.status.tiles " .
+				"%synapse.command.status.Time " . (($level->getTickRate() > 1 or $level->getTickRateTime() > 40) ? TextFormat::RED : TextFormat::YELLOW) . round($level->getTickRateTime(), 2) . "%synapse.command.status.ms" . ($level->getTickRate() > 1 ? " (tick rate " . $level->getTickRate() . ")" : "")
 			);
 		}
 

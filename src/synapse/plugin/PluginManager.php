@@ -167,14 +167,14 @@ class PluginManager{
 						if($description instanceof PluginDescription){
 							$name = $description->getName();
 							if(stripos($name, "synapse") !== false or stripos($name, "minecraft") !== false or stripos($name, "mojang") !== false){
-								$this->server->getLogger()->error($this->server->getLanguage()->translateString("pocketmine.plugin.loadError", [$name, "%pocketmine.plugin.restrictedName"]));
+								$this->server->getLogger()->error($this->server->getLanguage()->translateString("synapse.plugin.loadError", [$name, "%synapse.plugin.restrictedName"]));
 								continue;
 							}elseif(strpos($name, " ") !== false){
-								$this->server->getLogger()->warning($this->server->getLanguage()->translateString("pocketmine.plugin.spacesDiscouraged", [$name]));
+								$this->server->getLogger()->warning($this->server->getLanguage()->translateString("synapse.plugin.spacesDiscouraged", [$name]));
 							}
 
 							if(isset($plugins[$name]) or $this->getPlugin($name) instanceof Plugin){
-								$this->server->getLogger()->error($this->server->getLanguage()->translateString("pocketmine.plugin.duplicateError", [$name]));
+								$this->server->getLogger()->error($this->server->getLanguage()->translateString("synapse.plugin.duplicateError", [$name]));
 								continue;
 							}
 
@@ -203,7 +203,7 @@ class PluginManager{
 							}
 
 							if($compatible === false){
-								$this->server->getLogger()->error($this->server->getLanguage()->translateString("pocketmine.plugin.loadError", [$name, "%pocketmine.plugin.incompatibleAPI"]));
+								$this->server->getLogger()->error($this->server->getLanguage()->translateString("synapse.plugin.loadError", [$name, "%synapse.plugin.incompatibleAPI"]));
 								continue;
 							}
 
@@ -221,7 +221,7 @@ class PluginManager{
 							}
 						}
 					}catch(\Throwable $e){
-						$this->server->getLogger()->error($this->server->getLanguage()->translateString("pocketmine.plugin.fileError", [$file, $directory, $e->getMessage()]));
+						$this->server->getLogger()->error($this->server->getLanguage()->translateString("synapse.plugin.fileError", [$file, $directory, $e->getMessage()]));
 						$this->server->getLogger()->logException($e);
 					}
 				}
@@ -236,7 +236,7 @@ class PluginManager{
 							if(isset($loadedPlugins[$dependency]) or $this->getPlugin($dependency) instanceof Plugin){
 								unset($dependencies[$name][$key]);
 							}elseif(!isset($plugins[$dependency])){
-								$this->server->getLogger()->critical($this->server->getLanguage()->translateString("pocketmine.plugin.loadError", [$name, "%pocketmine.plugin.unknownDependency"]));
+								$this->server->getLogger()->critical($this->server->getLanguage()->translateString("synapse.plugin.loadError", [$name, "%synapse.plugin.unknownDependency"]));
 								break;
 							}
 						}
@@ -264,7 +264,7 @@ class PluginManager{
 						if($plugin = $this->loadPlugin($file, $loaders) and $plugin instanceof Plugin){
 							$loadedPlugins[$name] = $plugin;
 						}else{
-							$this->server->getLogger()->critical($this->server->getLanguage()->translateString("pocketmine.plugin.genericLoadError", [$name]));
+							$this->server->getLogger()->critical($this->server->getLanguage()->translateString("synapse.plugin.genericLoadError", [$name]));
 						}
 					}
 				}
@@ -278,7 +278,7 @@ class PluginManager{
 							if($plugin = $this->loadPlugin($file, $loaders) and $plugin instanceof Plugin){
 								$loadedPlugins[$name] = $plugin;
 							}else{
-								$this->server->getLogger()->critical($this->server->getLanguage()->translateString("pocketmine.plugin.genericLoadError", [$name]));
+								$this->server->getLogger()->critical($this->server->getLanguage()->translateString("synapse.plugin.genericLoadError", [$name]));
 							}
 						}
 					}
@@ -286,7 +286,7 @@ class PluginManager{
 					//No plugins loaded :(
 					if($missingDependency === true){
 						foreach($plugins as $name => $file){
-							$this->server->getLogger()->critical($this->server->getLanguage()->translateString("pocketmine.plugin.loadError", [$name, "%pocketmine.plugin.circularDependency"]));
+							$this->server->getLogger()->critical($this->server->getLanguage()->translateString("synapse.plugin.loadError", [$name, "%synapse.plugin.circularDependency"]));
 						}
 						$plugins = [];
 					}
@@ -340,7 +340,7 @@ class PluginManager{
 
 		foreach($plugin->getDescription()->getCommands() as $key => $data){
 			if(strpos($key, ":") !== false){
-				$this->server->getLogger()->critical($this->server->getLanguage()->translateString("pocketmine.plugin.commandError", [$key, $plugin->getDescription()->getFullName()]));
+				$this->server->getLogger()->critical($this->server->getLanguage()->translateString("synapse.plugin.commandError", [$key, $plugin->getDescription()->getFullName()]));
 				continue;
 			}
 			if(is_array($data)){
@@ -357,7 +357,7 @@ class PluginManager{
 					$aliasList = [];
 					foreach($data["aliases"] as $alias){
 						if(strpos($alias, ":") !== false){
-							$this->server->getLogger()->critical($this->server->getLanguage()->translateString("pocketmine.plugin.aliasError", [$alias, $plugin->getDescription()->getFullName()]));
+							$this->server->getLogger()->critical($this->server->getLanguage()->translateString("synapse.plugin.aliasError", [$alias, $plugin->getDescription()->getFullName()]));
 							continue;
 						}
 						$aliasList[] = $alias;
@@ -416,7 +416,7 @@ class PluginManager{
 				$registration->callEvent($event);
 			}catch(\Throwable $e){
 				$this->server->getLogger()->critical(
-					$this->server->getLanguage()->translateString("pocketmine.plugin.eventError", [
+					$this->server->getLanguage()->translateString("synapse.plugin.eventError", [
 						$event->getEventName(),
 						$registration->getPlugin()->getDescription()->getFullName(),
 						$e->getMessage(),
@@ -465,7 +465,7 @@ class PluginManager{
 					$class = $parameters[0]->getClass()->getName();
 					$reflection = new \ReflectionClass($class);
 					if(strpos((string) $reflection->getDocComment(), "@deprecated") !== false and $this->server->getProperty("settings.deprecated-verbose", true)){
-						$this->server->getLogger()->warning($this->server->getLanguage()->translateString("pocketmine.plugin.deprecatedEvent", [
+						$this->server->getLogger()->warning($this->server->getLanguage()->translateString("synapse.plugin.deprecatedEvent", [
 							$plugin->getName(),
 							$class,
 							get_class($listener) . "->" . $method->getName() . "()"

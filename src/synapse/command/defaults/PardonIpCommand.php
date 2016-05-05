@@ -31,10 +31,10 @@ class PardonIpCommand extends VanillaCommand{
 	public function __construct($name){
 		parent::__construct(
 			$name,
-			"%pocketmine.command.unban.ip.description",
+			"%synapse.command.unban.ip.description",
 			"%commands.unbanip.usage"
 		);
-		$this->setPermission("pocketmine.command.unban.ip");
+		$this->setPermission("synapse.command.unban.ip");
 	}
 
 	public function execute(CommandSender $sender, $currentAlias, array $args){

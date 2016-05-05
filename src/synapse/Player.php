@@ -26,6 +26,7 @@ use synapse\network\protocol\mcpe\DisconnectPacket;
 use synapse\network\protocol\mcpe\Info;
 use synapse\network\SourceInterface;
 use synapse\utils\UUID;
+use synapse\utils\TextFormat;
 
 class Player{
 	/** @var DataPacket */
@@ -34,6 +35,8 @@ class Player{
 	private $ip;
 	private $port;
 	private $clientId;
+	private $randomClientId;
+	private $protocol;
 	private $currentServerIp;
 	private $currentServerPort;
 	/** @var UUID */
@@ -42,12 +45,19 @@ class Player{
 	private $interface;
 	/** @var Client */
 	private $client;
+	/** @var Server */
+	private $server;
 
 	public function __construct(SourceInterface $interface, $clientId, $ip, int $port){
 		$this->interface = $interface;
 		$this->clientId = $clientId;
 		$this->ip = $ip;
 		$this->port = $port;
+		$this->server = Server::getInstance();
+	}
+
+	public function getServer() : Server{
+		return $this->server;
 	}
 	
 	public function handleDataPacket(DataPacket $pk){
@@ -57,6 +67,15 @@ class Player{
 				$this->cachedLoginPacket = $pk->buffer;
 				$this->name = $pk->username;
 				$this->uuid = $pk->clientUUID;
+				$this->randomClientId = $pk->clientId;
+				$this->protocol = $pk->protocol1;
+
+				$this->server->getLogger()->info($this->getServer()->getLanguage()->translateString("synapse.player.logIn", [
+					TextFormat::AQUA . $this->name . TextFormat::WHITE,
+					$this->ip,
+					$this->port,
+					TextFormat::GREEN . $this->randomClientId . TextFormat::WHITE,
+				]));
 				break;
 		}
 	}
@@ -74,7 +93,7 @@ class Player{
 	}
 
 	public function getName() : string{
-
+		return $this->name;
 	}
 	
 	public function transfer(Client $client){

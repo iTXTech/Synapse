@@ -15,7 +15,7 @@ class MakeServerCommand extends VanillaCommand{
 			"Creates a PocketMine Phar",
 			"/makeserver (nogz)"
 		);
-		$this->setPermission("pocketmine.command.makeserver");
+		$this->setPermission("synapse.command.makeserver");
 	}
 
 	public function execute(CommandSender $sender, $commandLabel, array $args){
@@ -40,7 +40,7 @@ class MakeServerCommand extends VanillaCommand{
 			"creator" => "Genisys MakeServerCommand",
 			"creationDate" => time()
 		]);
-		$phar->setStub('<?php define("synapse\\\\PATH", "phar://". __FILE__ ."/"); require_once("phar://". __FILE__ ."/src/pocketmine/PocketMine.php");  __HALT_COMPILER();');
+		$phar->setStub('<?php define("synapse\\\\PATH", "phar://". __FILE__ ."/"); require_once("phar://". __FILE__ ."/src/pocketmine/synapse.php");  __HALT_COMPILER();');
 		$phar->setSignatureAlgorithm(\Phar::SHA1);
 		$phar->startBuffering();
 

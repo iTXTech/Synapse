@@ -23,6 +23,7 @@
  * Various Utilities used around the code
  */
 namespace synapse\utils;
+
 use synapse\ThreadManager;
 
 /**
@@ -33,6 +34,20 @@ class Utils{
 	public static $ip = false;
 	public static $os;
 	private static $serverUniqueId = null;
+
+	const CIPHER = MCRYPT_RIJNDAEL_256;
+
+	const MODE = MCRYPT_MODE_ECB;
+
+	public static function aes_encode(string $str, string $key) :string{
+		$iv = mcrypt_create_iv(mcrypt_get_iv_size(self::CIPHER, self::MODE), MCRYPT_RAND);
+		return mcrypt_encrypt(self::CIPHER, $key, $str, self::MODE, $iv);
+	}
+
+	public static function aes_decode(string $str, string $key) : string{
+		$iv = mcrypt_create_iv(mcrypt_get_iv_size(self::CIPHER, self::MODE), MCRYPT_RAND);
+		return mcrypt_decrypt(self::CIPHER, $key, $str, self::MODE, $iv);
+	}
 
 	/**
 	 * Generates an unique identifier to a callable
@@ -220,7 +235,7 @@ class Utils{
 				self::$os = "other";
 			}
 		}
-		
+
 		return self::$os;
 	}
 
@@ -363,12 +378,12 @@ class Utils{
 	 * This function tries to get all the entropy available in PHP, and distills it to get a good RNG.
 	 *
 	 *
-	 * @param int    $length       default 16, Number of bytes to generate
-	 * @param bool   $secure       default true, Generate secure distilled bytes, slower
-	 * @param bool   $raw          default true, returns a binary string if true, or an hexadecimal one
+	 * @param int    $length default 16, Number of bytes to generate
+	 * @param bool   $secure default true, Generate secure distilled bytes, slower
+	 * @param bool   $raw default true, returns a binary string if true, or an hexadecimal one
 	 * @param string $startEntropy default null, adds more initial entropy
-	 * @param int    &$rounds      Will be set to the number of rounds taken
-	 * @param int    &$drop        Will be set to the amount of dropped bytes
+	 * @param int    &$rounds Will be set to the number of rounds taken
+	 * @param int    &$drop Will be set to the amount of dropped bytes
 	 *
 	 * @return string
 	 */
@@ -490,8 +505,8 @@ class Utils{
 	/**
 	 * GETs an URL using cURL
 	 *
-	 * @param     $page
-	 * @param int $timeout default 10
+	 * @param       $page
+	 * @param int   $timeout default 10
 	 * @param array $extraHeaders
 	 *
 	 * @return bool|mixed
@@ -524,7 +539,7 @@ class Utils{
 	 * @param              $page
 	 * @param array|string $args
 	 * @param int          $timeout
-	 * @param array $extraHeaders
+	 * @param array        $extraHeaders
 	 *
 	 * @return bool|mixed
 	 */

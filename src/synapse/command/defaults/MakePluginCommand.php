@@ -15,7 +15,7 @@ class MakePluginCommand extends VanillaCommand{
 			"Creates a Phar plugin from a unarchived",
 			"/makeplugin <pluginName> (nogz)"
 		);
-		$this->setPermission("pocketmine.command.makeplugin");
+		$this->setPermission("synapse.command.makeplugin");
 	}
 
 	public function execute(CommandSender $sender, $commandLabel, array $args){

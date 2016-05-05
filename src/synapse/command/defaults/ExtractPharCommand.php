@@ -12,7 +12,7 @@ class ExtractPharCommand extends VanillaCommand{
 			"Extracts the source code from a Phar file",
 			"/extractphar <Phar file Name>"
 		);
-		$this->setPermission("pocketmine.command.extractphar");
+		$this->setPermission("synapse.command.extractphar");
 	}
 
 	public function execute(CommandSender $sender, $commandLabel, array $args){

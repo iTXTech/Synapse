@@ -30,11 +30,11 @@ class PluginsCommand extends VanillaCommand{
 	public function __construct($name){
 		parent::__construct(
 			$name,
-			"%pocketmine.command.plugins.description",
-			"%pocketmine.command.plugins.usage",
+			"%synapse.command.plugins.description",
+			"%synapse.command.plugins.usage",
 			["pl"]
 		);
-		$this->setPermission("pocketmine.command.plugins");
+		$this->setPermission("synapse.command.plugins");
 	}
 
 	public function execute(CommandSender $sender, $currentAlias, array $args){
@@ -55,6 +55,6 @@ class PluginsCommand extends VanillaCommand{
 			$list .= $plugin->getDescription()->getFullName();
 		}
 
-		$sender->sendMessage(new TranslationContainer("pocketmine.command.plugins.success", [count($plugins), $list]));
+		$sender->sendMessage(new TranslationContainer("synapse.command.plugins.success", [count($plugins), $list]));
 	}
 }

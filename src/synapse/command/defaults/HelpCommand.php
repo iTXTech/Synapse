@@ -32,11 +32,11 @@ class HelpCommand extends VanillaCommand{
 	public function __construct($name){
 		parent::__construct(
 			$name,
-			"%pocketmine.command.help.description",
+			"%synapse.command.help.description",
 			"%commands.help.usage",
 			["?"]
 		);
-		$this->setPermission("pocketmine.command.help");
+		$this->setPermission("synapse.command.help");
 	}
 
 	public function execute(CommandSender $sender, $currentAlias, array $args){

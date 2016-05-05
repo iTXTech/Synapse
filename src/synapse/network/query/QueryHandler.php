@@ -37,10 +37,10 @@ class QueryHandler{
 
 	public function __construct(){
 		$this->server = Server::getInstance();
-		$this->server->getLogger()->info($this->server->getLanguage()->translateString("pocketmine.server.query.start"));
+		$this->server->getLogger()->info($this->server->getLanguage()->translateString("synapse.server.query.start"));
 		$addr = ($ip = $this->server->getIp()) != "" ? $ip : "0.0.0.0";
 		$port = $this->server->getPort();
-		$this->server->getLogger()->info($this->server->getLanguage()->translateString("pocketmine.server.query.info", [$port]));
+		$this->server->getLogger()->info($this->server->getLanguage()->translateString("synapse.server.query.info", [$port]));
 		/*
 		The Query protocol is built on top of the existing Minecraft PE UDP network stack.
 		Because the 0xFE packet does not exist in the MCPE protocol,
@@ -53,7 +53,7 @@ class QueryHandler{
 		$this->regenerateToken();
 		$this->lastToken = $this->token;
 		$this->regenerateInfo();
-		$this->server->getLogger()->info($this->server->getLanguage()->translateString("pocketmine.server.query.running", [$addr, $port]));
+		$this->server->getLogger()->info($this->server->getLanguage()->translateString("synapse.server.query.running", [$addr, $port]));
 	}
 
 	public function regenerateInfo(){

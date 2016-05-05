@@ -30,10 +30,10 @@ class GarbageCollectorCommand extends VanillaCommand{
 	public function __construct($name){
 		parent::__construct(
 			$name,
-			"%pocketmine.command.gc.description",
-			"%pocketmine.command.gc.usage"
+			"%synapse.command.gc.description",
+			"%synapse.command.gc.usage"
 		);
-		$this->setPermission("pocketmine.command.gc");
+		$this->setPermission("synapse.command.gc");
 	}
 
 	public function execute(CommandSender $sender, $currentAlias, array $args){
@@ -58,12 +58,12 @@ class GarbageCollectorCommand extends VanillaCommand{
 		}
 
 		$cyclesCollected = $sender->getServer()->getMemoryManager()->triggerGarbageCollector();
-		$sender->sendMessage(TextFormat::GREEN . "---- " . TextFormat::WHITE . "%pocketmine.command.gc.title" . TextFormat::GREEN . " ----");
-		$sender->sendMessage(TextFormat::GOLD . "%pocketmine.command.gc.chunks" . TextFormat::RED . \number_format($chunksCollected));
-		$sender->sendMessage(TextFormat::GOLD . "%pocketmine.command.gc.entities" . TextFormat::RED . \number_format($entitiesCollected));
-		$sender->sendMessage(TextFormat::GOLD . "%pocketmine.command.gc.tiles" . TextFormat::RED . \number_format($tilesCollected));
-		$sender->sendMessage(TextFormat::GOLD . "%pocketmine.command.gc.cycles" . TextFormat::RED . \number_format($cyclesCollected));
-		$sender->sendMessage(TextFormat::GOLD . "%pocketmine.command.gc.memory" . TextFormat::RED . \number_format(\round((($memory - \memory_get_usage()) / 1024) / 1024, 2))." MB");
+		$sender->sendMessage(TextFormat::GREEN . "---- " . TextFormat::WHITE . "%synapse.command.gc.title" . TextFormat::GREEN . " ----");
+		$sender->sendMessage(TextFormat::GOLD . "%synapse.command.gc.chunks" . TextFormat::RED . \number_format($chunksCollected));
+		$sender->sendMessage(TextFormat::GOLD . "%synapse.command.gc.entities" . TextFormat::RED . \number_format($entitiesCollected));
+		$sender->sendMessage(TextFormat::GOLD . "%synapse.command.gc.tiles" . TextFormat::RED . \number_format($tilesCollected));
+		$sender->sendMessage(TextFormat::GOLD . "%synapse.command.gc.cycles" . TextFormat::RED . \number_format($cyclesCollected));
+		$sender->sendMessage(TextFormat::GOLD . "%synapse.command.gc.memory" . TextFormat::RED . \number_format(\round((($memory - \memory_get_usage()) / 1024) / 1024, 2))." MB");
 		return true;
 	}
 }

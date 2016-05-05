@@ -12,10 +12,10 @@ class BanCidCommand extends VanillaCommand{
 	public function __construct($name){
 		parent::__construct(
 			$name,
-			"%pocketmine.command.bancid.description",
+			"%synapse.command.bancid.description",
 			"%commands.bancid.usage"
 		);
-		$this->setPermission("pocketmine.command.bancid");
+		$this->setPermission("synapse.command.bancid");
 	}
 
 	public function execute(CommandSender $sender, $currentAlias, array $args){

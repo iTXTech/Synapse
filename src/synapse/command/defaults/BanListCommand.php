@@ -31,10 +31,10 @@ class BanListCommand extends VanillaCommand{
 	public function __construct($name){
 		parent::__construct(
 			$name,
-			"%pocketmine.command.banlist.description",
+			"%synapse.command.banlist.description",
 			"%commands.banlist.usage"
 		);
-		$this->setPermission("pocketmine.command.ban.list");
+		$this->setPermission("synapse.command.ban.list");
 	}
 
 	public function execute(CommandSender $sender, $currentAlias, array $args){

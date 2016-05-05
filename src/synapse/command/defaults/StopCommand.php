@@ -31,7 +31,7 @@ class StopCommand extends VanillaCommand{
 	public function __construct($name){
 		parent::__construct(
 			$name,
-			"%pocketmine.command.stop.description",
+			"%synapse.command.stop.description",
 			"%commands.stop.usage"
 		);
 	}

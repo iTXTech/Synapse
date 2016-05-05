@@ -11,10 +11,10 @@ class PardonCidCommand extends VanillaCommand{
 	public function __construct($name){
 		parent::__construct(
 			$name,
-			"%pocketmine.command.unban.cid.description",
+			"%synapse.command.unban.cid.description",
 			"%commands.unbancid.usage"
 		);
-		$this->setPermission("pocketmine.command.pardoncid");
+		$this->setPermission("synapse.command.pardoncid");
 	}
 
 	public function execute(CommandSender $sender, $currentAlias, array $args){

@@ -28,6 +28,7 @@ class Client{
 	private $port;
 	/** @var Player[] */
 	private $players = [];
+	private $isVerified = false;
 	
 	public function __construct(Server $server, $ip, int $port){
 		$this->server = $server;
@@ -41,6 +42,14 @@ class Client{
 
 	public function getPort() : int{
 		return $this->port;
+	}
+
+	public function isVerified() : bool {
+		return $this->isVerified;
+	}
+
+	public function setVerified(){
+		$this->isVerified = true;
 	}
 
 	public function addPlayer(Player $player){

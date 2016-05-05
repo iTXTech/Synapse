@@ -22,7 +22,13 @@
 namespace synapse\network;
 
 use synapse\Client;
+use synapse\network\protocol\mcpe\DisconnectPacket;
+use synapse\network\protocol\spp\ConnectPacket;
 use synapse\network\protocol\spp\DataPacket;
+use synapse\network\protocol\spp\HeartbeatPacket;
+use synapse\network\protocol\spp\Info;
+use synapse\network\protocol\spp\PlayerLoginPacket;
+use synapse\network\protocol\spp\RedirectPacket;
 use synapse\Server;
 
 class SynapseInterface{
@@ -33,12 +39,19 @@ class SynapseInterface{
 	private $socket;
 	/** @var Client[] */
 	private $clients = [];
+	/** @var DataPacket[] */
+	private $packetPool = [];
 	
 	public function __construct(Server $server, $ip, int $port){
 		$this->server = $server;
 		$this->ip = $ip;
 		$this->port = $port;
-		$this->socket = new SynapseSocket($server, $ip, $port);
+		$this->registerPackets();
+		$this->socket = new SynapseSocket($this, $ip, $port);
+	}
+
+	public function getServer(){
+		return $this->server;
 	}
 
 	public function addClient($client, $ip, $port){
@@ -64,7 +77,64 @@ class SynapseInterface{
 
 	}
 
-	public function handlePacket(DataPacket $pk){
+	/**
+	 * @param $buffer
+	 *
+	 * @return DataPacket
+	 */
+	public function getPacket($buffer) {
+		$pid = ord($buffer{0});
+		/** @var DataPacket $class */
+		$class = $this->packetPool[$pid];
+		if ($class !== null) {
+			$pk = clone $class;
+			$pk->setBuffer($buffer, 1);
+			return $pk;
+		}
+		return null;
+	}
 
+	public function handlePacket($client, $buffer){
+		if(!isset($this->clients[$hash = SynapseSocket::clientHash($client)])){
+			throw new \Exception("Invalid Client");
+		}
+
+		$client = $this->clients[$client];
+
+		if(($pk = $this->getPacket($buffer)) != null){
+			switch($pk::NETWORK_ID){
+				case Info::HEARTBEAT_PACKET:
+					if(!$client->isVerified()){
+						$this->server->getLogger()->error("Client {$client->getIp()}:{$client->getPort()} is not verified");
+						return;
+					}
+					break;
+				case Info::CONNECT_PACKET:
+					/** @var ConnectPacket $pk */
+					if($this->server->comparePassword($pk->encodedPassword)){
+						$client->setVerified();
+					}
+					break;
+			}
+		}
+	}
+
+	/**
+	 * @param int        $id 0-255
+	 * @param DataPacket $class
+	 */
+	public function registerPacket($id, $class) {
+		$this->packetPool[$id] = new $class;
+	}
+
+
+	private function registerPackets() {
+		$this->packetPool = new \SplFixedArray(256);
+
+		$this->registerPacket(Info::HEARTBEAT_PACKET, HeartbeatPacket::class);
+		$this->registerPacket(Info::CONNECT_PACKET, ConnectPacket::class);
+		$this->registerPacket(Info::DISCONNECT_PACKET, DisconnectPacket::class);
+		$this->registerPacket(Info::REDIRECT_PACKET, RedirectPacket::class);
+		$this->registerPacket(Info::PLAYER_LOGIN_PACKET, PlayerLoginPacket::class);
 	}
 }

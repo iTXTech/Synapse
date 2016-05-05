@@ -241,8 +241,12 @@ class Server{
 		//TODO: add raw packet events
 	}
 
-	public function comparePassword($pass){
-
+	public function comparePassword(string $pass) : bool{
+		$rawPass = rtrim(Utils::aes_decode($pass, $pass));
+		if($rawPass == $this->getConfig("password", "123456")){
+			return true;
+		}
+		return false;
 	}
 
 	public function addPlayer($identifier, Player $player){
@@ -320,11 +324,11 @@ class Server{
 	}
 
 	private function checkTickUpdates($currentTick, $tickTime){
-		foreach($this->players as $p){
+		/*foreach($this->players as $p){
 			if(!$p->loggedIn and ($tickTime - $p->creationTime) >= 10){
 				$p->close("", "Login timeout");//TODO
 			}
-		}
+		}*/
 	}
 
 	private function titleTick(){
@@ -416,10 +420,6 @@ class Server{
 		Timings::$schedulerTimer->stopTiming();
 
 		$this->checkTickUpdates($this->tickCounter, $tickTime);
-
-		foreach($this->players as $player){
-			$player->checkNetwork();//TODO
-		}
 
 		if(($this->tickCounter & 0b1111) === 0){
 			$this->titleTick();

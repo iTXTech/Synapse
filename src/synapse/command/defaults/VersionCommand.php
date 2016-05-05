@@ -32,8 +32,8 @@ class VersionCommand extends VanillaCommand{
 	public function __construct($name){
 		parent::__construct(
 			$name,
-			"%pocketmine.command.version.description",
-			"%pocketmine.command.version.usage",
+			"%synapse.command.version.description",
+			"%synapse.command.version.usage",
 			["ver", "about"]
 		);
 	}
@@ -41,7 +41,7 @@ class VersionCommand extends VanillaCommand{
 	public function execute(CommandSender $sender, $currentAlias, array $args){
 
 		if(\count($args) === 0){
-			$sender->sendMessage(new TranslationContainer("pocketmine.server.info.extended", [
+			$sender->sendMessage(new TranslationContainer("synapse.server.info.extended", [
 				$sender->getServer()->getName(),
 				$sender->getServer()->getSynapseVersion(),
 				$sender->getServer()->getCodename(),
@@ -69,7 +69,7 @@ class VersionCommand extends VanillaCommand{
 			}
 
 			if(!$found){
-				$sender->sendMessage(new TranslationContainer("pocketmine.command.version.noSuchPlugin"));
+				$sender->sendMessage(new TranslationContainer("synapse.command.version.noSuchPlugin"));
 			}
 		}
 

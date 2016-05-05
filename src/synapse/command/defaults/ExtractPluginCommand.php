@@ -15,7 +15,7 @@ class ExtractPluginCommand extends VanillaCommand{
 			"Extracts the source code from a Phar plugin",
 			"/extractplugin <pluginName>"
 		);
-		$this->setPermission("pocketmine.command.extractplugin");
+		$this->setPermission("synapse.command.extractplugin");
 	}
 
 	public function execute(CommandSender $sender, $commandLabel, array $args){

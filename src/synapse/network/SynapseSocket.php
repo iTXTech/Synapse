@@ -21,32 +21,30 @@
 
 namespace synapse\network;
 
-use synapse\Server;
 use synapse\Thread;
 use synapse\utils\Binary;
 
 class SynapseSocket extends Thread{
-	/** @var Server */
-	private $server;
+	private $interface;
 	private $ip;
 	private $port;
 	private $socket;
 	private $stop = false;
 	private $clients = [];
 
-	public function __construct(Server $server, $ip, int $port){
-		$this->server = $server;
+	public function __construct(SynapseInterface $interface, $ip, int $port){
+		$this->interface = $interface;
 		$this->ip = $ip;
 		$this->port = $port;
 		$this->socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
 		if($this->socket === false or !socket_bind($this->socket, $ip, (int) $port) or !socket_listen($this->socket)){
-			$this->server->getLogger()->critical("Synapse Server can't be started: " . socket_strerror(socket_last_error()));
+			$this->interface->getServer()->getLogger()->critical("Synapse Server can't be started: " . socket_strerror(socket_last_error()));
 			return;
 		}
 		socket_set_block($this->socket);
 
 		socket_getsockname($this->socket, $addr, $port);
-		$this->server->getLogger()->info("Synapse Server is listening on $addr:$port");
+		$this->interface->getServer()->getLogger()->info("Synapse Server is listening on $addr:$port");
 		$this->start();
 	}
 
@@ -133,7 +131,7 @@ class SynapseSocket extends Thread{
 					}elseif($p === null){
 						continue;
 					}
-
+					$this->interface->handlePacket($client, $buffer);
 				}
 			}
 		}

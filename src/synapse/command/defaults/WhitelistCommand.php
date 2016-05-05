@@ -31,11 +31,11 @@ class WhitelistCommand extends VanillaCommand{
 	public function __construct($name){
 		parent::__construct(
 			$name,
-			"%pocketmine.command.whitelist.description",
+			"%synapse.command.whitelist.description",
 			"%commands.whitelist.usage",
 			["wl"]
 		);
-		$this->setPermission("pocketmine.command.whitelist.reload;pocketmine.command.whitelist.enable;pocketmine.command.whitelist.disable;pocketmine.command.whitelist.list;pocketmine.command.whitelist.add;pocketmine.command.whitelist.remove");
+		$this->setPermission("synapse.command.whitelist.reload;synapse.command.whitelist.enable;synapse.command.whitelist.disable;synapse.command.whitelist.list;synapse.command.whitelist.add;synapse.command.whitelist.remove");
 	}
 
 	public function execute(CommandSender $sender, $currentAlias, array $args){
@@ -110,7 +110,7 @@ class WhitelistCommand extends VanillaCommand{
 	}
 
 	private function badPerm(CommandSender $sender, $perm){
-		if(!$sender->hasPermission("pocketmine.command.whitelist.$perm")){
+		if(!$sender->hasPermission("synapse.command.whitelist.$perm")){
 			$sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.permission"));
 
 			return true;

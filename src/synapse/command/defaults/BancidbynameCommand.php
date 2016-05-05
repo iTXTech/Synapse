@@ -12,10 +12,10 @@ class BancidbynameCommand extends VanillaCommand{
 	public function __construct($name){
 		parent::__construct(
 			$name,
-			"%pocketmine.command.bancidbyname.description",
+			"%synapse.command.bancidbyname.description",
 			"%commands.bancidbyname.usage"
 		);
-		$this->setPermission("pocketmine.command.bancidbyname");
+		$this->setPermission("synapse.command.bancidbyname");
 	}
 
 	public function execute(CommandSender $sender, $currentAlias, array $args){

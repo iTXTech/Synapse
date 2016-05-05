@@ -32,10 +32,10 @@ class KickCommand extends VanillaCommand{
 	public function __construct($name){
 		parent::__construct(
 			$name,
-			"%pocketmine.command.kick.description",
+			"%synapse.command.kick.description",
 			"%commands.kick.usage"
 		);
-		$this->setPermission("pocketmine.command.kick");
+		$this->setPermission("synapse.command.kick");
 	}
 
 	public function execute(CommandSender $sender, $currentAlias, array $args){

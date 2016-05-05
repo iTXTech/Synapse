@@ -115,11 +115,11 @@ class ServerHandler{
                 $offset += 2;
                 $clientID = Binary::readLong(substr($packet, $offset, 8));
                 $this->instance->openSession($identifier, $address, $port, $clientID);
-                $identifier = substr($packet, $offset, $len);
+                /*$identifier = substr($packet, $offset, $len);
                 $offset += $len;
                 $len = ord($packet{$offset++});
                 $reason = substr($packet, $offset, $len);
-                $this->instance->closeSession($identifier, $reason);
+                $this->instance->closeSession($identifier, $reason);*/
             }elseif($id === RakLib::PACKET_INVALID_SESSION){
                 $len = ord($packet{$offset++});
                 $identifier = substr($packet, $offset, $len);

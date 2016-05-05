@@ -12,10 +12,10 @@ class BanipbynameCommand extends VanillaCommand{
 	public function __construct($name){
 		parent::__construct(
 			$name,
-			"%pocketmine.command.banipbyname.description",
+			"%synapse.command.banipbyname.description",
 			"%commands.banipbyname.usage"
 		);
-		$this->setPermission("pocketmine.command.banipbyname");
+		$this->setPermission("synapse.command.banipbyname");
 	}
 
 	public function execute(CommandSender $sender, $currentAlias, array $args){
