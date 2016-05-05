@@ -24,6 +24,7 @@ namespace synapse;
 use synapse\network\protocol\mcpe\DataPacket;
 use synapse\network\protocol\mcpe\DisconnectPacket;
 use synapse\network\protocol\mcpe\Info;
+use synapse\network\protocol\spp\PlayerLogoutPacket;
 use synapse\network\SourceInterface;
 use synapse\utils\UUID;
 use synapse\utils\TextFormat;
@@ -47,6 +48,7 @@ class Player{
 	private $client;
 	/** @var Server */
 	private $server;
+	private $rawUUID;
 
 	public function __construct(SourceInterface $interface, $clientId, $ip, int $port){
 		$this->interface = $interface;
@@ -54,6 +56,14 @@ class Player{
 		$this->ip = $ip;
 		$this->port = $port;
 		$this->server = Server::getInstance();
+	}
+
+	public function getClientId(){
+		return $this->randomClientId;
+	}
+
+	public function getRawUUID(){
+		return $this->rawUUID;
 	}
 
 	public function getServer() : Server{
@@ -67,6 +77,7 @@ class Player{
 				$this->cachedLoginPacket = $pk->buffer;
 				$this->name = $pk->username;
 				$this->uuid = $pk->clientUUID;
+				$this->rawUUID = $this->uuid->toBinary();
 				$this->randomClientId = $pk->clientId;
 				$this->protocol = $pk->protocol1;
 
@@ -100,13 +111,18 @@ class Player{
 
 	}
 
-	public function sendPacket(DataPacket $pk, $direct = false, $needACK = false){
-		$identifier = $this->interface->putPacket($this, $pk, $needACK, $direct);
+	public function sendDataPacket(DataPacket $pk, $direct = false, $needACK = false){
+		$this->interface->putPacket($this, $pk, $needACK, $direct);
 	}
 
 	public function close(string $reason = "Generic reason"){
 		$pk = new DisconnectPacket();
 		$pk->message = $reason;
-		$this->sendPacket($pk, true);
+		$this->sendDataPacket($pk, true);
+
+		$pk = new PlayerLogoutPacket();
+		$pk->uuid = $this->uuid;
+		$pk->reason = $reason;
+		$this->client->sendDataPacket($pk);
 	}
 }

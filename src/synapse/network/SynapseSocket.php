@@ -56,6 +56,10 @@ class SynapseSocket extends Thread{
 		socket_close($this->socket);
 	}
 
+	public function getConnectionById(string $id){
+		return $this->clients[$id];
+	}
+
 	public function writePacket($client, $buffer){
 		return socket_write($client, Binary::writeLInt(strlen($buffer)) . $buffer);
 	}

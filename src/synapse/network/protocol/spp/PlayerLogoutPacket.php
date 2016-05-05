@@ -23,24 +23,21 @@ namespace synapse\network\protocol\spp;
 
 use synapse\utils\UUID;
 
-class RedirectPacket extends DataPacket{
-	const NETWORK_ID = Info::REDIRECT_PACKET;
-
+class PlayerLogoutPacket extends DataPacket{
+	const NETWORK_ID = Info::PLAYER_LOGOUT_PACKET;
+	
 	/** @var UUID */
 	public $uuid;
-	public $direct;
-	public $mcpeBuffer;
+	public $reason;
 
 	public function encode(){
 		$this->reset();
 		$this->putUUID($this->uuid);
-		$this->putByte($this->direct ? 1 : 0);
-		$this->putString($this->mcpeBuffer);
+		$this->putString($this->reason);
 	}
 
 	public function decode(){
 		$this->uuid = $this->getUUID();
-		$this->direct = ($this->getByte() == 1) ? true : false;
-		$this->mcpeBuffer = $this->getString();
+		$this->reason = $this->getString();
 	}
 }

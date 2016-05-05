@@ -95,6 +95,7 @@ class Server{
 	private $synapseInterface;
 	/** @var Client[] */
 	private $clients = [];
+	private $mainClients = [];
 
 	public function __construct(\ClassLoader $autoloader, \ThreadedLogger $logger, $filePath, $dataPath, $pluginPath){
 		self::$instance = $this;
@@ -154,7 +155,7 @@ class Server{
 			$this->scheduler = new ServerScheduler();
 
 			if($this->getConfig("enable-rcon", false) === true){
-				$this->rcon = new RCON($this, $this->getConfig("rcon.password", ""), $this->getConfig("rcon.port", $this->getPort()), ($ip = $this->getIp()) != "" ? $ip : "0.0.0.0", $this->getConfigInt("rcon.threads", 1), $this->getConfigInt("rcon.clients-per-thread", 50));
+				$this->rcon = new RCON($this, $this->getConfig("rcon.password", ""), $this->getConfig("rcon.port", $this->getPort()), ($ip = $this->getIp()) != "" ? $ip : "0.0.0.0", $this->getConfig("rcon.threads", 1), $this->getConfig("rcon.clients-per-thread", 50));
 			}
 
 			define('synapse\DEBUG', 2);
@@ -214,9 +215,19 @@ class Server{
 
 	public function addClient(Client $client){
 		$this->clients[spl_object_hash($client)] = $client;
+		if($client->isMainServer()){
+			$this->mainClients[spl_object_hash($client)] = $client;
+		}
+	}
+
+	public function getMainClients(){
+		return $this->mainClients;
 	}
 
 	public function removeClient(Client $client){
+		$client->close();
+		$this->synapseInterface->removeClient($client);
+		unset($this->mainClients[spl_object_hash($client)]);
 		unset($this->clients[spl_object_hash($client)]);
 	}
 

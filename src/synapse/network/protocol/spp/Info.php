@@ -29,5 +29,6 @@ class Info{
 	const DISCONNECT_PACKET = 0x03;
 	const REDIRECT_PACKET = 0x04;
 	const PLAYER_LOGIN_PACKET = 0x05;
-	//const TRANSFER_PACKET = 0x06;
+	const PLAYER_LOGOUT_PACKET = 0x06;
+	//const TRANSFER_PACKET = 0x07;
 }

@@ -18,22 +18,90 @@
  * @link https://itxtech.org
  *
  */
- 
+
 namespace synapse;
+
+use synapse\network\protocol\mcpe\DisconnectPacket;
+use synapse\network\protocol\mcpe\GenericPacket;
+use synapse\network\protocol\spp\ConnectPacket;
+use synapse\network\protocol\spp\DataPacket;
+use synapse\network\protocol\spp\Info;
+use synapse\network\protocol\spp\RedirectPacket;
+use synapse\network\SynapseInterface;
 
 class Client{
 	/** @var Server */
 	private $server;
+	/** @var SynapseInterface */
+	private $interface;
 	private $ip;
 	private $port;
 	/** @var Player[] */
 	private $players = [];
 	private $isVerified = false;
-	
-	public function __construct(Server $server, $ip, int $port){
-		$this->server = $server;
+	private $isMainServer = false;
+	private $maxPlayers;
+
+	public function __construct(SynapseInterface $interface, $ip, int $port){
+		$this->server = $interface->getServer();
+		$this->interface = $interface;
 		$this->ip = $ip;
 		$this->port = $port;
+	}
+
+	public function isMainServer() : bool{
+		return $this->isMainServer;
+	}
+
+	public function getMaxPlayers() : int{
+		return $this->maxPlayers;
+	}
+
+	public function getId() : string{
+		return str_replace(".", "", $this->getIp()) . $this->getPort();
+	}
+
+	public function handleDataPacket(DataPacket $packet){
+		switch($packet::NETWORK_ID){
+			case Info::HEARTBEAT_PACKET:
+				if(!$this->isVerified()){
+					$this->server->getLogger()->error("Client {$this->getIp()}:{$this->getPort()} is not verified");
+					return;
+				}
+				break;
+			case Info::CONNECT_PACKET:
+				/** @var ConnectPacket $packet */
+				if($packet->protocol != Info::CURRENT_PROTOCOL){
+					$this->interface->removeClient($this);
+				}
+				if($this->server->comparePassword($packet->encodedPassword)){
+					$this->setVerified();
+				}
+				$this->isMainServer = $packet->isMainServer;
+				$this->maxPlayers = $packet->maxPlayers;
+				$this->server->addClient($this);
+				break;
+			case Info::DISCONNECT_PACKET:
+				/** @var DisconnectPacket $packet */
+				$this->server->removeClient($this);
+				break;
+			case Info::REDIRECT_PACKET:
+				/** @var RedirectPacket $packet */
+				if(isset($this->players[$uuid = $packet->uuid->toBinary()])){
+					$pk = new GenericPacket();
+					$pk->buffer = $packet->mcpeBuffer;
+					$this->players[$uuid]->sendDataPacket($pk, $packet->direct);
+				}else{
+					$this->server->getLogger()->error("Error RedirectPacket");
+				}
+				break;
+			default:
+				$this->server->getLogger()->error("Client {$this->getIp()}:{$this->getPort()} send an unknown packet " . $packet::NETWORK_ID);
+		}
+	}
+
+	public function sendDataPacket(DataPacket $pk){
+		$this->interface->putPacket($this, $pk);
 	}
 
 	public function getIp(){
@@ -44,7 +112,7 @@ class Client{
 		return $this->port;
 	}
 
-	public function isVerified() : bool {
+	public function isVerified() : bool{
 		return $this->isVerified;
 	}
 
@@ -53,11 +121,11 @@ class Client{
 	}
 
 	public function addPlayer(Player $player){
-		$this->players[$player->getUUID()->toBinary()] = $player;
+		$this->players[$player->getRawUUID()] = $player;
 	}
 
 	public function removePlayer(Player $player){
-		unset($this->players[$player->getUUID()->toBinary()]);
+		unset($this->players[$player->getRawUUID()]);
 	}
 
 	public function close(){

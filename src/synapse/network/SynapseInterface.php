@@ -28,6 +28,7 @@ use synapse\network\protocol\spp\DataPacket;
 use synapse\network\protocol\spp\HeartbeatPacket;
 use synapse\network\protocol\spp\Info;
 use synapse\network\protocol\spp\PlayerLoginPacket;
+use synapse\network\protocol\spp\PlayerLogoutPacket;
 use synapse\network\protocol\spp\RedirectPacket;
 use synapse\Server;
 
@@ -55,22 +56,21 @@ class SynapseInterface{
 	}
 
 	public function addClient($client, $ip, $port){
-		$this->clients[SynapseSocket::clientHash($client)] = new Client($this->server, $ip, $port);
-		$this->server->addClient($this->clients[SynapseSocket::clientHash($client)]);
+		$this->clients[SynapseSocket::clientHash($client)] = new Client($this, $ip, $port);
+		//$this->server->addClient($this->clients[SynapseSocket::clientHash($client)]);
 	}
 
-	public function removeClient($client){
-		$this->server->removeClient($this->clients[SynapseSocket::clientHash($client)]);
-		unset($this->clients[SynapseSocket::clientHash($client)]);
+	public function removeClient(Client $client){
+		//$this->server->removeClient($this->clients[SynapseSocket::clientHash($client)]);
+		unset($this->clients[$client->getId()]);
 	}
 
 	public function putPacket(Client $client, DataPacket $pk){
-		$id = str_replace(".", "", $client->getIp()) . $client->getPort();
-		$client = $this->clients[$id];
+		$client = $this->clients[$client->getId()];
 		if(!$pk->isEncoded){
 			$pk->encode();
 		}
-		$this->socket->writePacket($client, $pk->buffer);
+		$this->socket->writePacket($this->socket->getConnectionById($client->getId()), $pk->buffer);
 	}
 
 	public function process(){
@@ -102,20 +102,7 @@ class SynapseInterface{
 		$client = $this->clients[$client];
 
 		if(($pk = $this->getPacket($buffer)) != null){
-			switch($pk::NETWORK_ID){
-				case Info::HEARTBEAT_PACKET:
-					if(!$client->isVerified()){
-						$this->server->getLogger()->error("Client {$client->getIp()}:{$client->getPort()} is not verified");
-						return;
-					}
-					break;
-				case Info::CONNECT_PACKET:
-					/** @var ConnectPacket $pk */
-					if($this->server->comparePassword($pk->encodedPassword)){
-						$client->setVerified();
-					}
-					break;
-			}
+			$client->handleDataPacket($pk);
 		}
 	}
 
@@ -136,5 +123,6 @@ class SynapseInterface{
 		$this->registerPacket(Info::DISCONNECT_PACKET, DisconnectPacket::class);
 		$this->registerPacket(Info::REDIRECT_PACKET, RedirectPacket::class);
 		$this->registerPacket(Info::PLAYER_LOGIN_PACKET, PlayerLoginPacket::class);
+		$this->registerPacket(Info::PLAYER_LOGOUT_PACKET, PlayerLogoutPacket::class);
 	}
 }
