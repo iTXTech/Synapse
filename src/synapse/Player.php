@@ -38,8 +38,6 @@ class Player{
 	private $clientId;
 	private $randomClientId;
 	private $protocol;
-	private $currentServerIp;
-	private $currentServerPort;
 	/** @var UUID */
 	private $uuid;
 	/** @var SourceInterface */
