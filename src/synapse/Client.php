@@ -120,6 +120,10 @@ class Client{
 		$this->isVerified = true;
 	}
 
+	public function getPlayers(){
+		return $this->players;
+	}
+
 	public function addPlayer(Player $player){
 		$this->players[$player->getRawUUID()] = $player;
 	}

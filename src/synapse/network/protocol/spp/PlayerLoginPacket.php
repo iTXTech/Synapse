@@ -21,19 +21,25 @@
  
 namespace synapse\network\protocol\spp;
 
+use synapse\utils\UUID;
+
 class PlayerLoginPacket extends DataPacket{
 	const NETWORK_ID = Info::PLAYER_LOGIN_PACKET;
 
+	/** @var UUID */
+	public $uuid;
 	public $isFirstTime;
 	public $cachedLoginPacket;
 
 	public function encode(){
 		$this->reset();
+		$this->putUUID($this->uuid);
 		$this->putByte($this->isFirstTime ? 1 : 0);
 		$this->putString($this->cachedLoginPacket);
 	}
 
 	public function decode(){
+		$this->uuid = $this->getUUID();
 		$this->isFirstTime = ($this->getByte() == 1) ? true : false;
 		$this->cachedLoginPacket = $this->getString();
 	}

@@ -24,6 +24,8 @@ namespace synapse;
 use synapse\network\protocol\mcpe\DataPacket;
 use synapse\network\protocol\mcpe\DisconnectPacket;
 use synapse\network\protocol\mcpe\Info;
+use synapse\network\protocol\mcpe\PlayerListPacket;
+use synapse\network\protocol\spp\PlayerLoginPacket;
 use synapse\network\protocol\spp\PlayerLogoutPacket;
 use synapse\network\SourceInterface;
 use synapse\utils\UUID;
@@ -47,6 +49,7 @@ class Player{
 	/** @var Server */
 	private $server;
 	private $rawUUID;
+	private $isFirstTimeLogin = false;
 
 	public function __construct(SourceInterface $interface, $clientId, $ip, int $port){
 		$this->interface = $interface;
@@ -85,6 +88,9 @@ class Player{
 					$this->port,
 					TextFormat::GREEN . $this->randomClientId . TextFormat::WHITE,
 				]));
+
+				$c = $this->server->getMainClients();
+				$this->transfer($c[array_rand($c)]);
 				break;
 		}
 	}
@@ -104,9 +110,37 @@ class Player{
 	public function getName() : string{
 		return $this->name;
 	}
+
+	public function removeAllPlayer(){
+		$pk = new PlayerListPacket();
+		$pk->type = PlayerListPacket::TYPE_REMOVE;
+		foreach($this->client->getPlayers() as $p){
+			$pk->entries[] = $p->getUUID();
+		}
+		$this->sendDataPacket($pk);
+	}
 	
 	public function transfer(Client $client){
+		if($this->client instanceof Client){
+			$pk = new PlayerLogoutPacket();
+			$pk->reason = "Player has been transferred";
+			$this->client->sendDataPacket($pk);
 
+			$this->client->removePlayer($this);
+
+			$this->removeAllPlayer();
+		}
+		$this->client = $client;
+		$this->client->addPlayer($this);
+		$pk = new PlayerLoginPacket();
+		$pk->uuid = $this->uuid;
+		$pk->isFirstTime = $this->isFirstTimeLogin;
+		$pk->cachedLoginPacket = $this->cachedLoginPacket;
+		$this->client->sendDataPacket($pk);
+
+		$this->isFirstTimeLogin = false;
+
+		$this->server->getLogger()->info("{$this->name} has been transferred to {$this->client->getIp()}:{$this->client->getPort()}");
 	}
 
 	public function sendDataPacket(DataPacket $pk, $direct = false, $needACK = false){
