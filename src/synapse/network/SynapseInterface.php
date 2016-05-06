@@ -39,7 +39,7 @@ class SynapseInterface{
 	/** @var SynapseSocket */
 	private $socket;
 	/** @var Client[] */
-	private $clients = [];
+	private $clients;
 	/** @var DataPacket[] */
 	private $packetPool = [];
 	
@@ -48,15 +48,15 @@ class SynapseInterface{
 		$this->ip = $ip;
 		$this->port = $port;
 		$this->registerPackets();
-		$this->socket = new SynapseSocket($this, $ip, $port);
+		$this->socket = new SynapseSocket($ip, $port);
 	}
 
 	public function getServer(){
 		return $this->server;
 	}
 
-	public function addClient($client, $ip, $port){
-		$this->clients[SynapseSocket::clientHash($client)] = new Client($this, $ip, $port);
+	public function addClient($ip, $port){
+		$this->clients[str_replace(".", "", $ip) . $port] = new Client($this, $ip, $port);
 		//$this->server->addClient($this->clients[SynapseSocket::clientHash($client)]);
 	}
 
@@ -74,7 +74,16 @@ class SynapseInterface{
 	}
 
 	public function process(){
-
+		if($this->socket->isWaiting()){
+			if($this->socket->waitHash == ""){
+				$this->addClient($this->socket->waitIp, $this->socket->waitPort);
+			}else{
+				$this->handlePacket($this->socket->waitHash, $this->socket->waitBuffer);
+			}
+			$this->socket->synchronized(function(SynapseSocket $thread){
+				$thread->notify();
+			}, $this->socket);
+		}
 	}
 
 	/**
@@ -94,14 +103,15 @@ class SynapseInterface{
 		return null;
 	}
 
-	public function handlePacket($client, $buffer){
-		if(!isset($this->clients[$hash = SynapseSocket::clientHash($client)])){
+	public function handlePacket($hash, $buffer){
+		if(!isset($this->clients[$hash])){
 			throw new \Exception("Invalid Client");
 		}
 
-		$client = $this->clients[$client];
+		$client = $this->clients[$hash];
 
 		if(($pk = $this->getPacket($buffer)) != null){
+			$pk->decode();
 			$client->handleDataPacket($pk);
 		}
 	}

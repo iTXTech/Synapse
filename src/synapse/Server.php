@@ -334,6 +334,10 @@ class Server{
 		return $this->network;
 	}
 
+	public function getInterface(){
+		return $this->synapseInterface;
+	}
+
 	private function checkTickUpdates($currentTick, $tickTime){
 		/*foreach($this->players as $p){
 			if(!$p->loggedIn and ($tickTime - $p->creationTime) >= 10){

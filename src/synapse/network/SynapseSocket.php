@@ -21,30 +21,38 @@
 
 namespace synapse\network;
 
+use synapse\Server;
 use synapse\Thread;
 use synapse\utils\Binary;
+use synapse\utils\MainLogger;
 
 class SynapseSocket extends Thread{
-	private $interface;
 	private $ip;
 	private $port;
 	private $socket;
 	private $stop;
-	private $clients;
+	public $waitIp = "";
+	public $waitPort = 0;
+	public $waitBuffer = "";
+	public $waitHash = "";
+	private $waiting;
 
-	public function __construct(SynapseInterface $interface, string $ip, int $port){
-		$this->interface = $interface;
+	public function isWaiting(){
+		return $this->waiting === true;
+	}
+
+	public function __construct(string $ip, int $port){
 		$this->ip = $ip;
 		$this->port = $port;
 		$this->socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
 		if($this->socket === false or !socket_bind($this->socket, $ip, (int) $port) or !socket_listen($this->socket)){
-			$this->interface->getServer()->getLogger()->critical("Synapse Server can't be started: " . socket_strerror(socket_last_error()));
+			MainLogger::getLogger()->critical("Synapse Server can't be started: " . socket_strerror(socket_last_error()));
 			return;
 		}
 		socket_set_block($this->socket);
 
 		socket_getsockname($this->socket, $addr, $port);
-		$this->interface->getServer()->getLogger()->info("Synapse Server is listening on $addr:$port");
+		MainLogger::getLogger()->info("Synapse Server is listening on $addr:$port");
 		$this->stop = false;
 		$this->start();
 	}
@@ -58,7 +66,7 @@ class SynapseSocket extends Thread{
 	}
 
 	public function getConnectionById(string $id){
-		return $this->clients[$id];
+		return $this->{"client_" . $id};
 	}
 
 	public function writePacket($client, $buffer){
@@ -85,23 +93,25 @@ class SynapseSocket extends Thread{
 	}
 
 	public function disconnect($client){
+		$hash = self::clientHash($client);
 		@socket_set_option($client, SOL_SOCKET, SO_LINGER, ["l_onoff" => 1, "l_linger" => 1]);
 		@socket_shutdown($client, 2);
 		@socket_set_block($client);
 		@socket_read($client, 1);
 		@socket_close($client);
-		unset($this->clients[self::clientHash($client)]);
+		unset($this->{"client_" . ($hash)});
+		unset($this->{"timeout_" . $hash});
 	}
 
 	public static function clientHash($client){
+		if(!is_resource($client)){
+			throw new \Exception("Invalid Client");
+		}
 		socket_getpeername($client, $addr, $port);
-		var_dump($addr);
-		$i = explode(".", $addr);
-		return ($i[0]. $i[1]. $i[2]. $i[3]. $port);
+		return (str_replace(".", "", $addr) . $port);
 	}
 
 	public function run(){
-		$this->clients = (array) [[]];
 		while(!$this->stop){
 			$this->synchronized(function(){
 				$this->wait(100);
@@ -113,35 +123,50 @@ class SynapseSocket extends Thread{
 				if(($client = socket_accept($this->socket)) !== false){
 					socket_set_block($client);
 					socket_set_option($client, SOL_SOCKET, SO_KEEPALIVE, 1);
-					socket_getpeername($client, $addr, $port);var_dump($this->clients);
-					if(!isset($this->clients[$hash = self::clientHash($client)])){ echo "a";
-						$this->clients[$hash] = [
-							"client" => $client,
-							"addr" => $addr,
-							"port" => $port,
-							"timeout" => microtime(true) + 5,
-						];
-					}else{
-						$this->clients[$hash]["timeout"] = microtime(true) + 5;
+					socket_getpeername($client, $addr, $port);
+					if(!isset($this->{"client_" . ($hash = self::clientHash($client))})){
+						$this->{"client_" . $hash} = $client;
+						$this->waitIp = $addr;
+						$this->waitPort = $port;
+						$this->synchronized(function(){
+							$this->waiting = true;
+							$this->wait();
+						});
+						$this->waiting = false;
+						$this->waitIp = "";
+						$this->waitPort = 0;
 					}
+					$this->{"timeout_" . $hash} = microtime(true) + 5;
 				}
 			}
 
-			foreach($this->clients as $cli){
-				$client = &$cli["client"];
-				if($client !== null and !$this->stop){
-					if($cli["timeout"] < microtime(true)){ //Timeout
-						$this->disconnect($client);
-						continue;
+			foreach($this as $p => $v){
+				if(strstr($p, "client_")){
+					$client = &$v;
+					$hash = explode("_", $p);
+					$hash = $hash[1];
+					if($client !== null and !$this->stop){
+						if($this->{"timeout_" . $hash} < microtime(true)){ //Timeout
+							$this->disconnect($client);
+							continue;
+						}
+						$p = $this->readPacket($client, $buffer);
+						if($p === false){
+							$this->disconnect($client);
+							continue;
+						}elseif($p === null){
+							continue;
+						}
+						var_dump($buffer);
+						$this->waitHash = $hash;
+						$this->waitBuffer = $buffer;
+						$this->synchronized(function(){
+							$this->waiting = true;
+							$this->wait();
+						});
+						$this->waitHash = "";
+						$this->waitBuffer = "";
 					}
-					$p = $this->readPacket($client, $buffer);
-					if($p === false){
-						$this->disconnect($client);
-						continue;
-					}elseif($p === null){
-						continue;
-					}
-					$this->interface->handlePacket($client, $buffer);
 				}
 			}
 		}

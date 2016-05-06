@@ -49,6 +49,11 @@ class Client{
 		$this->port = $port;
 	}
 
+	public function setIpAndPort(string $ip, int $port){
+		$this->ip = $ip;
+		$this->port = $port;
+	}
+
 	public function isMainServer() : bool{
 		return $this->isMainServer;
 	}
@@ -74,11 +79,11 @@ class Client{
 				if($packet->protocol != Info::CURRENT_PROTOCOL){
 					$this->interface->removeClient($this);
 				}
-				if($this->server->comparePassword($packet->encodedPassword)){
+				if($this->server->comparePassword(base64_decode($packet->encodedPassword))){
 					$this->setVerified();
 				}
 				$this->isMainServer = $packet->isMainServer;
-				$this->maxPlayers = $packet->maxPlayers;
+				$this->maxPlayers = $packet->maxPlayers;var_dump($packet);
 				$this->server->addClient($this);
 				break;
 			case Info::DISCONNECT_PACKET:
