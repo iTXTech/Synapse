@@ -29,7 +29,7 @@ class SynapseSocket extends Thread{
 	private $ip;
 	private $port;
 	private $socket;
-	private $stop = false;
+	private $stop;
 	private $clients;
 
 	public function __construct(SynapseInterface $interface, string $ip, int $port){
@@ -45,6 +45,7 @@ class SynapseSocket extends Thread{
 
 		socket_getsockname($this->socket, $addr, $port);
 		$this->interface->getServer()->getLogger()->info("Synapse Server is listening on $addr:$port");
+		$this->stop = false;
 		$this->start();
 	}
 
@@ -100,8 +101,11 @@ class SynapseSocket extends Thread{
 	}
 
 	public function run(){
-		$this->clients = (array) [];
+		$this->clients = (array) [[]];
 		while(!$this->stop){
+			$this->synchronized(function(){
+				$this->wait(100);
+			});
 			$r = [$socket = $this->socket];
 			$w = null;
 			$e = null;
@@ -109,8 +113,8 @@ class SynapseSocket extends Thread{
 				if(($client = socket_accept($this->socket)) !== false){
 					socket_set_block($client);
 					socket_set_option($client, SOL_SOCKET, SO_KEEPALIVE, 1);
-					socket_getpeername($client, $addr, $port);
-					if(!isset($this->clients[$hash = self::clientHash($client)])){
+					socket_getpeername($client, $addr, $port);var_dump($this->clients);
+					if(!isset($this->clients[$hash = self::clientHash($client)])){ echo "a";
 						$this->clients[$hash] = [
 							"client" => $client,
 							"addr" => $addr,
