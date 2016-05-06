@@ -22,7 +22,7 @@
 namespace synapse\network;
 
 use synapse\Client;
-use synapse\network\protocol\mcpe\DisconnectPacket;
+use synapse\network\protocol\spp\DisconnectPacket;
 use synapse\network\protocol\spp\ConnectPacket;
 use synapse\network\protocol\spp\DataPacket;
 use synapse\network\protocol\spp\HeartbeatPacket;

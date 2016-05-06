@@ -30,9 +30,9 @@ class SynapseSocket extends Thread{
 	private $port;
 	private $socket;
 	private $stop = false;
-	private $clients = [];
+	private $clients;
 
-	public function __construct(SynapseInterface $interface, $ip, int $port){
+	public function __construct(SynapseInterface $interface, string $ip, int $port){
 		$this->interface = $interface;
 		$this->ip = $ip;
 		$this->port = $port;
@@ -94,11 +94,13 @@ class SynapseSocket extends Thread{
 
 	public static function clientHash($client){
 		socket_getpeername($client, $addr, $port);
-		$i = explode($addr, ".");
+		var_dump($addr);
+		$i = explode(".", $addr);
 		return ($i[0]. $i[1]. $i[2]. $i[3]. $port);
 	}
 
 	public function run(){
+		$this->clients = (array) [];
 		while(!$this->stop){
 			$r = [$socket = $this->socket];
 			$w = null;
