@@ -42,12 +42,14 @@ class Client{
 	private $isVerified = false;
 	private $isMainServer = false;
 	private $maxPlayers;
+	private $lastUpdate;
 
 	public function __construct(SynapseInterface $interface, $ip, int $port){
 		$this->server = $interface->getServer();
 		$this->interface = $interface;
 		$this->ip = $ip;
 		$this->port = $port;
+		$this->lastUpdate = time();
 	}
 
 	public function setIpAndPort(string $ip, int $port){
@@ -74,6 +76,8 @@ class Client{
 					$this->server->getLogger()->error("Client {$this->getIp()}:{$this->getPort()} is not verified");
 					return;
 				}
+				$this->lastUpdate = time();
+				$this->server->getLogger()->notice("Received Heartbeat Packet from {$this->getIp()}:{$this->getPort()}");
 				break;
 			case Info::CONNECT_PACKET:
 				/** @var ConnectPacket $packet */

@@ -77,7 +77,7 @@ class SynapseSocket extends Thread{
 	}
 
 	public function writePacket($client, $buffer){
-		return socket_write($client, Binary::writeLInt(strlen($buffer)) . $buffer);
+		return @socket_write($client, Binary::writeLInt(strlen($buffer)) . $buffer);
 	}
 
 	public function readPacket($client, &$buffer){
@@ -100,14 +100,16 @@ class SynapseSocket extends Thread{
 	}
 
 	public function disconnect($client){
-		$hash = self::clientHash($client);
-		@socket_set_option($client, SOL_SOCKET, SO_LINGER, ["l_onoff" => 1, "l_linger" => 1]);
-		@socket_shutdown($client, 2);
-		@socket_set_block($client);
-		@socket_read($client, 1);
-		@socket_close($client);
-		unset($this->{"client_" . ($hash)});
-		unset($this->{"timeout_" . $hash});
+		if(is_resource($client)){
+			$hash = self::clientHash($client);
+			@socket_set_option($client, SOL_SOCKET, SO_LINGER, ["l_onoff" => 1, "l_linger" => 1]);
+			@socket_shutdown($client, 2);
+			@socket_set_block($client);
+			@socket_read($client, 1);
+			@socket_close($client);
+			unset($this->{"client_" . ($hash)});
+			//unset($this->{"timeout_" . $hash});
+		}
 	}
 
 	public static function clientHash($client){
@@ -143,7 +145,7 @@ class SynapseSocket extends Thread{
 						$this->waitIp = "";
 						$this->waitPort = 0;
 					}
-					$this->{"timeout_" . $hash} = microtime(true) + 5;
+					//$this->{"timeout_" . $hash} = microtime(true) + 5;
 				}
 			}
 
@@ -153,13 +155,14 @@ class SynapseSocket extends Thread{
 					$hash = explode("_", $p);
 					$hash = $hash[1];
 					if($client !== null and !$this->stop){
-						if($this->{"timeout_" . $hash} < microtime(true)){ //Timeout
+						/*if($this->{"timeout_" . $hash} < microtime(true)){ //Timeout
 							$this->disconnect($client);
 							continue;
-						}
+						}*/
 						$p = $this->readPacket($client, $buffer);
 						if($p === false){
 							$this->disconnect($client);
+							unset($this->{$p});
 							continue;
 						}elseif($p === null){
 							continue;
