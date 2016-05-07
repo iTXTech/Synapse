@@ -18,7 +18,7 @@
  * @link https://itxtech.org
  *
  */
- 
+
 namespace synapse\network;
 
 use synapse\Client;
@@ -31,25 +31,26 @@ use synapse\network\protocol\spp\InformationPacket;
 use synapse\network\protocol\spp\PlayerLoginPacket;
 use synapse\network\protocol\spp\PlayerLogoutPacket;
 use synapse\network\protocol\spp\RedirectPacket;
+use synapse\network\synapse\SynapseServer;
 use synapse\Server;
 
 class SynapseInterface{
 	private $server;
 	private $ip;
 	private $port;
-	/** @var SynapseSocket */
-	private $socket;
 	/** @var Client[] */
 	private $clients;
 	/** @var DataPacket[] */
 	private $packetPool = [];
-	
+	/** @var SynapseServer */
+	private $interface;
+
 	public function __construct(Server $server, $ip, int $port){
 		$this->server = $server;
 		$this->ip = $ip;
 		$this->port = $port;
 		$this->registerPackets();
-		$this->socket = new SynapseSocket($ip, $port);
+		$this->interface = new SynapseServer($server->getLogger(), $server->getLoader(), $port, $ip);
 	}
 
 	public function getServer(){
@@ -75,18 +76,7 @@ class SynapseInterface{
 	}
 
 	public function process(){
-		if($this->socket->isWaiting()){
-			if($this->socket->waitIp != ""){
-				$this->addClient($this->socket->waitIp, $this->socket->waitPort);
-			}
-			$this->socket->synchronized(function(SynapseSocket $thread){
-				$thread->notify();
-			}, $this->socket);
-		}
-		while(($buffer = $this->socket->getPBuffer()) != null){
-			$temp = explode("|", $buffer);
-			$this->handlePacket($temp[0], $temp[1]);
-		}
+		$this->interface->handleData();
 	}
 
 	/**
