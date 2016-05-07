@@ -21,7 +21,6 @@
 
 namespace synapse\network;
 
-use synapse\Server;
 use synapse\Thread;
 use synapse\utils\Binary;
 use synapse\utils\MainLogger;
@@ -33,12 +32,19 @@ class SynapseSocket extends Thread{
 	private $stop;
 	public $waitIp = "";
 	public $waitPort = 0;
-	public $waitBuffer = "";
-	public $waitHash = "";
 	private $waiting;
+	/** @var \Threaded */
+	protected $buffer;
 
 	public function isWaiting(){
 		return $this->waiting === true;
+	}
+
+	public function getPBuffer(){
+		if($this->buffer->count() !== 0){
+			return $this->buffer->shift();
+		}
+		return null;
 	}
 
 	public function __construct(string $ip, int $port){
@@ -54,6 +60,7 @@ class SynapseSocket extends Thread{
 		socket_getsockname($this->socket, $addr, $port);
 		MainLogger::getLogger()->info("Synapse Server is listening on $addr:$port");
 		$this->stop = false;
+		$this->buffer = new \Threaded;
 		$this->start();
 	}
 
@@ -157,15 +164,7 @@ class SynapseSocket extends Thread{
 						}elseif($p === null){
 							continue;
 						}
-						var_dump($buffer);
-						$this->waitHash = $hash;
-						$this->waitBuffer = $buffer;
-						$this->synchronized(function(){
-							$this->waiting = true;
-							$this->wait();
-						});
-						$this->waitHash = "";
-						$this->waitBuffer = "";
+						$this->buffer[] = $hash. "|" . $buffer;
 					}
 				}
 			}

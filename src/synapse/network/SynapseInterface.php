@@ -27,6 +27,7 @@ use synapse\network\protocol\spp\ConnectPacket;
 use synapse\network\protocol\spp\DataPacket;
 use synapse\network\protocol\spp\HeartbeatPacket;
 use synapse\network\protocol\spp\Info;
+use synapse\network\protocol\spp\InformationPacket;
 use synapse\network\protocol\spp\PlayerLoginPacket;
 use synapse\network\protocol\spp\PlayerLogoutPacket;
 use synapse\network\protocol\spp\RedirectPacket;
@@ -75,14 +76,16 @@ class SynapseInterface{
 
 	public function process(){
 		if($this->socket->isWaiting()){
-			if($this->socket->waitHash == ""){
+			if($this->socket->waitIp != ""){
 				$this->addClient($this->socket->waitIp, $this->socket->waitPort);
-			}else{
-				$this->handlePacket($this->socket->waitHash, $this->socket->waitBuffer);
 			}
 			$this->socket->synchronized(function(SynapseSocket $thread){
 				$thread->notify();
 			}, $this->socket);
+		}
+		while(($buffer = $this->socket->getPBuffer()) != null){
+			$temp = explode("|", $buffer);
+			$this->handlePacket($temp[0], $temp[1]);
 		}
 	}
 
@@ -134,5 +137,6 @@ class SynapseInterface{
 		$this->registerPacket(Info::REDIRECT_PACKET, RedirectPacket::class);
 		$this->registerPacket(Info::PLAYER_LOGIN_PACKET, PlayerLoginPacket::class);
 		$this->registerPacket(Info::PLAYER_LOGOUT_PACKET, PlayerLogoutPacket::class);
+		$this->registerPacket(Info::INFORMATION_PACKET, InformationPacket::class);
 	}
 }

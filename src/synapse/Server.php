@@ -253,8 +253,8 @@ class Server{
 	}
 
 	public function comparePassword(string $pass) : bool{
-		$rawPass = rtrim(Utils::aes_decode($pass, $pass));
-		if($rawPass == $this->getConfig("password", "123456")){
+		$rawPass = rtrim(Utils::aes_decode($pass, ($truePass = $this->getConfig("password", "123456"))));
+		if($rawPass == $truePass){
 			return true;
 		}
 		return false;

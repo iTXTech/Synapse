@@ -26,6 +26,7 @@ use synapse\network\protocol\mcpe\GenericPacket;
 use synapse\network\protocol\spp\ConnectPacket;
 use synapse\network\protocol\spp\DataPacket;
 use synapse\network\protocol\spp\Info;
+use synapse\network\protocol\spp\InformationPacket;
 use synapse\network\protocol\spp\RedirectPacket;
 use synapse\network\SynapseInterface;
 
@@ -79,12 +80,19 @@ class Client{
 				if($packet->protocol != Info::CURRENT_PROTOCOL){
 					$this->interface->removeClient($this);
 				}
+				$pk = new InformationPacket();
 				if($this->server->comparePassword(base64_decode($packet->encodedPassword))){
 					$this->setVerified();
+					$pk->message = InformationPacket::INFO_LOGIN_SUCCESS;
+					$this->isMainServer = $packet->isMainServer;
+					$this->maxPlayers = $packet->maxPlayers;
+					$this->server->addClient($this);
+					$this->server->getLogger()->notice("Client {$this->getIp()}:{$this->getPort()} has connected successfully");
+				}else{
+					$pk->message = InformationPacket::INFO_LOGIN_FAILED;
+					$this->server->getLogger()->emergency("Client {$this->getIp()}:{$this->getPort()} tried to connect with wrong password!");
 				}
-				$this->isMainServer = $packet->isMainServer;
-				$this->maxPlayers = $packet->maxPlayers;var_dump($packet);
-				$this->server->addClient($this);
+				$this->sendDataPacket($pk);
 				break;
 			case Info::DISCONNECT_PACKET:
 				/** @var DisconnectPacket $packet */
