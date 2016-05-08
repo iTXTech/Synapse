@@ -164,7 +164,13 @@ class SynapseServer extends Thread
     public function handleData()
     {
         if(strlen($packet = $this->readThreadToMainPacket()) > 0){
-            //TODO
+            $data = json_decode(base64_decode($packet), true);
+            if(is_array($data) and isset($data['type']) and is_int($data['type'])){
+                switch($data['type']){
+                    case 1:
+                        
+                }
+            }
         }
     }
 

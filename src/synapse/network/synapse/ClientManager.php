@@ -22,6 +22,7 @@
 namespace synapse\network\synapse;
 
 use synapse\Client;
+use synapse\ClientConnection;
 
 class ClientManager
 {
@@ -70,7 +71,7 @@ class ClientManager
     private function tick()
     {
         while(($socket = $this->socket->getClient())){
-            $this->client[] = new Client($this, $socket);
+            $this->client[] = new ClientConnection($this, $socket);
         }
         
         foreach($this->client as $client){

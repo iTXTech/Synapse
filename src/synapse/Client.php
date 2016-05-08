@@ -1,5 +1,4 @@
 <?php
-
 /*
  *
  *  _____   _____   __   _   _   _____  __    __  _____
@@ -21,53 +20,13 @@
 
 namespace synapse;
 
+use synapse\network\SynapseInterface;
 
-use synapse\network\synapse\ClientManager;
-
-class Client{
-
-	private $getData = '';
-	private $sendData = [];
-	/** @var resource */
-	private $socket;
-
-	public function __construct(ClientManager $clientManager, $socket){
-		$this->clientManager = $clientManager;
-		$this->socket = $socket;
-	}
-
-	public function update()
-	{
-		if(count($this->sendData) > 0){
-			$data = implode('\r\n', $this->sendData);
-			socket_write($this->socket, $data);
-		}
-		$data = socket_read($this->socket, 2048, PHP_BINARY_READ);
-		$this->getData .= $data;
-	}
-
-	public function getSocket()
-	{
-		return $this->socket;
-	}
-
-	public function readData()
-	{
-		$buff = "\r\n";
-		$end = explode($buff, $this->getData, 2);
-		if(count($end) == 2){
-			$this->getData = $end[1];
-			if($end[0] == ''){
-				return null;
-			}
-			return $end[0];
-		}
-		return null;
-	}
-
-	public function sendData(string $data)
-	{
-		$this->sendData[] = $data;
-	}
+class Client
+{
+    
+    public function __construct(SynapseInterface $interface, $ip, $port)
+    {
+    }
 
 }
