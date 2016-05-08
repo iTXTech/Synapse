@@ -27,6 +27,7 @@ use synapse\network\protocol\mcpe\Info;
 use synapse\network\protocol\mcpe\PlayerListPacket;
 use synapse\network\protocol\spp\PlayerLoginPacket;
 use synapse\network\protocol\spp\PlayerLogoutPacket;
+use synapse\network\protocol\spp\RedirectPacket;
 use synapse\network\SourceInterface;
 use synapse\utils\UUID;
 use synapse\utils\TextFormat;
@@ -92,6 +93,11 @@ class Player{
 				$c = $this->server->getMainClients();
 				$this->transfer($c[array_rand($c)]);
 				break;
+			default:
+				$packet = new RedirectPacket();
+				$packet->uuid = $this->uuid;
+				$packet->mcpeBuffer = $pk->buffer;
+				$this->client->sendDataPacket($packet);
 		}
 	}
 

@@ -88,7 +88,7 @@ class SynapseSocket extends Thread{
 		}elseif($d === false){
 			return null;
 		}elseif($d === "" or strlen($d) < 4){
-			return false;
+			//return false;
 		}
 		socket_set_block($client);
 		$size = Binary::readLInt($d);
