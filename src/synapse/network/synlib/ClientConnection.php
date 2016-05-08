@@ -19,7 +19,7 @@
  *
  */
 
-namespace synapse;
+namespace synapse\network\synlib;
 
 use synapse\network\synapse\ClientManager;
 

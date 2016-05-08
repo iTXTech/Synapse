@@ -19,7 +19,7 @@
  *
  */
 
-namespace synapse\network\synapse;
+namespace synapse\network\synlib;
 
 
 class SynapseSocket{

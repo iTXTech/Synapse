@@ -19,7 +19,7 @@
  *
  */
 
-namespace synapse\network\synapse;
+namespace synapse\network\synlib;
 
 use synapse\Client;
 use synapse\ClientConnection;

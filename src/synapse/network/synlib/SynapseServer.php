@@ -1,5 +1,5 @@
 <?php
-namespace synapse\network\synapse;
+namespace synapse\network\synlib;
 
 use synapse\Thread;
 

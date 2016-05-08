@@ -31,7 +31,7 @@ use synapse\network\protocol\spp\InformationPacket;
 use synapse\network\protocol\spp\PlayerLoginPacket;
 use synapse\network\protocol\spp\PlayerLogoutPacket;
 use synapse\network\protocol\spp\RedirectPacket;
-use synapse\network\synapse\SynapseServer;
+use synapse\network\synlib\SynapseServer;
 use synapse\Server;
 
 class SynapseInterface{
