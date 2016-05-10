@@ -21,8 +21,6 @@
 
 namespace synapse\network\synlib;
 
-use synapse\network\synapse\ClientManager;
-
 class ClientConnection{
 
 	private $getData = '';
@@ -33,6 +31,12 @@ class ClientConnection{
 	public function __construct(ClientManager $clientManager, $socket){
 		$this->clientManager = $clientManager;
 		$this->socket = $socket;
+	}
+
+	public function getHash()
+	{
+		socket_getpeername($this->socket, $address, $port);
+		return $address.':'.$port;
 	}
 
 	public function update()
@@ -53,6 +57,7 @@ class ClientConnection{
 	public function readData()
 	{
 		$buff = "\r\n";
+		//TODO
 		$end = explode($buff, $this->getData, 2);
 		if(count($end) == 2){
 			$this->getData = $end[1];
@@ -64,9 +69,9 @@ class ClientConnection{
 		return null;
 	}
 
-	public function sendData(string $data)
+	public function sendData($data)
 	{
-		$this->sendData[] = $data;
+		@socket_write($this->socket, $data);
 	}
 
 }

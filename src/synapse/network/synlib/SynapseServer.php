@@ -1,6 +1,8 @@
 <?php
 namespace synapse\network\synlib;
 
+use synapse\network\protocol\spp\Info;
+use synapse\network\SynapseInterface;
 use synapse\Thread;
 
 class SynapseServer extends Thread
@@ -21,10 +23,13 @@ class SynapseServer extends Thread
     /** @var \ClassLoader */
     private $loader;
     private $mainPath;
+    /** @var SynapseInterface */
+    private $server;
 
-    public function __construct(\ThreadedLogger $logger, \ClassLoader $loader, $port, $interface = "0.0.0.0")
+    public function __construct(\ThreadedLogger $logger, SynapseInterface $server,\ClassLoader $loader, $port, $interface = "0.0.0.0")
     {
         $this->logger = $logger;
+        $this->server = $server;
         $this->interface = $interface;
         $this->port = (int)$port;
         if ($port < 1 or $port > 65536) {
@@ -50,18 +55,31 @@ class SynapseServer extends Thread
         $this->start();
     }
 
-    protected function addDependency(array &$loadPaths, \ReflectionClass $dep){
-        if($dep->getFileName() !== false){
-            $loadPaths[$dep->getName()] = $dep->getFileName();
+    /**
+     * @return bool
+     */
+    public function handlePacket()
+    {
+        if(strlen($data = $this->readThreadToMainPacket()) > 0){
+            $tmp = explode("|", $data, 2);
+            if(count($tmp) != 2){
+                return true;
+            }
+            $this->server->handlePacket($tmp[0], $tmp[1]);
         }
+        return false;
+    }
+    
+    public function handelStream()
+    {
+        if(strlen($packet = $this->readThreadToMainPacket()) > 0){
+            
+        }
+    }
 
-        if($dep->getParentClass() instanceof \ReflectionClass){
-            $this->addDependency($loadPaths, $dep->getParentClass());
-        }
-
-        foreach($dep->getInterfaces() as $interface){
-            $this->addDependency($loadPaths, $interface);
-        }
+    public function closeSession($identifier, $reason){
+        $buffer = chr(Info::DISCONNECT_PACKET) . chr(strlen($identifier)) . $identifier . chr(strlen($reason)) . $reason;
+        $this->pushMainToThreadPacket($buffer);
     }
 
     public function run(){
@@ -82,6 +100,20 @@ class SynapseServer extends Thread
 
         $socket = new SynapseSocket($this->getLogger(), $this->port, $this->interface);
         new ClientManager($this, $socket);
+    }
+
+    protected function addDependency(array &$loadPaths, \ReflectionClass $dep){
+        if($dep->getFileName() !== false){
+            $loadPaths[$dep->getName()] = $dep->getFileName();
+        }
+
+        if($dep->getParentClass() instanceof \ReflectionClass){
+            $this->addDependency($loadPaths, $dep->getParentClass());
+        }
+
+        foreach($dep->getInterfaces() as $interface){
+            $this->addDependency($loadPaths, $interface);
+        }
     }
 
     public function shutdownHandler(){
@@ -159,19 +191,6 @@ class SynapseServer extends Thread
 
     public function cleanPath($path){
         return rtrim(str_replace(["\\", ".php", "phar://", rtrim(str_replace(["\\", "phar://"], ["/", ""], $this->mainPath), "/")], ["/", "", "", ""], $path), "/");
-    }
-
-    public function handleData()
-    {
-        if(strlen($packet = $this->readThreadToMainPacket()) > 0){
-            $data = json_decode(base64_decode($packet), true);
-            if(is_array($data) and isset($data['type']) and is_int($data['type'])){
-                switch($data['type']){
-                    case 1:
-                        
-                }
-            }
-        }
     }
 
     public function getExternalQueue(){

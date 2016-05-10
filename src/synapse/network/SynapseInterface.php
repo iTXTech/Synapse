@@ -50,7 +50,7 @@ class SynapseInterface{
 		$this->ip = $ip;
 		$this->port = $port;
 		$this->registerPackets();
-		$this->interface = new SynapseServer($server->getLogger(), $server->getLoader(), $port, $ip);
+		$this->interface = new SynapseServer($server->getLogger(), $this, $server->getLoader(), $port, $ip);
 	}
 
 	public function getServer(){
@@ -72,11 +72,11 @@ class SynapseInterface{
 		if(!$pk->isEncoded){
 			$pk->encode();
 		}
-		$this->socket->writePacket($this->socket->getConnectionById($client->getId()), $pk->buffer);
+		$this->interface->pushMainToThreadPacket($client->getId().'|'.$pk->buffer);
 	}
 
 	public function process(){
-		$this->interface->handleData();
+		$this->interface->handlePacket();
 	}
 
 	/**

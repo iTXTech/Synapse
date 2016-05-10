@@ -22,7 +22,6 @@
 namespace synapse\network\synlib;
 
 use synapse\Client;
-use synapse\ClientConnection;
 
 class ClientManager
 {
@@ -36,7 +35,7 @@ class ClientManager
     protected $socket;
     /** @var int */
     private $serverId;
-    /** @var Client[] */
+    /** @var ClientConnection[] */
     private $client = [];
 
     public function __construct(SynapseServer $server, SynapseSocket $socket)
@@ -71,16 +70,29 @@ class ClientManager
     private function tick()
     {
         while(($socket = $this->socket->getClient())){
-            $this->client[] = new ClientConnection($this, $socket);
+            $client = new ClientConnection($this, $socket);
+            $this->client[$client->getHash()] = $client;
         }
         
         foreach($this->client as $client){
             $client->update();
             if(($data = $client->readData()) !== null){
                 socket_getpeername($client->getSocket(), $address, $port);
-                $this->server->pushThreadToMainPacket($address.':'.$port.'-->'.$data);
-                //TODO
+                $this->server->pushThreadToMainPacket($address.':'.$port.'|'.$data);
             }
         }
+        while($this->receivePacket());
+    }
+
+    public function receivePacket()
+    {
+        if(strlen($data = $this->server->readMainToThreadPacket()) > 0){
+            $tmp = explode("|", $data, 2);
+            if(count($tmp) != 2){
+                return true;
+            }
+            //TODO
+        }
+        return false;
     }
 }
