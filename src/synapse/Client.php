@@ -65,8 +65,8 @@ class Client{
 		return $this->maxPlayers;
 	}
 
-	public function getId() : string{
-		return str_replace(".", "", $this->getIp()) . $this->getPort();
+	public function getHash() : string{
+		return $this->ip . ':' . $this->port;
 	}
 
 	public function handleDataPacket(DataPacket $packet){

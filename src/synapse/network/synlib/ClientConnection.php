@@ -21,57 +21,79 @@
 
 namespace synapse\network\synlib;
 
+use synapse\utils\Binary;
+
 class ClientConnection{
 
-	private $getData = '';
-	private $sendData = [];
+	const MAGIC_BYTES = "\x35\xac";
+
+	private $receiveBuffer = "";
+	private $sendBuffer = "";
 	/** @var resource */
 	private $socket;
+	private $ip;
+	private $port;
 
 	public function __construct(ClientManager $clientManager, $socket){
 		$this->clientManager = $clientManager;
 		$this->socket = $socket;
-	}
-
-	public function getHash()
-	{
 		socket_getpeername($this->socket, $address, $port);
-		return $address.':'.$port;
+		$this->ip = $address;
+		$this->port = $port;
 	}
 
-	public function update()
-	{
-		if(count($this->sendData) > 0){
-			$data = implode('\r\n', $this->sendData);
-			socket_write($this->socket, $data);
+	public function getHash(){
+		return $this->ip . ':' . $this->port;
+	}
+
+	public function getIp() : string {
+		return $this->ip;
+	}
+
+	public function getPort() : int{
+		return $this->port;
+	}
+
+	public function update(){
+		if($this->sendBuffer != ""){
+			socket_write($this->socket, $this->sendBuffer);
+			$this->sendBuffer = "";
 		}
 		$data = socket_read($this->socket, 2048, PHP_BINARY_READ);
-		$this->getData .= $data;
+		$this->receiveBuffer .= $data;
 	}
 
-	public function getSocket()
-	{
+	public function getSocket(){
 		return $this->socket;
 	}
 
-	public function readData()
-	{
-		$buff = "\r\n";
-		//TODO
-		$end = explode($buff, $this->getData, 2);
-		if(count($end) == 2){
-			$this->getData = $end[1];
-			if($end[0] == ''){
+	public function readPacket(){
+		$end = explode(self::MAGIC_BYTES, $this->receiveBuffer, 2);
+		if(count($end) <= 2){
+			if(count($end) == 1){
+				if(strstr($end[0], self::MAGIC_BYTES)){
+					$this->receiveBuffer = "";
+				}else{
+					return null;
+				}
+			}else{
+				$this->receiveBuffer = $end[1];
+			}
+			$buffer = $end[0];
+			if(strlen($buffer) < 4){
 				return null;
 			}
-			return $end[0];
+			$len = Binary::readLInt(substr($buffer, 0, 4));
+			$buffer = substr($buffer, 4);
+			if($len != strlen($buffer)){
+				throw new \Exception("Wrong packet $buffer");
+			}
+			return $buffer;
 		}
 		return null;
 	}
 
-	public function sendData($data)
-	{
-		@socket_write($this->socket, $data);
+	public function writePacket($data){
+		$this->sendBuffer .= Binary::writeLInt(strlen($data)) . $data . self::MAGIC_BYTES;
 	}
-
 }

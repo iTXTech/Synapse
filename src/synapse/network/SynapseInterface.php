@@ -58,25 +58,35 @@ class SynapseInterface{
 	}
 
 	public function addClient($ip, $port){
-		$this->clients[str_replace(".", "", $ip) . $port] = new Client($this, $ip, $port);
+		$this->clients[$ip . ":" . $port] = new Client($this, $ip, $port);
 		//$this->server->addClient($this->clients[SynapseSocket::clientHash($client)]);
 	}
 
 	public function removeClient(Client $client){
 		//$this->server->removeClient($this->clients[SynapseSocket::clientHash($client)]);
-		unset($this->clients[$client->getId()]);
+		$client->close();
+		unset($this->clients[$client->getHash()]);
 	}
 
 	public function putPacket(Client $client, DataPacket $pk){
-		$client = $this->clients[$client->getId()];
+		$client = $this->clients[$client->getHash()];
 		if(!$pk->isEncoded){
 			$pk->encode();
 		}
-		$this->interface->pushMainToThreadPacket($client->getId().'|'.$pk->buffer);
+		$this->interface->pushMainToThreadPacket($client->getHash() . '|' . $pk->buffer);
 	}
 
 	public function process(){
-		$this->interface->handlePacket();
+		while(strlen($data = $this->interface->getClientOpenRequest()) > 0){
+			$tmp = explode(":", $data);
+			$this->addClient($tmp[0], $tmp[1]);
+		}
+		if(strlen($data = $this->interface->readThreadToMainPacket()) > 0){
+			$tmp = explode("|", $data, 2);
+			if(count($tmp) == 2){
+				$this->handlePacket($tmp[0], $tmp[1]);
+			}
+		}
 	}
 
 	/**
@@ -84,11 +94,11 @@ class SynapseInterface{
 	 *
 	 * @return DataPacket
 	 */
-	public function getPacket($buffer) {
+	public function getPacket($buffer){
 		$pid = ord($buffer{0});
 		/** @var DataPacket $class */
 		$class = $this->packetPool[$pid];
-		if ($class !== null) {
+		if($class !== null){
 			$pk = clone $class;
 			$pk->setBuffer($buffer, 1);
 			return $pk;
@@ -113,12 +123,12 @@ class SynapseInterface{
 	 * @param int        $id 0-255
 	 * @param DataPacket $class
 	 */
-	public function registerPacket($id, $class) {
+	public function registerPacket($id, $class){
 		$this->packetPool[$id] = new $class;
 	}
 
 
-	private function registerPackets() {
+	private function registerPackets(){
 		$this->packetPool = new \SplFixedArray(256);
 
 		$this->registerPacket(Info::HEARTBEAT_PACKET, HeartbeatPacket::class);

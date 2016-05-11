@@ -23,50 +23,29 @@ namespace synapse\network\synlib;
 
 
 class SynapseSocket{
+	private $socket;
 
-    public function __construct(\ThreadedLogger $logger, $port = 19132, $interface = "0.0.0.0")
-    {
-        $this->socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-        if(@socket_bind($this->socket, $interface, $port) !== true){
-            $logger->critical("**** FAILED TO BIND TO " . $interface . ":" . $port . "!");
-            $logger->critical("Perhaps a server is already running on that port?");
-            exit(1);
-        }
-        socket_listen($this->socket);
-        socket_set_nonblock($this->socket);
-    }
+	public function __construct(\ThreadedLogger $logger, $port = 10305, $interface = "0.0.0.0"){
+		$this->socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+		if(@socket_bind($this->socket, $interface, $port) !== true){
+			$logger->critical("**** FAILED TO BIND TO " . $interface . ":" . $port . "!");
+			$logger->critical("Perhaps a server is already running on that port?");
+			exit(1);
+		}
+		socket_listen($this->socket);
+		$logger->info("Synapse is running on $interface:$port");
+		socket_set_nonblock($this->socket);
+	}
 
-    public function getClient()
-    {
-        return socket_accept($this->socket);
-    }
+	public function getClient(){
+		return socket_accept($this->socket);
+	}
 
-    public function getSocket(){
-        return $this->socket;
-    }
+	public function getSocket(){
+		return $this->socket;
+	}
 
-    public function close(){
-        socket_close($this->socket);
-    }
-
-    /**
-     * @param int $size
-     *
-     * @return $this
-     */
-    public function setSendBuffer($size){
-        @socket_set_option($this->socket, SOL_SOCKET, SO_SNDBUF, $size);
-        return $this;
-    }
-
-    /**
-     * @param int $size
-     *
-     * @return $this
-     */
-    public function setRecvBuffer($size){
-        @socket_set_option($this->socket, SOL_SOCKET, SO_RCVBUF, $size);
-        return $this;
-    }
-
+	public function close(){
+		socket_close($this->socket);
+	}
 }
