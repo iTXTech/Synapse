@@ -45,7 +45,7 @@ abstract class Thread extends \Thread{
 		if(!interface_exists("ClassLoader", false)){
 			require(\synapse\PATH . "src/spl/ClassLoader.php");
 			require(\synapse\PATH . "src/spl/BaseClassLoader.php");
-			require(\synapse\PATH . "src/pocketmine/CompatibleClassLoader.php");
+			require(\synapse\PATH . "src/synapse/CompatibleClassLoader.php");
 		}
 		if($this->classLoader !== null){
 			$this->classLoader->register(true);

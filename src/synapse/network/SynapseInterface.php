@@ -18,7 +18,7 @@
  * @link https://itxtech.org
  *
  */
- 
+
 namespace synapse\network;
 
 use synapse\Client;
@@ -31,25 +31,26 @@ use synapse\network\protocol\spp\InformationPacket;
 use synapse\network\protocol\spp\PlayerLoginPacket;
 use synapse\network\protocol\spp\PlayerLogoutPacket;
 use synapse\network\protocol\spp\RedirectPacket;
+use synapse\network\synlib\SynapseServer;
 use synapse\Server;
 
 class SynapseInterface{
 	private $server;
 	private $ip;
 	private $port;
-	/** @var SynapseSocket */
-	private $socket;
 	/** @var Client[] */
 	private $clients;
 	/** @var DataPacket[] */
 	private $packetPool = [];
-	
+	/** @var SynapseServer */
+	private $interface;
+
 	public function __construct(Server $server, $ip, int $port){
 		$this->server = $server;
 		$this->ip = $ip;
 		$this->port = $port;
 		$this->registerPackets();
-		$this->socket = new SynapseSocket($ip, $port);
+		$this->interface = new SynapseServer($server->getLogger(), $this, $server->getLoader(), $port, $ip);
 	}
 
 	public function getServer(){
@@ -57,35 +58,34 @@ class SynapseInterface{
 	}
 
 	public function addClient($ip, $port){
-		$this->clients[str_replace(".", "", $ip) . $port] = new Client($this, $ip, $port);
+		$this->clients[$ip . ":" . $port] = new Client($this, $ip, $port);
 		//$this->server->addClient($this->clients[SynapseSocket::clientHash($client)]);
 	}
 
 	public function removeClient(Client $client){
 		//$this->server->removeClient($this->clients[SynapseSocket::clientHash($client)]);
-		unset($this->clients[$client->getId()]);
+		$client->close();
+		unset($this->clients[$client->getHash()]);
 	}
 
 	public function putPacket(Client $client, DataPacket $pk){
-		$client = $this->clients[$client->getId()];
+		$client = $this->clients[$client->getHash()];
 		if(!$pk->isEncoded){
 			$pk->encode();
 		}
-		$this->socket->writePacket($this->socket->getConnectionById($client->getId()), $pk->buffer);
+		$this->interface->pushMainToThreadPacket($client->getHash() . '|' . $pk->buffer);
 	}
 
 	public function process(){
-		if($this->socket->isWaiting()){
-			if($this->socket->waitIp != ""){
-				$this->addClient($this->socket->waitIp, $this->socket->waitPort);
-			}
-			$this->socket->synchronized(function(SynapseSocket $thread){
-				$thread->notify();
-			}, $this->socket);
+		while(strlen($data = $this->interface->getClientOpenRequest()) > 0){
+			$tmp = explode(":", $data);
+			$this->addClient($tmp[0], $tmp[1]);
 		}
-		while(($buffer = $this->socket->getPBuffer()) != null){
-			$temp = explode("|", $buffer);
-			$this->handlePacket($temp[0], $temp[1]);
+		if(strlen($data = $this->interface->readThreadToMainPacket()) > 0){
+			$tmp = explode("|", $data, 2);
+			if(count($tmp) == 2){
+				$this->handlePacket($tmp[0], $tmp[1]);
+			}
 		}
 	}
 
@@ -94,11 +94,11 @@ class SynapseInterface{
 	 *
 	 * @return DataPacket
 	 */
-	public function getPacket($buffer) {
+	public function getPacket($buffer){
 		$pid = ord($buffer{0});
 		/** @var DataPacket $class */
 		$class = $this->packetPool[$pid];
-		if ($class !== null) {
+		if($class !== null){
 			$pk = clone $class;
 			$pk->setBuffer($buffer, 1);
 			return $pk;
@@ -123,12 +123,12 @@ class SynapseInterface{
 	 * @param int        $id 0-255
 	 * @param DataPacket $class
 	 */
-	public function registerPacket($id, $class) {
+	public function registerPacket($id, $class){
 		$this->packetPool[$id] = new $class;
 	}
 
 
-	private function registerPackets() {
+	private function registerPackets(){
 		$this->packetPool = new \SplFixedArray(256);
 
 		$this->registerPacket(Info::HEARTBEAT_PACKET, HeartbeatPacket::class);
