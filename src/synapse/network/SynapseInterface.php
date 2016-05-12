@@ -59,12 +59,10 @@ class SynapseInterface{
 
 	public function addClient($ip, $port){
 		$this->clients[$ip . ":" . $port] = new Client($this, $ip, $port);
-		//$this->server->addClient($this->clients[SynapseSocket::clientHash($client)]);
 	}
 
 	public function removeClient(Client $client){
-		//$this->server->removeClient($this->clients[SynapseSocket::clientHash($client)]);
-		$client->close();
+		$this->interface->addExternalClientCloseRequest($client->getHash());
 		unset($this->clients[$client->getHash()]);
 	}
 
@@ -79,6 +77,10 @@ class SynapseInterface{
 		while(strlen($data = $this->interface->getClientOpenRequest()) > 0){
 			$tmp = explode(":", $data);
 			$this->addClient($tmp[0], $tmp[1]);
+		}
+		while(strlen($data = $this->interface->getInternalClientCloseRequest()) > 0){
+			$this->clients[$data]->closeAllPlayers();
+			unset($this->clients[$data]);
 		}
 		if(strlen($data = $this->interface->readThreadToMainPacket()) > 0){
 			$tmp = explode("|", $data, 2);

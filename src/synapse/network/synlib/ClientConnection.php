@@ -55,16 +55,27 @@ class ClientConnection{
 	}
 
 	public function update(){
-		if($this->sendBuffer != ""){
-			socket_write($this->socket, $this->sendBuffer);
-			$this->sendBuffer = "";
+		$err = socket_last_error($this->socket);
+		if($err == 10057 or $err == 10054){
+			$this->clientManager->getServer()->getLogger()->error("Synapse client [$this->ip:$this->port] has disconnected unexpectedly");
+			return false;
+		}else{
+			$data = @socket_read($this->socket, 65535, PHP_BINARY_READ);
+			$this->receiveBuffer .= $data;
+			if($this->sendBuffer != ""){
+				socket_write($this->socket, $this->sendBuffer);
+				$this->sendBuffer = "";
+			}
+			return true;
 		}
-		$data = socket_read($this->socket, 2048, PHP_BINARY_READ);
-		$this->receiveBuffer .= $data;
 	}
 
 	public function getSocket(){
 		return $this->socket;
+	}
+
+	public function close(){
+		@socket_close($this->socket);
 	}
 
 	public function readPacket(){

@@ -61,6 +61,10 @@ class ClientManager{
 		return $this->client;
 	}
 
+	public function getServer(){
+		return $this->server;
+	}
+
 	private function tick(){
 		while(($socket = $this->socket->getClient())){
 			$client = new ClientConnection($this, $socket);
@@ -69,16 +73,27 @@ class ClientManager{
 		}
 
 		foreach($this->client as $client){
-			$client->update();
-			while(($data = $client->readPacket()) !== null){
-				$this->server->pushThreadToMainPacket($client->getHash() . "|" . $data);
+			if($client->update()){
+				while(($data = $client->readPacket()) !== null){
+					$this->server->pushThreadToMainPacket($client->getHash() . "|" . $data);
+				}
+			}else{
+				$this->server->addInternalClientCloseRequest($client->getHash());
+				unset($this->client[$client->getHash()]);
 			}
+		}
+
+		while(strlen($data = $this->server->getExternalClientCloseRequest()) > 0){
+			$this->client[$data]->close();
+			unset($this->client[$data]);
 		}
 
 		while(strlen($data = $this->server->readMainToThreadPacket()) > 0){
 			$tmp = explode("|", $data, 2);
 			if(count($tmp) == 2){
-				$this->client[$tmp[0]]->writePacket($tmp[1]);
+				if(isset($this->client[$tmp[0]])){
+					$this->client[$tmp[0]]->writePacket($tmp[1]);
+				}
 			}
 		}
 	}

@@ -13,7 +13,7 @@ class SynapseServer extends Thread{
 	private $port;
 	private $shutdown = true;
 	/** @var \Threaded */
-	private $externalQueue, $internalQueue, $clientOpenQueue, $clientCloseQueue;
+	private $externalQueue, $internalQueue, $clientOpenQueue, $internalClientCloseQueue, $externalClientCloseQueue;
 	private $mainPath;
 	/** @var SynapseInterface */
 	private $server;
@@ -33,7 +33,8 @@ class SynapseServer extends Thread{
 		$this->externalQueue = new \Threaded;
 		$this->internalQueue = new \Threaded;
 		$this->clientOpenQueue = new \Threaded;
-		$this->clientCloseQueue = new \Threaded;
+		$this->internalClientCloseQueue = new \Threaded;
+		$this->externalClientCloseQueue = new \Threaded;
 
 		if(\Phar::running(true) !== ""){
 			$this->mainPath = \Phar::running(true);
@@ -44,11 +45,27 @@ class SynapseServer extends Thread{
 		$this->start();
 	}
 
+	public function getInternalClientCloseRequest(){
+		return $this->internalClientCloseQueue->shift();
+	}
+
+	public function addInternalClientCloseRequest(string $hash){
+		$this->internalClientCloseQueue[] = $hash;
+	}
+
+	public function getExternalClientCloseRequest(){
+		return $this->externalClientCloseQueue->shift();
+	}
+
+	public function addExternalClientCloseRequest(string $hash){
+		$this->externalClientCloseQueue[] = $hash;
+	}
+
 	public function getClientOpenRequest(){
 		return $this->clientOpenQueue->shift();
 	}
 
-	public function addClientOpenRequest($hash){
+	public function addClientOpenRequest(string $hash){
 		$this->clientOpenQueue[] = $hash;
 	}
 
@@ -76,7 +93,7 @@ class SynapseServer extends Thread{
 
 	public function shutdownHandler(){
 		if($this->shutdown !== true){
-			$this->getLogger()->emergency("RakLib crashed!");
+			$this->getLogger()->emergency("SynLib crashed!");
 		}
 	}
 

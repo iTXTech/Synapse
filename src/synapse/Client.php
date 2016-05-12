@@ -149,9 +149,15 @@ class Client{
 		unset($this->players[$player->getRawUUID()]);
 	}
 
-	public function close(){
+	public function closeAllPlayers(){
 		foreach($this->players as $player){
 			$player->close("Server Closed");
 		}
+	}
+
+	public function close(){
+		$this->server->getLogger()->info("Client $this->ip:$this->port has disconnected");
+		$this->closeAllPlayers();
+		$this->interface->removeClient($this);
 	}
 }
