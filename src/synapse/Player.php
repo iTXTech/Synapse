@@ -91,7 +91,11 @@ class Player{
 				]));
 
 				$c = $this->server->getMainClients();
-				$this->transfer($c[array_rand($c)]);
+				if(count($c) > 0){
+					$this->transfer($c[array_rand($c)]);
+				}else{
+					$this->close("Synapse Server: ".TextFormat::RED."No server online!");
+			}
 				break;
 			default:
 				$packet = new RedirectPacket();
@@ -140,6 +144,8 @@ class Player{
 		$this->client->addPlayer($this);
 		$pk = new PlayerLoginPacket();
 		$pk->uuid = $this->uuid;
+		$pk->address = $this->ip;
+		$pk->port = $this->port;
 		$pk->isFirstTime = $this->isFirstTimeLogin;
 		$pk->cachedLoginPacket = $this->cachedLoginPacket;
 		$this->client->sendDataPacket($pk);
@@ -157,10 +163,13 @@ class Player{
 		$pk = new DisconnectPacket();
 		$pk->message = $reason;
 		$this->sendDataPacket($pk, true);
+		$this->interface->close($this, $reason);
 
-		$pk = new PlayerLogoutPacket();
-		$pk->uuid = $this->uuid;
-		$pk->reason = $reason;
-		$this->client->sendDataPacket($pk);
+		if($this->client instanceof Client){
+			$pk = new PlayerLogoutPacket();
+			$pk->uuid = $this->uuid;
+			$pk->reason = $reason;
+			$this->client->sendDataPacket($pk);
+		}
 	}
 }

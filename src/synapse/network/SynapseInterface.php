@@ -69,11 +69,10 @@ class SynapseInterface{
 	}
 
 	public function putPacket(Client $client, DataPacket $pk){
-		$client = $this->clients[$client->getHash()];
 		if(!$pk->isEncoded){
 			$pk->encode();
 		}
-		$this->interface->pushMainToThreadPacket($client->getHash() . '|' . $pk->buffer);
+		$this->interface->pushMainToThreadPacket($client->getHash() . "|" . $pk->buffer);
 	}
 
 	public function process(){

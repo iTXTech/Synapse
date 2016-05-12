@@ -71,12 +71,12 @@ class ClientManager{
 		foreach($this->client as $client){
 			$client->update();
 			while(($data = $client->readPacket()) !== null){
-				$this->server->pushThreadToMainPacket($client->getHash() . '|' . $data);
+				$this->server->pushThreadToMainPacket($client->getHash() . "|" . $data);
 			}
 		}
 
 		while(strlen($data = $this->server->readMainToThreadPacket()) > 0){
-			$tmp = explode($data, "|", 2);
+			$tmp = explode("|", $data, 2);
 			if(count($tmp) == 2){
 				$this->client[$tmp[0]]->writePacket($tmp[1]);
 			}
