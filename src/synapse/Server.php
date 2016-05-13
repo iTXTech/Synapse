@@ -476,9 +476,9 @@ class Server{
 		if(($this->nextTick - $tickTime) < -1){
 			$this->nextTick = $tickTime;
 		}else{
-			$this->nextTick += 0.05;
+			$this->nextTick += 0.01;
 		}
-
+		//printf("Tick time ".microtime(true)."\n");
 		return true;
 	}
 

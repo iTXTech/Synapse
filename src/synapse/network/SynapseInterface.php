@@ -82,7 +82,7 @@ class SynapseInterface{
 			$this->clients[$data]->closeAllPlayers();
 			unset($this->clients[$data]);
 		}
-		if(strlen($data = $this->interface->readThreadToMainPacket()) > 0){
+		while(strlen($data = $this->interface->readThreadToMainPacket()) > 0){
 			$tmp = explode("|", $data, 2);
 			if(count($tmp) == 2){
 				$this->handlePacket($tmp[0], $tmp[1]);
