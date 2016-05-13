@@ -100,6 +100,7 @@ class Player{
 			default:
 				$packet = new RedirectPacket();
 				$packet->uuid = $this->uuid;
+				$packet->direct = false;
 				$packet->mcpeBuffer = $pk->buffer;
 				$this->client->sendDataPacket($packet);
 		}

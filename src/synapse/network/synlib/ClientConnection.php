@@ -25,7 +25,7 @@ use synapse\utils\Binary;
 
 class ClientConnection{
 
-	const MAGIC_BYTES = "\x35\xac";
+	const MAGIC_BYTES = "\x35\xac\x66\xbf";
 
 	private $receiveBuffer = "";
 	private $sendBuffer = "";
@@ -97,7 +97,7 @@ class ClientConnection{
 			$len = Binary::readLInt(substr($buffer, 0, 4));
 			$buffer = substr($buffer, 4);
 			if($len != strlen($buffer)){
-				throw new \Exception("Wrong packet $buffer");
+				throw new \Exception("Wrong packet 0x" . ord($buffer{0}) . ": $buffer");
 			}
 			return $buffer;
 		}

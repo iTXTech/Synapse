@@ -66,35 +66,39 @@ class ClientManager{
 	}
 
 	private function tick(){
-		while(($socket = $this->socket->getClient())){
-			$client = new ClientConnection($this, $socket);
-			$this->client[$client->getHash()] = $client;
-			$this->server->addClientOpenRequest($client->getHash());
-		}
-
-		foreach($this->client as $client){
-			if($client->update()){
-				while(($data = $client->readPacket()) !== null){
-					$this->server->pushThreadToMainPacket($client->getHash() . "|" . $data);
-				}
-			}else{
-				$this->server->addInternalClientCloseRequest($client->getHash());
-				unset($this->client[$client->getHash()]);
+		try{
+			while(($socket = $this->socket->getClient())){
+				$client = new ClientConnection($this, $socket);
+				$this->client[$client->getHash()] = $client;
+				$this->server->addClientOpenRequest($client->getHash());
 			}
-		}
 
-		while(strlen($data = $this->server->getExternalClientCloseRequest()) > 0){
-			$this->client[$data]->close();
-			unset($this->client[$data]);
-		}
-
-		while(strlen($data = $this->server->readMainToThreadPacket()) > 0){
-			$tmp = explode("|", $data, 2);
-			if(count($tmp) == 2){
-				if(isset($this->client[$tmp[0]])){
-					$this->client[$tmp[0]]->writePacket($tmp[1]);
+			foreach($this->client as $client){
+				if($client->update()){
+					while(($data = $client->readPacket()) !== null){
+						$this->server->pushThreadToMainPacket($client->getHash() . "|" . $data);
+					}
+				}else{
+					$this->server->addInternalClientCloseRequest($client->getHash());
+					unset($this->client[$client->getHash()]);
 				}
 			}
+
+			while(strlen($data = $this->server->getExternalClientCloseRequest()) > 0){
+				$this->client[$data]->close();
+				unset($this->client[$data]);
+			}
+
+			while(strlen($data = $this->server->readMainToThreadPacket()) > 0){
+				$tmp = explode("|", $data, 2);
+				if(count($tmp) == 2){
+					if(isset($this->client[$tmp[0]])){
+						$this->client[$tmp[0]]->writePacket($tmp[1]);
+					}
+				}
+			}
+		}catch(\Throwable $e){
+			$this->server->getLogger()->logException($e);
 		}
 	}
 }
