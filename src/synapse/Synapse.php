@@ -89,7 +89,7 @@ namespace synapse {
 	//Logger has a dependency on timezone, so we'll set it to UTC until we can get the actual timezone.
 	date_default_timezone_set("UTC");
 
-	$logger = new MainLogger(\synapse\DATA . "server.log", \synapse\ANSI);
+	$logger = new MainLogger(\synapse\DATA . "server.log", true);
 
 	if(!ini_get("date.timezone")){
 		if(($timezone = detect_system_timezone()) and date_default_timezone_set($timezone)){

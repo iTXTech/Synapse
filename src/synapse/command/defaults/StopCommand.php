@@ -37,23 +37,9 @@ class StopCommand extends VanillaCommand{
 	}
 
 	public function execute(CommandSender $sender, $currentAlias, array $args){
-		$msg = "";
-		if(isset($args[0])){
-			$msg = $args[0];
-		}
+		$sender->getServer()->displayTranslation(new TranslationContainer("commands.stop.start"));
 
-		$restart = false;
-		if(isset($args[1])){
-			if($args[0] == 'force'){
-				$restart = true;
-			}else{
-				$restart = false;
-			}
-		}
-
-		Command::broadcastCommandMessage($sender, new TranslationContainer("commands.stop.start"));
-
-		$sender->getServer()->shutdown($restart, $msg);
+		$sender->getServer()->shutdown();
 
 		return true;
 	}

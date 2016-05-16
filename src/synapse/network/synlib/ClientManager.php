@@ -29,16 +29,12 @@ class ClientManager{
 	protected $server;
 	/** @var SynapseSocket */
 	protected $socket;
-	/** @var int */
-	private $serverId;
 	/** @var ClientConnection[] */
 	private $client = [];
 
 	public function __construct(SynapseServer $server, SynapseSocket $socket){
 		$this->server = $server;
 		$this->socket = $socket;
-
-		$this->serverId = mt_rand(0, PHP_INT_MAX);
 		$this->run();
 	}
 
@@ -47,7 +43,7 @@ class ClientManager{
 	}
 
 	private function tickProcessor(){
-		while(!$this->shutdown){
+		while(!$this->server->isShutdown()){
 			$start = microtime(true);
 			$this->tick();
 			$time = microtime(true);
@@ -55,6 +51,10 @@ class ClientManager{
 				@time_sleep_until($time + 0.01 - ($time - $start));
 			}
 		}
+		foreach($this->client as $client){
+			$client->close();
+		}
+		$this->socket->close();
 	}
 
 	public function getClients(){

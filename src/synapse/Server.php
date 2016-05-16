@@ -21,8 +21,10 @@
  
 namespace synapse;
 
+use synapse\event\HandlerList;
 use synapse\event\server\QueryRegenerateEvent;
 use synapse\command\CommandSender;
+use synapse\event\TextContainer;
 use synapse\event\Timings;
 use synapse\command\ConsoleCommandSender;
 use synapse\command\SimpleCommandMap;
@@ -87,6 +89,7 @@ class Server{
 	private $maxUse = 0;
 
 	private $isRunning = true;
+	private $hasStopped = false;
 
 	private $dispatchSignals = false;
 	private $identifiers = [];
@@ -95,6 +98,14 @@ class Server{
 	private $synapseInterface;
 	/** @var Client[] */
 	private $clients = [];
+	private $clientData;
+	/*
+	 * "clientHash" => [
+	 * "playerCount" => 5,
+	 * "maxPlayers" => 20,
+	 * "description" => "A Synapse client"
+	 * ]
+	 */
 	private $mainClients = [];
 
 	public function __construct(\ClassLoader $autoloader, \ThreadedLogger $logger, $filePath, $dataPath, $pluginPath){
@@ -315,6 +326,14 @@ class Server{
 		gc_collect_cycles();
 	}
 
+	/**
+	 * @param TextContainer $message
+	 */
+	public function displayTranslation(TextContainer $message){
+		$result = ($this->getLanguage()->get($message->getText()) !== $message->getText() ? "%" : "") . $message->getText();
+		$this->logger->info($result);
+	}
+
 	private function tickProcessor(){
 		$this->nextTick = microtime(true);
 		while($this->isRunning){
@@ -322,7 +341,7 @@ class Server{
 			$next = $this->nextTick - 0.0001;
 			if($next > microtime(true)){
 				try{
-					time_sleep_until($next);
+					@time_sleep_until($next);
 				}catch(\Throwable $e){
 					//Sometimes $next is less than the current time. High load?
 				}
@@ -336,14 +355,6 @@ class Server{
 
 	public function getInterface(){
 		return $this->synapseInterface;
-	}
-
-	private function checkTickUpdates($currentTick, $tickTime){
-		/*foreach($this->players as $p){
-			if(!$p->loggedIn and ($tickTime - $p->creationTime) >= 10){
-				$p->close("", "Login timeout");//TODO
-			}
-		}*/
 	}
 
 	private function titleTick(){
@@ -408,6 +419,84 @@ class Server{
 		return $this->version;
 	}
 
+	public function shutdown(){
+		if($this->isRunning){
+			$this->isRunning = false;
+		}
+	}
+
+
+	public function forceShutdown(){
+		if($this->hasStopped){
+			return;
+		}
+
+		try{
+
+			$this->hasStopped = true;
+
+			$this->shutdown();
+			if($this->rcon instanceof RCON){
+				$this->rcon->stop();
+			}
+
+			$this->getLogger()->debug("Disabling all plugins");
+			$this->pluginManager->disablePlugins();
+
+			foreach($this->clients as $client){
+				foreach($client->getPlayers() as $player){
+					$player->close($this->getConfig("shutdown-message", "Server closed"));
+				}
+			}
+
+			$this->getLogger()->debug("Removing event handlers");
+			HandlerList::unregisterAll();
+
+			$this->getLogger()->debug("Stopping all tasks");
+			$this->scheduler->cancelAllTasks();
+			$this->scheduler->mainThreadHeartbeat(PHP_INT_MAX);
+
+			$this->getLogger()->debug("Saving properties");
+			$this->properties->save();
+
+			$this->getLogger()->debug("Closing console");
+			$this->console->shutdown();
+			$this->console->notify();
+
+			$this->getLogger()->debug("Stopping network interfaces");
+			foreach($this->network->getInterfaces() as $interface){
+				$interface->shutdown();
+				$this->network->unregisterInterface($interface);
+			}
+
+			//$this->memoryManager->doObjectCleanup();
+
+			gc_collect_cycles();
+		}catch(\Throwable $e){
+			$this->logger->logException($e);
+			$this->logger->emergency("Crashed while crashing, killing process");
+			@kill(getmypid());
+		}
+	}
+
+	public function getClientData(){
+		return $this->clientData;
+	}
+
+	public function updateClientData(){
+		if(count($this->clients) > 0){
+			$this->clientData = [];
+			foreach($this->clients as $client){
+				$this->clientData[$client->getHash()] = [
+					"playerCount" => count($client->getPlayers()),
+					"maxPlayers" => $client->getMaxPlayers(),
+					"description" => $client->getDescription(),
+				];
+			}
+			$this->clientData = json_encode($this->clientData);
+		}
+	}
+
 	private function tick(){
 		$tickTime = microtime(true);
 		if(($tickTime - $this->nextTick) < -0.025){ //Allow half a tick of diff
@@ -434,7 +523,9 @@ class Server{
 		$this->scheduler->mainThreadHeartbeat($this->tickCounter);
 		Timings::$schedulerTimer->stopTiming();
 
-		$this->checkTickUpdates($this->tickCounter, $tickTime);
+		if(($this->tickCounter % 200) == 0){//re-generate client data
+			$this->updateClientData();
+		}
 
 		if(($this->tickCounter & 0b1111) === 0){
 			$this->titleTick();
@@ -442,7 +533,7 @@ class Server{
 			$this->maxUse = 0;
 
 			if(($this->tickCounter & 0b111111111) === 0){
-					$this->updateQuery();
+				$this->updateQuery();
 			}
 
 			$this->getNetwork()->updateName();

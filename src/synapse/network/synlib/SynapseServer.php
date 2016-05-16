@@ -5,6 +5,8 @@ use synapse\network\SynapseInterface;
 use synapse\Thread;
 
 class SynapseServer extends Thread{
+	const VERSION = "0.1.0";
+
 	/** @var \ThreadedLogger */
 	private $logger;
 	/** @var string */
@@ -89,6 +91,11 @@ class SynapseServer extends Thread{
 		}catch(\Throwable $e){
 			$this->logger->logException($e);
 		}
+	}
+
+	public function quit(){
+		$this->shutdown();
+		parent::quit();
 	}
 
 	public function shutdownHandler(){

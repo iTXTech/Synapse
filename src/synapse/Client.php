@@ -21,10 +21,10 @@
 
 namespace synapse;
 
-use synapse\network\protocol\mcpe\DisconnectPacket;
 use synapse\network\protocol\mcpe\GenericPacket;
 use synapse\network\protocol\spp\ConnectPacket;
 use synapse\network\protocol\spp\DataPacket;
+use synapse\network\protocol\spp\DisconnectPacket;
 use synapse\network\protocol\spp\Info;
 use synapse\network\protocol\spp\InformationPacket;
 use synapse\network\protocol\spp\RedirectPacket;
@@ -39,22 +39,18 @@ class Client{
 	private $port;
 	/** @var Player[] */
 	private $players = [];
-	private $isVerified = false;
+	private $verified = false;
 	private $isMainServer = false;
 	private $maxPlayers;
 	private $lastUpdate;
+	private $description;
 
 	public function __construct(SynapseInterface $interface, $ip, int $port){
 		$this->server = $interface->getServer();
 		$this->interface = $interface;
 		$this->ip = $ip;
 		$this->port = $port;
-		$this->lastUpdate = time();
-	}
-
-	public function setIpAndPort(string $ip, int $port){
-		$this->ip = $ip;
-		$this->port = $port;
+		$this->lastUpdate = microtime(true);
 	}
 
 	public function isMainServer() : bool{
@@ -69,6 +65,14 @@ class Client{
 		return $this->ip . ':' . $this->port;
 	}
 
+	public function getDescription() : string {
+		return $this->description;
+	}
+
+	public function setDescription(string $description){
+		$this->description = $description;
+	}
+
 	public function handleDataPacket(DataPacket $packet){
 		switch($packet::NETWORK_ID){
 			case Info::HEARTBEAT_PACKET:
@@ -76,31 +80,43 @@ class Client{
 					$this->server->getLogger()->error("Client {$this->getIp()}:{$this->getPort()} is not verified");
 					return;
 				}
-				$this->lastUpdate = time();
+				$this->lastUpdate = microtime(true);
 				$this->server->getLogger()->notice("Received Heartbeat Packet from {$this->getIp()}:{$this->getPort()}");
+
+				$pk = new InformationPacket();
+				$pk->type = InformationPacket::TYPE_CLIENT_DATA;
+				$pk->message = $this->server->getClientData();
+				$this->sendDataPacket($pk);
+
 				break;
 			case Info::CONNECT_PACKET:
 				/** @var ConnectPacket $packet */
 				if($packet->protocol != Info::CURRENT_PROTOCOL){
-					$this->interface->removeClient($this);
+					$this->close("Wrong protocol! Require SPP version: " . Info::CURRENT_PROTOCOL, true, DisconnectPacket::TYPE_WRONG_PROTOCOL);
+					return;
 				}
 				$pk = new InformationPacket();
+				$pk->type = InformationPacket::TYPE_LOGIN;
 				if($this->server->comparePassword(base64_decode($packet->encodedPassword))){
 					$this->setVerified();
 					$pk->message = InformationPacket::INFO_LOGIN_SUCCESS;
 					$this->isMainServer = $packet->isMainServer;
+					$this->description = $packet->description;
 					$this->maxPlayers = $packet->maxPlayers;
 					$this->server->addClient($this);
 					$this->server->getLogger()->notice("Client {$this->getIp()}:{$this->getPort()} has connected successfully");
+					$this->server->updateClientData();
+					$this->sendDataPacket($pk);
 				}else{
 					$pk->message = InformationPacket::INFO_LOGIN_FAILED;
 					$this->server->getLogger()->emergency("Client {$this->getIp()}:{$this->getPort()} tried to connect with wrong password!");
+					$this->sendDataPacket($pk);
+					$this->close("Auth failed!");
 				}
-				$this->sendDataPacket($pk);
 				break;
 			case Info::DISCONNECT_PACKET:
 				/** @var DisconnectPacket $packet */
-				$this->server->removeClient($this);
+				$this->close($packet->message, false);
 				break;
 			case Info::REDIRECT_PACKET:
 				/** @var RedirectPacket $packet */
@@ -130,11 +146,11 @@ class Client{
 	}
 
 	public function isVerified() : bool{
-		return $this->isVerified;
+		return $this->verified;
 	}
 
 	public function setVerified(){
-		$this->isVerified = true;
+		$this->verified = true;
 	}
 
 	public function getPlayers(){
@@ -155,8 +171,14 @@ class Client{
 		}
 	}
 
-	public function close(){
-		$this->server->getLogger()->info("Client $this->ip:$this->port has disconnected");
+	public function close(string $reason = "Generic reason", bool $needPk = true, int $type = DisconnectPacket::TYPE_GENERIC){
+		$this->server->getLogger()->info("Client $this->ip:$this->port has disconnected due to $reason");
+		if($needPk){
+			$pk = new DisconnectPacket();
+			$pk->type = $type;
+			$pk->message = $reason;
+			$this->sendDataPacket($pk);
+		}
 		$this->closeAllPlayers();
 		$this->interface->removeClient($this);
 	}
