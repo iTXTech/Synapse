@@ -368,7 +368,7 @@ class Server{
 		$usage = round(($u[0] / 1024) / 1024, 2) . "/" . round(($d[0] / 1024) / 1024, 2) . "/" . round(($u[1] / 1024) / 1024, 2) . "/" . round(($u[2] / 1024) / 1024, 2) . " MB @ " . Utils::getThreadCount() . " threads";
 
 		echo "\x1b]0;" . $this->getName() . " " .
-			$this->getVersionString()->getMajor() . "-#" . $this->getVersion()->getBuild() .
+			$this->getVersionString()->getMajor() . "-#" . $this->getVersionString()->getBuild() .
 			" | Online " . count($this->players) . "/" . $this->getMaxPlayers() .
 			" | Memory " . $usage .
 			" | U " . round($this->network->getUpload() / 1024, 2) .
@@ -488,6 +488,8 @@ class Server{
 			$this->clientData = [];
 			foreach($this->clients as $client){
 				$this->clientData[$client->getHash()] = [
+					"ip" => $client->getIp(),
+					"port" => $client->getPort(),
 					"playerCount" => count($client->getPlayers()),
 					"maxPlayers" => $client->getMaxPlayers(),
 					"description" => $client->getDescription(),
