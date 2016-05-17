@@ -31,6 +31,7 @@ use synapse\network\protocol\spp\InformationPacket;
 use synapse\network\protocol\spp\PlayerLoginPacket;
 use synapse\network\protocol\spp\PlayerLogoutPacket;
 use synapse\network\protocol\spp\RedirectPacket;
+use synapse\network\protocol\spp\TransferPacket;
 use synapse\network\synlib\SynapseServer;
 use synapse\Server;
 
@@ -117,6 +118,8 @@ class SynapseInterface{
 		if(($pk = $this->getPacket($buffer)) != null){
 			$pk->decode();
 			$client->handleDataPacket($pk);
+		}else{
+			$this->server->getLogger()->critical("Error packet: 0x" . dechex(ord($buffer{0})) . " $buffer");
 		}
 	}
 
@@ -139,5 +142,6 @@ class SynapseInterface{
 		$this->registerPacket(Info::PLAYER_LOGIN_PACKET, PlayerLoginPacket::class);
 		$this->registerPacket(Info::PLAYER_LOGOUT_PACKET, PlayerLogoutPacket::class);
 		$this->registerPacket(Info::INFORMATION_PACKET, InformationPacket::class);
+		$this->registerPacket(Info::TRANSFER_PACKET, TransferPacket::class);
 	}
 }

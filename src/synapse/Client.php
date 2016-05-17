@@ -28,6 +28,7 @@ use synapse\network\protocol\spp\DisconnectPacket;
 use synapse\network\protocol\spp\Info;
 use synapse\network\protocol\spp\InformationPacket;
 use synapse\network\protocol\spp\RedirectPacket;
+use synapse\network\protocol\spp\TransferPacket;
 use synapse\network\SynapseInterface;
 
 class Client{
@@ -127,6 +128,9 @@ class Client{
 				}else{
 					$this->server->getLogger()->error("Error RedirectPacket");
 				}
+				break;
+			case Info::TRANSFER_PACKET:
+				/** @var TransferPacket $pk */
 				break;
 			default:
 				$this->server->getLogger()->error("Client {$this->getIp()}:{$this->getPort()} send an unknown packet " . $packet::NETWORK_ID);
