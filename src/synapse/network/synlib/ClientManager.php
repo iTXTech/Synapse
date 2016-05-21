@@ -84,11 +84,6 @@ class ClientManager{
 				}
 			}
 
-			while(strlen($data = $this->server->getExternalClientCloseRequest()) > 0){
-				$this->client[$data]->close();
-				unset($this->client[$data]);
-			}
-
 			while(strlen($data = $this->server->readMainToThreadPacket()) > 0){
 				$tmp = explode("|", $data, 2);
 				if(count($tmp) == 2){
@@ -96,6 +91,11 @@ class ClientManager{
 						$this->client[$tmp[0]]->writePacket($tmp[1]);
 					}
 				}
+			}
+			
+			while(strlen($data = $this->server->getExternalClientCloseRequest()) > 0){
+				$this->client[$data]->close();
+				unset($this->client[$data]);
 			}
 		}catch(\Throwable $e){
 			$this->server->getLogger()->logException($e);

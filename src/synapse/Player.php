@@ -18,7 +18,7 @@
  * @link https://itxtech.org
  *
  */
- 
+
 namespace synapse;
 
 use synapse\network\protocol\mcpe\DataPacket;
@@ -51,6 +51,7 @@ class Player{
 	private $server;
 	private $rawUUID;
 	private $isFirstTimeLogin = false;
+	private $lastUpdate;
 
 	public function __construct(SourceInterface $interface, $clientId, $ip, int $port){
 		$this->interface = $interface;
@@ -58,6 +59,7 @@ class Player{
 		$this->ip = $ip;
 		$this->port = $port;
 		$this->server = Server::getInstance();
+		$this->lastUpdate = microtime(true);
 	}
 
 	public function getClientId(){
@@ -71,9 +73,9 @@ class Player{
 	public function getServer() : Server{
 		return $this->server;
 	}
-	
+
 	public function handleDataPacket(DataPacket $pk){
-		var_dump($pk);
+		$this->lastUpdate = microtime(true);
 		switch($pk::NETWORK_ID){
 			case Info::LOGIN_PACKET:
 				$this->cachedLoginPacket = $pk->buffer;
@@ -94,8 +96,8 @@ class Player{
 				if(count($c) > 0){
 					$this->transfer($c[array_rand($c)]);
 				}else{
-					$this->close("Synapse Server: ".TextFormat::RED."No server online!");
-			}
+					$this->close("Synapse Server: " . TextFormat::RED . "No server online!");
+				}
 				break;
 			default:
 				$packet = new RedirectPacket();
@@ -121,6 +123,12 @@ class Player{
 	public function getName() : string{
 		return $this->name;
 	}
+	
+	public function onUpdate($currentTick){
+		if((microtime(true) - $this->lastUpdate) >= 5 * 60){//5 minutes timeout
+			$this->close("timeout");
+		}
+	}
 
 	public function removeAllPlayer(){
 		$pk = new PlayerListPacket();
@@ -130,7 +138,7 @@ class Player{
 		}
 		$this->sendDataPacket($pk);
 	}
-	
+
 	public function transfer(Client $client){
 		if($this->client instanceof Client){
 			$pk = new PlayerLogoutPacket();

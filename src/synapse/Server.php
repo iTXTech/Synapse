@@ -525,6 +525,10 @@ class Server{
 		$this->scheduler->mainThreadHeartbeat($this->tickCounter);
 		Timings::$schedulerTimer->stopTiming();
 
+		foreach($this->players as $p){
+			$p->onUpdate($this->tickCounter);
+		}
+
 		if(($this->tickCounter % 200) == 0){//re-generate client data
 			$this->updateClientData();
 		}

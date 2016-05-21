@@ -131,6 +131,10 @@ class Client{
 				break;
 			case Info::TRANSFER_PACKET:
 				/** @var TransferPacket $pk */
+				$clients = $this->server->getClients();
+				if(isset($this->players[$uuid = $pk->uuid->toBinary()]) and isset($clients[$pk->clientHash])){
+					$this->players[$uuid]->transfer($clients[$pk->clientHash]);
+				}
 				break;
 			default:
 				$this->server->getLogger()->error("Client {$this->getIp()}:{$this->getPort()} send an unknown packet " . $packet::NETWORK_ID);
