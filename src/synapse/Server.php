@@ -225,9 +225,9 @@ class Server{
 	}
 
 	public function addClient(Client $client){
-		$this->clients[spl_object_hash($client)] = $client;
+		$this->clients[$client->getHash()] = $client;
 		if($client->isMainServer()){
-			$this->mainClients[spl_object_hash($client)] = $client;
+			$this->mainClients[$client->getHash()] = $client;
 		}
 	}
 
@@ -236,10 +236,10 @@ class Server{
 	}
 
 	public function removeClient(Client $client){
-		$client->close();
-		$this->synapseInterface->removeClient($client);
-		unset($this->mainClients[spl_object_hash($client)]);
-		unset($this->clients[spl_object_hash($client)]);
+		if(isset($this->clients[$client->getHash()])){
+			unset($this->mainClients[$client->getHash()]);
+			unset($this->clients[$client->getHash()]);
+		}
 	}
 
 	public function getClients(){

@@ -81,6 +81,7 @@ class SynapseInterface{
 		}
 		while(strlen($data = $this->interface->getInternalClientCloseRequest()) > 0){
 			$this->clients[$data]->closeAllPlayers();
+			$this->server->removeClient($this->clients[$data]);
 			unset($this->clients[$data]);
 		}
 		while(strlen($data = $this->interface->readThreadToMainPacket()) > 0){

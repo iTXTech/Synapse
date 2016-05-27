@@ -106,6 +106,9 @@ class Client{
 					$this->maxPlayers = $packet->maxPlayers;
 					$this->server->addClient($this);
 					$this->server->getLogger()->notice("Client {$this->getIp()}:{$this->getPort()} has connected successfully");
+					$this->server->getLogger()->notice("mainServer: $this->isMainServer");
+					$this->server->getLogger()->notice("description: $this->description");
+					$this->server->getLogger()->notice("maxPlayers: $this->maxPlayers");
 					$this->server->updateClientData();
 					$this->sendDataPacket($pk);
 				}else{
@@ -189,5 +192,6 @@ class Client{
 		}
 		$this->closeAllPlayers();
 		$this->interface->removeClient($this);
+		$this->server->removeClient($this);
 	}
 }

@@ -98,18 +98,6 @@ class StatusCommand extends VanillaCommand{
 		$sender->sendMessage(TextFormat::GOLD . "%synapse.command.status.Heapmemory " . TextFormat::RED . number_format(round(($rUsage[0] / 1024) / 1024, 2)) . " MB.");
 		$sender->sendMessage(TextFormat::GOLD . "%synapse.command.status.Maxmemorysystem " . TextFormat::RED . number_format(round(($mUsage[2] / 1024) / 1024, 2)) . " MB.");
 
-		if($server->getProperty("memory.global-limit") > 0){
-			$sender->sendMessage(TextFormat::GOLD . "%synapse.command.status.Maxmemorymanager " . TextFormat::RED . number_format(round($server->getProperty("memory.global-limit"), 2)) . " MB.");
-		}
-		foreach($server->getLevels() as $level){
-			$sender->sendMessage(TextFormat::GOLD . "%synapse.command.status.World \"" . $level->getFolderName() . "\"" . ($level->getFolderName() !== $level->getName() ? " (" . $level->getName() . ")" : "") . ": " .
-				TextFormat::RED . number_format(count($level->getChunks())) . TextFormat::GREEN . " %synapse.command.status.chunks " .
-				TextFormat::RED . number_format(count($level->getEntities())) . TextFormat::GREEN . " %synapse.command.status.entities " .
-				TextFormat::RED . number_format(count($level->getTiles())) . TextFormat::GREEN . " %synapse.command.status.tiles " .
-				"%synapse.command.status.Time " . (($level->getTickRate() > 1 or $level->getTickRateTime() > 40) ? TextFormat::RED : TextFormat::YELLOW) . round($level->getTickRateTime(), 2) . "%synapse.command.status.ms" . ($level->getTickRate() > 1 ? " (tick rate " . $level->getTickRate() . ")" : "")
-			);
-		}
-
 		return true;
 	}
 }
