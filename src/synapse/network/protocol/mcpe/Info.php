@@ -30,14 +30,15 @@ interface Info{
 	/**
 	 * Actual Minecraft: PE protocol version
 	 */
-	const CURRENT_PROTOCOL = 60;
-	const ACCEPTED_PROTOCOLS = [45, 46, 60];
+	const CURRENT_PROTOCOL = 81;
+	const ACCEPTED_PROTOCOLS = [81];
 
-	const LOGIN_PACKET = 0x8f;
-	const DISCONNECT_PACKET = 0x91;
-	const BATCH_PACKET = 0x92;
-	const CHANGE_DIMENSION_PACKET = 0xc1;
-	const PLAYER_LIST_PACKET = 0xc3;
+	const LOGIN_PACKET = 0x01;
+	const DISCONNECT_PACKET = 0x05;
+	const BATCH_PACKET = 0x06;
+	const TEXT_PACKET = 0x07;
+	const CHANGE_DIMENSION_PACKET = 0x36;
+	const PLAYER_LIST_PACKET = 0x38;
 }
 
 

@@ -172,7 +172,7 @@ class Network {
 				$buf = substr($str, $offset, $pkLen);
 				$offset += $pkLen;
 
-				if (($pk = $this->getPacket(ord($buf{1}))) !== null) {
+				if (($pk = $this->getPacket(ord($buf{0}))) !== null) {
 					if ($pk::NETWORK_ID === ProtocolInfo::BATCH_PACKET) {
 						throw new \InvalidStateException("Invalid BatchPacket inside BatchPacket");
 					}
@@ -241,5 +241,6 @@ class Network {
 
 		$this->registerPacket(ProtocolInfo::LOGIN_PACKET, LoginPacket::class);
 		$this->registerPacket(ProtocolInfo::BATCH_PACKET, BatchPacket::class);
+		$this->registerPacket(ProtocolInfo::DISCONNECT_PACKET, Dis)
 	}
 }
