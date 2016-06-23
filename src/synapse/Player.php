@@ -80,10 +80,10 @@ class Player{
 			case Info::LOGIN_PACKET:
 				$this->cachedLoginPacket = $pk->buffer;
 				$this->name = $pk->username;
-				$this->uuid = $pk->clientUUID;
-				$this->rawUUID = $this->uuid->toBinary();
+				$this->rawUUID = $pk->clientUUID;
+				$this->uuid = UUID::fromBinary($this->rawUUID);
 				$this->randomClientId = $pk->clientId;
-				$this->protocol = $pk->protocol1;
+				$this->protocol = $pk->protocol;
 
 				$this->server->getLogger()->info($this->getServer()->getLanguage()->translateString("synapse.player.logIn", [
 					TextFormat::AQUA . $this->name . TextFormat::WHITE,

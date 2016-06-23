@@ -41,8 +41,8 @@ class LoginPacket extends DataPacket{
 	public function decode(){
 		$this->protocol = $this->getInt();
 
-		$str = zlib_decode($this->get($this->getInt()),1024 *1024 * 64);
-		$this->setBuffer($str,0);
+		$str = zlib_decode($this->get($this->getInt()), 1024 * 1024 * 64);
+		$this->setBuffer($str, 0);
 
 		$chainData = json_decode($this->get($this->getLInt()));
 		foreach($chainData->{"chain"} as $chain){

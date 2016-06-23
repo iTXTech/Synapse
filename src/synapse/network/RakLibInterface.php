@@ -197,7 +197,7 @@ class RakLibInterface implements ServerInstance, AdvancedSourceInterface{
 				if(!isset($packet->__encapsulatedPacket)){
 					$packet->__encapsulatedPacket = new CachedEncapsulatedPacket;
 					$packet->__encapsulatedPacket->identifierACK = null;
-					$packet->__encapsulatedPacket->buffer = chr(0x8e) . $packet->buffer;
+					$packet->__encapsulatedPacket->buffer = chr(0xfe) . $packet->buffer;
 					$packet->__encapsulatedPacket->reliability = 3;
 					$packet->__encapsulatedPacket->orderChannel = 0;
 				}
@@ -206,7 +206,7 @@ class RakLibInterface implements ServerInstance, AdvancedSourceInterface{
 
 			if($pk === null){
 				$pk = new EncapsulatedPacket();
-				$pk->buffer = chr(0x8e) . $packet->buffer;
+				$pk->buffer = chr(0xfe) . $packet->buffer;
 				$packet->reliability = 3;
 				$packet->orderChannel = 0;
 

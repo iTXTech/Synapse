@@ -29,6 +29,7 @@ use synapse\network\protocol\mcpe\DataPacket;
 use synapse\network\protocol\mcpe\GenericPacket;
 use synapse\network\protocol\mcpe\Info as ProtocolInfo;
 use synapse\network\protocol\mcpe\LoginPacket;
+use synapse\network\protocol\mcpe\DisconnectPacket;
 use synapse\Player;
 use synapse\Server;
 use synapse\utils\Binary;
@@ -177,7 +178,7 @@ class Network {
 						throw new \InvalidStateException("Invalid BatchPacket inside BatchPacket");
 					}
 
-					$pk->setBuffer($buf, 2);
+					$pk->setBuffer($buf, 1);
 
 					$pk->decode();
 					$p->handleDataPacket($pk);
@@ -241,6 +242,6 @@ class Network {
 
 		$this->registerPacket(ProtocolInfo::LOGIN_PACKET, LoginPacket::class);
 		$this->registerPacket(ProtocolInfo::BATCH_PACKET, BatchPacket::class);
-		$this->registerPacket(ProtocolInfo::DISCONNECT_PACKET, Dis)
+		$this->registerPacket(ProtocolInfo::DISCONNECT_PACKET, DisconnectPacket::class);
 	}
 }
