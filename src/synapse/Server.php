@@ -276,6 +276,12 @@ class Server{
 		$this->identifiers[spl_object_hash($player)] = $identifier;
 	}
 
+	public function removePlayer(Player $player){
+		$id = $this->identifiers[spl_object_hash($player)];
+		unset($this->players[$id]);
+		unset($this->identifiers[$id]);
+	}
+
 	public function getQueryInformation(){
 		return $this->queryRegenerateTask;
 	}

@@ -195,5 +195,7 @@ class Player{
 			$this->client->sendDataPacket($pk);
 			$this->client->removePlayer($this);
 		}
+		
+		$this->getServer()->removePlayer($this);
 	}
 }
