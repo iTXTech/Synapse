@@ -139,8 +139,8 @@ class Player{
 		$this->sendDataPacket($pk);
 	}
 
-	public function transfer(Client $client){
-		if($this->client instanceof Client){
+	public function transfer(Client $client, bool $needDisconnect = false){
+		if($this->client instanceof Client and $needDisconnect){
 			$pk = new PlayerLogoutPacket();
 			$pk->reason = "Player has been transferred";
 			$this->client->sendDataPacket($pk);
