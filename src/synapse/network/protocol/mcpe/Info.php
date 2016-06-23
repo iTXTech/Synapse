@@ -34,6 +34,7 @@ interface Info{
 	const ACCEPTED_PROTOCOLS = [81];
 
 	const LOGIN_PACKET = 0x01;
+	const PLAY_STATUS_PACKET = 0x02;
 	const DISCONNECT_PACKET = 0x05;
 	const BATCH_PACKET = 0x06;
 	const TEXT_PACKET = 0x07;

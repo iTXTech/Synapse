@@ -41,6 +41,8 @@ class LoginPacket extends DataPacket{
 	public function decode(){
 		$this->protocol = $this->getInt();
 
+		$originBuffer = $this->buffer;
+
 		$str = zlib_decode($this->get($this->getInt()), 1024 * 1024 * 64);
 		$this->setBuffer($str, 0);
 
@@ -72,6 +74,8 @@ class LoginPacket extends DataPacket{
 		if(isset($skinToken["SkinId"])){
 			$this->skinId = $skinToken["SkinId"];
 		}
+
+		$this->buffer = $originBuffer;
 	}
 
 	public function encode(){

@@ -135,8 +135,8 @@ class Client{
 			case Info::TRANSFER_PACKET:
 				/** @var TransferPacket $pk */
 				$clients = $this->server->getClients();
-				if(isset($this->players[$uuid = $pk->uuid->toBinary()]) and isset($clients[$pk->clientHash])){
-					$this->players[$uuid]->transfer($clients[$pk->clientHash], true);
+				if(isset($this->players[$uuid = $packet->uuid->toBinary()]) and isset($clients[$packet->clientHash])){
+					$this->players[$uuid]->transfer($clients[$packet->clientHash], true);
 				}
 				break;
 			default:

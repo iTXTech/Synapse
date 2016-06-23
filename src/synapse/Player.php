@@ -21,10 +21,12 @@
 
 namespace synapse;
 
+use synapse\network\protocol\mcpe\BatchPacket;
 use synapse\network\protocol\mcpe\DataPacket;
 use synapse\network\protocol\mcpe\DisconnectPacket;
 use synapse\network\protocol\mcpe\Info;
 use synapse\network\protocol\mcpe\PlayerListPacket;
+use synapse\network\protocol\mcpe\PlayStatusPacket;
 use synapse\network\protocol\spp\PlayerLoginPacket;
 use synapse\network\protocol\spp\PlayerLogoutPacket;
 use synapse\network\protocol\spp\RedirectPacket;
@@ -50,7 +52,7 @@ class Player{
 	/** @var Server */
 	private $server;
 	private $rawUUID;
-	private $isFirstTimeLogin = false;
+	private $isFirstTimeLogin = true;
 	private $lastUpdate;
 
 	public function __construct(SourceInterface $interface, $clientId, $ip, int $port){
@@ -58,6 +60,7 @@ class Player{
 		$this->clientId = $clientId;
 		$this->ip = $ip;
 		$this->port = $port;
+		$this->name = "Unknown";
 		$this->server = Server::getInstance();
 		$this->lastUpdate = microtime(true);
 	}
@@ -76,12 +79,22 @@ class Player{
 
 	public function handleDataPacket(DataPacket $pk){
 		$this->lastUpdate = microtime(true);
+		$packet = new PlayStatusPacket();
+		$packet->status = PlayStatusPacket::LOGIN_SUCCESS;
+		$this->sendDataPacket($packet);
 		switch($pk::NETWORK_ID){
+			case Info::BATCH_PACKET:
+				$packet = new PlayStatusPacket();
+				$packet->status = PlayStatusPacket::LOGIN_SUCCESS;
+				$this->sendDataPacket($packet);
+				/** @var BatchPacket $pk */
+				$this->getServer()->getNetwork()->processBatch($pk, $this);
+				break;
 			case Info::LOGIN_PACKET:
 				$this->cachedLoginPacket = $pk->buffer;
 				$this->name = $pk->username;
-				$this->rawUUID = $pk->clientUUID;
-				$this->uuid = UUID::fromBinary($this->rawUUID);
+				$this->uuid = UUID::fromString($pk->clientUUID);
+				$this->rawUUID = $this->uuid->toBinary();
 				$this->randomClientId = $pk->clientId;
 				$this->protocol = $pk->protocol;
 
@@ -142,6 +155,7 @@ class Player{
 	public function transfer(Client $client, bool $needDisconnect = false){
 		if($this->client instanceof Client and $needDisconnect){
 			$pk = new PlayerLogoutPacket();
+			$pk->uuid = $this->uuid;
 			$pk->reason = "Player has been transferred";
 			$this->client->sendDataPacket($pk);
 
@@ -179,6 +193,7 @@ class Player{
 			$pk->uuid = $this->uuid;
 			$pk->reason = $reason;
 			$this->client->sendDataPacket($pk);
+			$this->client->removePlayer($this);
 		}
 	}
 }
