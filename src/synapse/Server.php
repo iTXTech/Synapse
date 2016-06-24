@@ -535,6 +535,10 @@ class Server{
 			$p->onUpdate($this->tickCounter);
 		}
 
+		foreach($this->clients as $client){
+			$client->onUpdate($this->tickCounter);
+		}
+
 		if(($this->tickCounter % 200) == 0){//re-generate client data
 			$this->updateClientData();
 		}

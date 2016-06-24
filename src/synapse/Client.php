@@ -74,6 +74,12 @@ class Client{
 		$this->description = $description;
 	}
 
+	public function onUpdate($currentTick){
+		if((microtime(true) - $this->lastUpdate) >= 30){//30 seconds timeout
+			$this->close("timeout");
+		}
+	}
+
 	public function handleDataPacket(DataPacket $packet){
 		switch($packet::NETWORK_ID){
 			case Info::HEARTBEAT_PACKET:

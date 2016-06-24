@@ -51,6 +51,7 @@ class ClientManager{
 				@time_sleep_until($time + 0.01 - ($time - $start));
 			}
 		}
+		$this->tick();
 		foreach($this->client as $client){
 			$client->close();
 		}
