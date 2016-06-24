@@ -1,11 +1,29 @@
 <?php
+
+/*
+ *
+ *  _____   _____   __   _   _   _____  __    __  _____
+ * /  ___| | ____| |  \ | | | | /  ___/ \ \  / / /  ___/
+ * | |     | |__   |   \| | | | | |___   \ \/ /  | |___
+ * | |  _  |  __|  | |\   | | | \___  \   \  /   \___  \
+ * | |_| | | |___  | | \  | | |  ___| |   / /     ___| |
+ * \_____/ |_____| |_|  \_| |_| /_____/  /_/     /_____/
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * @author iTX Technologies
+ * @link https://itxtech.org
+ *
+ */
+
 namespace synapse\command\defaults;
 
 use synapse\command\CommandSender;
-use synapse\plugin\Plugin;
 use synapse\Server;
-use synapse\utils\TextFormat;
-use synapse\network\protocol\Info;
+use synapse\network\protocol\mcpe\Info;
 
 class MakeServerCommand extends VanillaCommand{
 
@@ -15,16 +33,12 @@ class MakeServerCommand extends VanillaCommand{
 			"Creates a PocketMine Phar",
 			"/makeserver (nogz)"
 		);
-		$this->setPermission("synapse.command.makeserver");
 	}
 
 	public function execute(CommandSender $sender, $commandLabel, array $args){
-		if(!$this->testPermission($sender)){
-			return false;
-		}
 
 		$server = $sender->getServer();
-		$pharPath = Server::getInstance()->getPluginPath() . DIRECTORY_SEPARATOR . "Genisys" . DIRECTORY_SEPARATOR . $server->getName() . "_" . $server->getPocketMineVersion() . ".phar";
+		$pharPath = Server::getInstance()->getPluginPath() . DIRECTORY_SEPARATOR . "Synapse" . DIRECTORY_SEPARATOR . $server->getName() . "_" . $server->getSynapseVersion() . ".phar";
 		if(file_exists($pharPath)){
 			$sender->sendMessage("Phar file already exists, overwriting...");
 			@unlink($pharPath);
@@ -32,15 +46,14 @@ class MakeServerCommand extends VanillaCommand{
 		$phar = new \Phar($pharPath);
 		$phar->setMetadata([
 			"name" => $server->getName(),
-			"version" => $server->getPocketMineVersion(),
+			"version" => $server->getSynapseVersion(),
 			"api" => $server->getApiVersion(),
-			"geniapi" => $server->getGeniApiVersion(),
 			"minecraft" => $server->getVersion(),
 			"protocol" => Info::CURRENT_PROTOCOL,
-			"creator" => "Genisys MakeServerCommand",
+			"creator" => "Synapse MakeServerCommand",
 			"creationDate" => time()
 		]);
-		$phar->setStub('<?php define("synapse\\\\PATH", "phar://". __FILE__ ."/"); require_once("phar://". __FILE__ ."/src/pocketmine/synapse.php");  __HALT_COMPILER();');
+		$phar->setStub('<?php define("synapse\\\\PATH", "phar://". __FILE__ ."/"); require_once("phar://". __FILE__ ."/src/synapse/Synapse.php");  __HALT_COMPILER();');
 		$phar->setSignatureAlgorithm(\Phar::SHA1);
 		$phar->startBuffering();
 
@@ -52,7 +65,7 @@ class MakeServerCommand extends VanillaCommand{
 				continue;
 			}
 			$phar->addFile($file, $path);
-			$sender->sendMessage("[Genisys] Adding $path");
+			$sender->sendMessage("[Synapse] Adding $path");
 		}
 		foreach($phar as $file => $finfo){
 			/** @var \PharFileInfo $finfo */
@@ -65,7 +78,7 @@ class MakeServerCommand extends VanillaCommand{
 		}
 		$phar->stopBuffering();
 
-		$sender->sendMessage($server->getName() . " " . $server->getPocketMineVersion() . " Phar file has been created on " . $pharPath);
+		$sender->sendMessage($server->getName() . " " . $server->getSynapseVersion() . " Phar file has been created on " . $pharPath);
 
 		return true;
 	}

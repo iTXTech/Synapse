@@ -101,10 +101,16 @@ class SimpleCommandMap implements CommandMap{
 	}
 
 	private function setDefaultCommands(){
-		$this->register("synapse", new VersionCommand("version"));
-		$this->register("synapse", new StopCommand("stop"));
+		$this->register("synapse", new ExtractPluginCommand("ep"));
+		$this->register("synapse", new GarbageCollectorCommand("gc"));
+		$this->register("synapse", new HelpCommand("help"));
+		$this->register("synapse", new KickCommand("kick"));
+		$this->register("synapse", new MakePluginCommand("mp"));
+		$this->register("synapse", new MakeServerCommand("ms"));
+		$this->register("synapse", new PluginsCommand("plugins"));
 		$this->register("synapse", new StatusCommand("status"));
-		//$this->register("synapse", new GarbageCollectorCommand("gc"));
+		$this->register("synapse", new StopCommand("stop"));
+		$this->register("synapse", new VersionCommand("version"));
 	}
 
 

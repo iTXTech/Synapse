@@ -15,13 +15,9 @@ class ExtractPluginCommand extends VanillaCommand{
 			"Extracts the source code from a Phar plugin",
 			"/extractplugin <pluginName>"
 		);
-		$this->setPermission("synapse.command.extractplugin");
 	}
 
 	public function execute(CommandSender $sender, $commandLabel, array $args){
-		if(!$this->testPermission($sender)){
-			return false;
-		}
 
 		if(count($args) === 0){
 			$sender->sendMessage(TextFormat::RED . "Usage: ".$this->usageMessage);
@@ -40,7 +36,7 @@ class ExtractPluginCommand extends VanillaCommand{
 			return true;
 		}
 
-		$folderPath = Server::getInstance()->getPluginPath().DIRECTORY_SEPARATOR . "Genisys" . DIRECTORY_SEPARATOR . $description->getName()."_v".$description->getVersion()."/";
+		$folderPath = Server::getInstance()->getPluginPath().DIRECTORY_SEPARATOR . "Synapse" . DIRECTORY_SEPARATOR . $description->getName()."_v".$description->getVersion()."/";
 		if(file_exists($folderPath)){
 			$sender->sendMessage("Plugin already exists, overwriting...");
 		}else{

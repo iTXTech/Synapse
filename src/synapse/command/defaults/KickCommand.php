@@ -35,13 +35,9 @@ class KickCommand extends VanillaCommand{
 			"%synapse.command.kick.description",
 			"%commands.kick.usage"
 		);
-		$this->setPermission("synapse.command.kick");
 	}
 
 	public function execute(CommandSender $sender, $currentAlias, array $args){
-		if(!$this->testPermission($sender)){
-			return true;
-		}
 
 		if(count($args) === 0){
 			$sender->sendMessage(new TranslationContainer("commands.generic.usage", [$this->usageMessage]));
@@ -53,11 +49,11 @@ class KickCommand extends VanillaCommand{
 		$reason = trim(implode(" ", $args));
 
 		if(($player = $sender->getServer()->getPlayer($name)) instanceof Player){
-			$player->kick($reason);
+			$player->close($reason);
 			if(strlen($reason) >= 1){
-				Command::broadcastCommandMessage($sender, new TranslationContainer("commands.kick.success.reason", [$player->getName(), $reason]));
+				$sender->sendMessage(new TranslationContainer("commands.kick.success.reason", [$player->getName(), $reason]));
 			}else{
-				Command::broadcastCommandMessage($sender, new TranslationContainer("commands.kick.success", [$player->getName()]));
+				$sender->sendMessage(new TranslationContainer("commands.kick.success", [$player->getName()]));
 			}
 		}else{
 			$sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.player.notFound"));

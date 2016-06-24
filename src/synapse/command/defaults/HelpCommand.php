@@ -36,13 +36,9 @@ class HelpCommand extends VanillaCommand{
 			"%commands.help.usage",
 			["?"]
 		);
-		$this->setPermission("synapse.command.help");
 	}
 
 	public function execute(CommandSender $sender, $currentAlias, array $args){
-		if(!$this->testPermission($sender)){
-			return true;
-		}
 
 		if(count($args) === 0){
 			$command = "";
@@ -68,9 +64,7 @@ class HelpCommand extends VanillaCommand{
 			/** @var Command[][] $commands */
 			$commands = [];
 			foreach($sender->getServer()->getCommandMap()->getCommands() as $command){
-				if($command->testPermissionSilent($sender)){
-					$commands[$command->getName()] = $command;
-				}
+				$commands[$command->getName()] = $command;
 			}
 			ksort($commands, SORT_NATURAL | SORT_FLAG_CASE);
 			$commands = array_chunk($commands, $pageHeight);
@@ -88,14 +82,12 @@ class HelpCommand extends VanillaCommand{
 			return true;
 		}else{
 			if(($cmd = $sender->getServer()->getCommandMap()->getCommand(strtolower($command))) instanceof Command){
-				if($cmd->testPermissionSilent($sender)){
-					$message = TextFormat::YELLOW . "--------- " . TextFormat::WHITE . " Help: /" . $cmd->getName() . TextFormat::YELLOW . " ---------\n";
-					$message .= TextFormat::GOLD . "Description: " . TextFormat::WHITE . $cmd->getDescription() . "\n";
-					$message .= TextFormat::GOLD . "Usage: " . TextFormat::WHITE . implode("\n" . TextFormat::WHITE, explode("\n", $cmd->getUsage())) . "\n";
-					$sender->sendMessage($message);
+				$message = TextFormat::YELLOW . "--------- " . TextFormat::WHITE . " Help: /" . $cmd->getName() . TextFormat::YELLOW . " ---------\n";
+				$message .= TextFormat::GOLD . "Description: " . TextFormat::WHITE . $cmd->getDescription() . "\n";
+				$message .= TextFormat::GOLD . "Usage: " . TextFormat::WHITE . implode("\n" . TextFormat::WHITE, explode("\n", $cmd->getUsage())) . "\n";
+				$sender->sendMessage($message);
 
-					return true;
-				}
+				return true;
 			}
 			$sender->sendMessage(TextFormat::RED . "No help for " . strtolower($command));
 

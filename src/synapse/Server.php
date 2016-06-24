@@ -302,10 +302,6 @@ class Server{
 			$this->queryHandler = new QueryHandler();
 		}
 
-		/*foreach($this->getIPBans()->getEntries() as $entry){
-			$this->network->blockAddress($entry->getName(), -1);
-		}*/
-
 		if($this->getConfig("network.upnp-forwarding", false) == true){
 			$this->logger->info("[UPnP] Trying to port forward...");
 			UPnP::PortForward($this->getPort());
@@ -322,8 +318,8 @@ class Server{
 
 		$this->logger->info($this->getLanguage()->translateString("synapse.server.startFinished", [round(microtime(true) - \synapse\START_TIME, 3)]));
 
-		if(!file_exists($this->getPluginPath() . DIRECTORY_SEPARATOR . "Genisys")){
-			@mkdir($this->getPluginPath() . DIRECTORY_SEPARATOR . "Genisys");
+		if(!file_exists($this->getPluginPath() . DIRECTORY_SEPARATOR . "Synapse")){
+			@mkdir($this->getPluginPath() . DIRECTORY_SEPARATOR . "Synapse");
 		}
 
 		$this->tickProcessor();
@@ -599,8 +595,18 @@ class Server{
 		return $this->players;
 	}
 
-	public function hasWhitelist(){
-		return false;//TODO: whitelist
+	/**
+	 * @param string $name
+	 * @return null|Player
+	 */
+	public function getPlayer(string $name){
+		$name = strtolower($name);
+		foreach($this->players as $player){
+			if(strtolower($player->getName()) == $name){
+				return $player;
+			}
+		}
+		return null;
 	}
 
 	public function enablePlugins(){

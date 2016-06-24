@@ -71,7 +71,7 @@ class QueryRegenerateEvent extends Event{
 		$this->map = "world";
 		$this->numPlayers = $poc;
 		$this->maxPlayers = $pc;
-		$this->whitelist = $server->hasWhitelist() ? "on" : "off";
+		$this->whitelist = "off";
 		$this->port = $server->getPort();
 		$this->ip = $server->getIp();
 

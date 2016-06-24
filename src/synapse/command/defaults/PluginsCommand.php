@@ -34,13 +34,9 @@ class PluginsCommand extends VanillaCommand{
 			"%synapse.command.plugins.usage",
 			["pl"]
 		);
-		$this->setPermission("synapse.command.plugins");
 	}
 
 	public function execute(CommandSender $sender, $currentAlias, array $args){
-		if(!$this->testPermission($sender)){
-			return true;
-		}
 		$this->sendPluginList($sender);
 		return true;
 	}

@@ -15,13 +15,9 @@ class MakePluginCommand extends VanillaCommand{
 			"Creates a Phar plugin from a unarchived",
 			"/makeplugin <pluginName> (nogz)"
 		);
-		$this->setPermission("synapse.command.makeplugin");
 	}
 
 	public function execute(CommandSender $sender, $commandLabel, array $args){
-		if(!$this->testPermission($sender)){
-			return false;
-		}
 
 		if(count($args) === 0){
 			$sender->sendMessage(TextFormat::RED . "Usage: " . $this->usageMessage);
@@ -40,7 +36,7 @@ class MakePluginCommand extends VanillaCommand{
 			return true;
 		}
 
-		$pharPath = Server::getInstance()->getPluginPath() . DIRECTORY_SEPARATOR . "Genisys" . DIRECTORY_SEPARATOR . $description->getName() . "_v" . $description->getVersion() . ".phar";
+		$pharPath = Server::getInstance()->getPluginPath() . DIRECTORY_SEPARATOR . "Synapse" . DIRECTORY_SEPARATOR . $description->getName() . "_v" . $description->getVersion() . ".phar";
 		if(file_exists($pharPath)){
 			$sender->sendMessage("Phar plugin already exists, overwriting...");
 			@unlink($pharPath);
@@ -51,19 +47,14 @@ class MakePluginCommand extends VanillaCommand{
 			"version" => $description->getVersion(),
 			"main" => $description->getMain(),
 			"api" => $description->getCompatibleApis(),
-			"geniapi" => $description->getCompatibleGeniApis(),
 			"depend" => $description->getDepend(),
 			"description" => $description->getDescription(),
 			"authors" => $description->getAuthors(),
 			"website" => $description->getWebsite(),
-			"creator" => "Genisys MakePluginCommand",
+			"creator" => "Synapse MakePluginCommand",
 			"creationDate" => time()
 		]);
-		if($description->getName() === "DevTools"){
-			$phar->setStub('<?php require("phar://". __FILE__ ."/src/DevTools/ConsoleScript.php"); __HALT_COMPILER();');
-		}else{
-			$phar->setStub('<?php echo "PocketMine-MP/Genisys plugin ' . $description->getName() . ' v' . $description->getVersion() . '\nThis file has been generated using Genisys by iTX Technologies at ' . date("r") . '\n----------------\n";if(extension_loaded("phar")){$phar = new \Phar(__FILE__);foreach($phar->getMetadata() as $key => $value){echo ucfirst($key).": ".(is_array($value) ? implode(", ", $value):$value)."\n";}} __HALT_COMPILER();');
-		}
+		$phar->setStub('<?php echo "Synapse plugin ' . $description->getName() . ' v' . $description->getVersion() . '\nThis file has been generated using Synapse by iTX Technologies at ' . date("r") . '\n----------------\n";if(extension_loaded("phar")){$phar = new \Phar(__FILE__);foreach($phar->getMetadata() as $key => $value){echo ucfirst($key).": ".(is_array($value) ? implode(", ", $value):$value)."\n";}} __HALT_COMPILER();');
 		$phar->setSignatureAlgorithm(\Phar::SHA1);
 		$reflection = new \ReflectionClass("synapse\\plugin\\PluginBase");
 		$file = $reflection->getProperty("file");
@@ -76,7 +67,7 @@ class MakePluginCommand extends VanillaCommand{
 				continue;
 			}
 			$phar->addFile($file, $path);
-			$sender->sendMessage("[Genisys] Adding $path");
+			$sender->sendMessage("[Synapse] Adding $path");
 		}
 
 		foreach($phar as $file => $finfo){
