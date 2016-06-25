@@ -36,13 +36,9 @@ class TimingsCommand extends VanillaCommand{
 			"%synapse.command.timings.description",
 			"%synapse.command.timings.usage"
 		);
-		$this->setPermission("synapse.command.timings");
 	}
 
 	public function execute(CommandSender $sender, $currentAlias, array $args){
-		if(!$this->testPermission($sender)){
-			return true;
-		}
 
 		if(count($args) !== 1){
 			$sender->sendMessage(new TranslationContainer("commands.generic.usage", [$this->usageMessage]));
@@ -113,7 +109,7 @@ class TimingsCommand extends VanillaCommand{
 				curl_setopt($ch, CURLOPT_AUTOREFERER, false);
 				curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
 				curl_setopt($ch, CURLOPT_HEADER, true);
-				curl_setopt($ch, CURLOPT_HTTPHEADER, ["User-Agent: " . $this->getName() . " " . $sender->getServer()->getPocketMineVersion()]);
+				curl_setopt($ch, CURLOPT_HTTPHEADER, ["User-Agent: " . $this->getName() . " " . $sender->getServer()->getSynapseVersion()]);
 				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 				$data = curl_exec($ch);
 				curl_close($ch);

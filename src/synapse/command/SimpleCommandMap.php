@@ -110,6 +110,7 @@ class SimpleCommandMap implements CommandMap{
 		$this->register("synapse", new PluginsCommand("plugins"));
 		$this->register("synapse", new StatusCommand("status"));
 		$this->register("synapse", new StopCommand("stop"));
+		$this->register("synapse", new TimingsCommand("timings"));
 		$this->register("synapse", new VersionCommand("version"));
 	}
 
