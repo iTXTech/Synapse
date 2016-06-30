@@ -21,8 +21,6 @@
 
 namespace synapse\plugin;
 
-use synapse\event\plugin\PluginDisableEvent;
-use synapse\event\plugin\PluginEnableEvent;
 use synapse\Server;
 use synapse\utils\PluginException;
 
@@ -121,8 +119,6 @@ class PharPluginLoader implements PluginLoader{
 			$this->server->getLogger()->info($this->server->getLanguage()->translateString("synapse.plugin.enable", [$plugin->getDescription()->getFullName()]));
 
 			$plugin->setEnabled(true);
-
-			$this->server->getPluginManager()->callEvent(new PluginEnableEvent($plugin));
 		}
 	}
 
@@ -132,8 +128,6 @@ class PharPluginLoader implements PluginLoader{
 	public function disablePlugin(Plugin $plugin){
 		if($plugin instanceof PluginBase and $plugin->isEnabled()){
 			$this->server->getLogger()->info($this->server->getLanguage()->translateString("synapse.plugin.disable", [$plugin->getDescription()->getFullName()]));
-
-			$this->server->getPluginManager()->callEvent(new PluginDisableEvent($plugin));
 
 			$plugin->setEnabled(false);
 		}
