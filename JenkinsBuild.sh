@@ -25,6 +25,7 @@ while(!feof($pipes[1])){
 fclose($pipes[0]);
 fclose($pipes[1]);
 fclose($pipes[2]);
+@mkdir("/opt/data-2T/jenkins/jobs/$project/workspace/artifact");
 rename("/opt/data-2T/jenkins/jobs/$project/workspace/plugins/$project/{$project}_$ver-$build.phar","/opt/data-2T/jenkins/jobs/$project/workspace/artifact/{$project}_$ver-$build.phar");
-if(file_exists("/opt/data-2T/jenkins/jobs/Synapse/workspace/artifact/{$project}_$ver-$build.phar")) exit (0);
+if(file_exists("/opt/data-2T/jenkins/jobs/$project/workspace/artifact/{$project}_$ver-$build.phar")) exit (0);
 exit (1);

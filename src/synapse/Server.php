@@ -329,11 +329,10 @@ class Server{
 	}
 
 	/**
-	 * @param TextContainer $message
+	 * @param TranslationContainer $message
 	 */
-	public function displayTranslation(TextContainer $message){
-		$result = ($this->getLanguage()->get($message->getText()) !== $message->getText() ? "%" : "") . $message->getText();
-		$this->logger->info($result);
+	public function displayTranslation(TranslationContainer $message){
+		$this->logger->info($this->getLanguage()->translateString($message->getText(), $message->getParameters()));
 	}
 
 	private function tickProcessor(){
