@@ -21,6 +21,11 @@
 
 namespace synapse;
 
+use synapse\event\client\ClientAuthEvent;
+use synapse\event\client\ClientConnectEvent;
+use synapse\event\client\ClientDisconnectEvent;
+use synapse\event\client\ClientRecvPacketEvent;
+use synapse\event\client\ClientSendPacketEvent;
 use synapse\network\protocol\mcpe\GenericPacket;
 use synapse\network\protocol\spp\ConnectPacket;
 use synapse\network\protocol\spp\DataPacket;
@@ -52,6 +57,8 @@ class Client{
 		$this->ip = $ip;
 		$this->port = $port;
 		$this->lastUpdate = microtime(true);
+
+		$this->server->getPluginManager()->callEvent(new ClientConnectEvent($this));
 	}
 
 	public function isMainServer() : bool{
@@ -81,6 +88,10 @@ class Client{
 	}
 
 	public function handleDataPacket(DataPacket $packet){
+		$this->server->getPluginManager()->callEvent($ev = new ClientRecvPacketEvent($this, $packet));
+		if($ev->isCancelled()){
+			return;
+		}
 		switch($packet::NETWORK_ID){
 			case Info::HEARTBEAT_PACKET:
 				if(!$this->isVerified()){
@@ -123,6 +134,7 @@ class Client{
 					$this->sendDataPacket($pk);
 					$this->close("Auth failed!");
 				}
+				$this->server->getPluginManager()->callEvent(new ClientAuthEvent($this, $packet->encodedPassword));
 				break;
 			case Info::DISCONNECT_PACKET:
 				/** @var DisconnectPacket $packet */
@@ -151,7 +163,10 @@ class Client{
 	}
 
 	public function sendDataPacket(DataPacket $pk){
-		$this->interface->putPacket($this, $pk);
+		$this->server->getPluginManager()->callEvent($ev = new ClientSendPacketEvent($this, $pk));
+		if(!$ev->isCancelled()){
+			$this->interface->putPacket($this, $pk);
+		}
 	}
 
 	public function getIp(){
@@ -189,6 +204,8 @@ class Client{
 	}
 
 	public function close(string $reason = "Generic reason", bool $needPk = true, int $type = DisconnectPacket::TYPE_GENERIC){
+		$this->server->getPluginManager()->callEvent($ev = new ClientDisconnectEvent($this, $reason, $type));
+		$reason = $ev->getReason();
 		$this->server->getLogger()->info("Client $this->ip:$this->port has disconnected due to $reason");
 		if($needPk){
 			$pk = new DisconnectPacket();
