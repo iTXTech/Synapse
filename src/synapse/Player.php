@@ -147,7 +147,7 @@ class Player{
 		$pk = new PlayerListPacket();
 		$pk->type = PlayerListPacket::TYPE_REMOVE;
 		foreach($this->client->getPlayers() as $p){
-			$pk->entries[] = $p->getUUID();
+			$pk->entries[] = [$p->getUUID()];
 		}
 		$this->sendDataPacket($pk);
 	}
