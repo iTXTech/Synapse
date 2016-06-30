@@ -2,6 +2,13 @@
 * A proxy which can transfer between Synapse Clients
 * Development status: **Alpha**
 
+
+# Build status
+Jenkins: [![Jenkins](https://img.shields.io/jenkins/s/http/jenkins.mcper.cn/Synapse.svg)](https://jenkins.mcper.cn/job/Synapse/) 
+
+# Downloads
+You can get a prebuilt phar from [Jenkins](https://jenkins.mcper.cn/job/Synapse/).
+
 # How to use
 * [Click to visit Synapse wiki](https://github.com/iTXTech/Synapse/wiki)
 
