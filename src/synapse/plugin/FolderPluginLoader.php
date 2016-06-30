@@ -1,8 +1,6 @@
 <?php
 namespace synapse\plugin;
 
-use synapse\event\plugin\PluginDisableEvent;
-use synapse\event\plugin\PluginEnableEvent;
 use synapse\plugin\Plugin;
 use synapse\plugin\PluginBase;
 use synapse\plugin\PluginDescription;
@@ -104,11 +102,8 @@ class FolderPluginLoader implements PluginLoader{
 	 */
 	public function enablePlugin(Plugin $plugin){
 		if($plugin instanceof PluginBase and !$plugin->isEnabled()){
-			MainLogger::getLogger()->info("开启中... " . $plugin->getDescription()->getFullName());
-
+			MainLogger::getLogger()->info("Disabling " . $plugin->getDescription()->getFullName() . "...");
 			$plugin->setEnabled(true);
-
-			Server::getInstance()->getPluginManager()->callEvent(new PluginEnableEvent($plugin));
 		}
 	}
 
@@ -117,10 +112,7 @@ class FolderPluginLoader implements PluginLoader{
 	 */
 	public function disablePlugin(Plugin $plugin){
 		if($plugin instanceof PluginBase and $plugin->isEnabled()){
-			MainLogger::getLogger()->info("关闭中... " . $plugin->getDescription()->getFullName());
-
-			Server::getInstance()->getPluginManager()->callEvent(new PluginDisableEvent($plugin));
-
+			MainLogger::getLogger()->info("Disabling " . $plugin->getDescription()->getFullName() . "...");
 			$plugin->setEnabled(false);
 		}
 	}
