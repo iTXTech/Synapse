@@ -138,7 +138,7 @@ class Server{
 				"async-workers" => "auto",
 				"enable-profiling" => false,
 				"profile-report-trigger" => 20,
-				"max-player" => 20,
+				"max-players" => 20,
 				"dynamic-player-count" => false,
 				"enable-query" => true,
 				"enable-rcon" => false,
