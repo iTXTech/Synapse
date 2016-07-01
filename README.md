@@ -1,9 +1,10 @@
 # Synapse
 * A proxy which can transfer players among Synapse Clients
 * Development status: **Alpha**
-* Chat on Gitter: [![Gitter](https://badges.gitter.im/iTXTech/Synapse.svg)](https://gitter.im/iTXTech/Synapse?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+* Chat on Gitter: [![Gitter](https://img.shields.io/gitter/room/iTXTech/Synapse.svg)](https://gitter.im/iTXTech/Synapse?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 ## Build status
+Travis-CI: [![Travis-CI](https://img.shields.io/travis/iTXTech/Synapse/master.svg)](https://travis-ci.org/iTXTech/Synapse)  
 Jenkins: [![Jenkins](https://img.shields.io/jenkins/s/http/jenkins.mcper.cn/Synapse.svg)](https://jenkins.mcper.cn/job/Synapse/) 
 
 ## Downloads

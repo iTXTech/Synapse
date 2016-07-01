@@ -12,6 +12,7 @@ before_script:
  - echo | pecl install channel://pecl.php.net/yaml-2.0.0RC7
 
 script:
+ - chmod 777 ./tests/ci.sh
  - ./tests/ci.sh
 
 notifications:
