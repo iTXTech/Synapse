@@ -29,8 +29,8 @@ namespace synapse {
 	const VERSION = "1.0dev";
 	const API_VERSION = "1.0.0";
 	const CODENAME = "Nymph";
-	const MINECRAFT_VERSION = "v0.15.0 alpha";
-	const MINECRAFT_VERSION_NETWORK = "0.15.0";
+	const MINECRAFT_VERSION = "v0.15.x alpha";
+	const MINECRAFT_VERSION_NETWORK = "0.15.1";
 
 	if(\Phar::running(true) !== ""){
 		@define('synapse\PATH', \Phar::running(true) . "/");
