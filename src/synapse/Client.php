@@ -88,10 +88,10 @@ class Client{
 	}
 
 	public function handleDataPacket(DataPacket $packet){
-		$this->server->getPluginManager()->callEvent($ev = new ClientRecvPacketEvent($this, $packet));
+		/*$this->server->getPluginManager()->callEvent($ev = new ClientRecvPacketEvent($this, $packet));
 		if($ev->isCancelled()){
 			return;
-		}
+		}*/
 		switch($packet::NETWORK_ID){
 			case Info::HEARTBEAT_PACKET:
 				if(!$this->isVerified()){
@@ -163,10 +163,11 @@ class Client{
 	}
 
 	public function sendDataPacket(DataPacket $pk){
-		$this->server->getPluginManager()->callEvent($ev = new ClientSendPacketEvent($this, $pk));
+		$this->interface->putPacket($this, $pk);
+		/*$this->server->getPluginManager()->callEvent($ev = new ClientSendPacketEvent($this, $pk));
 		if(!$ev->isCancelled()){
 			$this->interface->putPacket($this, $pk);
-		}
+		}*/
 	}
 
 	public function getIp(){
