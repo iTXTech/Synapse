@@ -40,6 +40,7 @@ class ClientConnection{
 		socket_getpeername($this->socket, $address, $port);
 		$this->ip = $address;
 		$this->port = $port;
+		$clientManager->getServer()->getLogger()->notice("Client [$address:$port] has connected.");
 	}
 
 	public function getHash(){

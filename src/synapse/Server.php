@@ -18,7 +18,7 @@
  * @link https://itxtech.org
  *
  */
- 
+
 namespace synapse;
 
 use synapse\event\HandlerList;
@@ -61,11 +61,11 @@ class Server{
 	private $logger;
 	private $filePath;
 	private $pluginPath;
-	/** @var BaseLang  */
+	/** @var BaseLang */
 	private $baseLang;
 	/** @var Config */
 	private $properties;
-	/** @var RCON  */
+	/** @var RCON */
 	private $rcon;
 	private $serverID;
 	/** @var PluginManager */
@@ -133,7 +133,7 @@ class Server{
 				"motd" => "Minecraft: PE Server",
 				"server-port" => 19132,
 				"synapse-port" => 10305,
-				"password" => md5(mt_rand(0, PHP_INT_MAX)),
+				"password" => substr(md5("admin"), 8, 16),
 				"lang" => "eng",
 				"async-workers" => "auto",
 				"enable-profiling" => false,
@@ -149,8 +149,8 @@ class Server{
 			$this->logger->info($this->getLanguage()->translateString("language.selected", [$this->getLanguage()->getName(), $this->getLanguage()->getLang()]));
 
 			$this->maxPlayers = $this->getConfig("max-players", 20);
-			
-			$this->logger->info($this->getLanguage()->translateString("synapse.server.start", [TextFormat::AQUA . $this->getVersion(). TextFormat::WHITE]));
+
+			$this->logger->info($this->getLanguage()->translateString("synapse.server.start", [TextFormat::AQUA . $this->getVersion() . TextFormat::WHITE]));
 
 			if(($poolSize = $this->getConfig("async-workers", "auto")) === "auto"){
 				$poolSize = ServerScheduler::$WORKERS;
@@ -264,7 +264,7 @@ class Server{
 	}
 
 	public function comparePassword(string $pass) : bool{
-		$rawPass = rtrim(Utils::aes_decode($pass, ($truePass = $this->getConfig("password", "123456"))));
+		$rawPass = trim(Utils::aes_decode($pass, ($truePass = $this->getConfig("password", "123456"))));
 		if($rawPass == $truePass){
 			return true;
 		}
@@ -639,7 +639,7 @@ class Server{
 	public function checkConsole(){
 		Timings::$serverCommandTimer->startTiming();
 		if(($line = $this->console->getLine()) !== null){
-				$this->dispatchCommand($this->consoleSender, $line);
+			$this->dispatchCommand($this->consoleSender, $line);
 		}
 		Timings::$serverCommandTimer->stopTiming();
 	}
