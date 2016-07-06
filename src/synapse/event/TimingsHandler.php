@@ -72,18 +72,10 @@ class TimingsHandler{
 		}
 
 		fwrite($fp, "# Version " . Server::getInstance()->getVersion() . PHP_EOL);
-		fwrite($fp, "# " . Server::getInstance()->getName() . " " . Server::getInstance()->getPocketMineVersion() . PHP_EOL);
+		fwrite($fp, "# " . Server::getInstance()->getName() . " " . Server::getInstance()->getSynapseVersion() . PHP_EOL);
 
 		$entities = 0;
 		$livingEntities = 0;
-		foreach(Server::getInstance()->getLevels() as $level){
-			$entities += count($level->getEntities());
-			foreach($level->getEntities() as $e){
-				if($e instanceof Living){
-					++$livingEntities;
-				}
-			}
-		}
 
 		fwrite($fp, "# Entities " . $entities . PHP_EOL);
 		fwrite($fp, "# LivingEntities " . $livingEntities . PHP_EOL);

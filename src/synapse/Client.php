@@ -26,6 +26,7 @@ use synapse\event\client\ClientConnectEvent;
 use synapse\event\client\ClientDisconnectEvent;
 use synapse\event\client\ClientRecvPacketEvent;
 use synapse\event\client\ClientSendPacketEvent;
+use synapse\event\Timings;
 use synapse\network\protocol\mcpe\GenericPacket;
 use synapse\network\protocol\spp\ConnectPacket;
 use synapse\network\protocol\spp\DataPacket;
@@ -92,6 +93,9 @@ class Client{
 		if($ev->isCancelled()){
 			return;
 		}*/
+		$timings = Timings::getClientReceiveDataPacketTimings($packet);
+		$timings->startTiming();
+
 		switch($packet::NETWORK_ID){
 			case Info::HEARTBEAT_PACKET:
 				if(!$this->isVerified()){
@@ -147,7 +151,7 @@ class Client{
 					$pk->buffer = $packet->mcpeBuffer;
 					$this->players[$uuid]->sendDataPacket($pk, $packet->direct);
 				}else{
-					$this->server->getLogger()->error("Error RedirectPacket");
+					$this->server->getLogger()->error("Error RedirectPacket 0x" . bin2hex($packet->buffer));
 				}
 				break;
 			case Info::TRANSFER_PACKET:
@@ -160,6 +164,7 @@ class Client{
 			default:
 				$this->server->getLogger()->error("Client {$this->getIp()}:{$this->getPort()} send an unknown packet " . $packet::NETWORK_ID);
 		}
+		$timings->stopTiming();
 	}
 
 	public function sendDataPacket(DataPacket $pk){

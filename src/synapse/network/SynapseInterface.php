@@ -111,7 +111,7 @@ class SynapseInterface{
 
 	public function handlePacket($hash, $buffer){
 		if(!isset($this->clients[$hash])){
-			throw new \Exception("Invalid Client");
+			return;
 		}
 
 		$client = $this->clients[$hash];

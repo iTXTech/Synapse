@@ -21,6 +21,7 @@
 
 namespace synapse;
 
+use synapse\event\Timings;
 use synapse\network\protocol\mcpe\BatchPacket;
 use synapse\network\protocol\mcpe\DataPacket;
 use synapse\network\protocol\mcpe\DisconnectPacket;
@@ -78,9 +79,15 @@ class Player{
 	}
 
 	public function handleDataPacket(DataPacket $pk){
+		$timings = Timings::getPlayerReceiveDataPacketTimings($pk);
+
+		$timings->startTiming();
+
 		$this->lastUpdate = microtime(true);
+
 		$packet = new PlayStatusPacket();
 		$packet->status = PlayStatusPacket::LOGIN_SUCCESS;
+
 		$this->sendDataPacket($packet);
 		switch($pk::NETWORK_ID){
 			case Info::BATCH_PACKET:
@@ -119,6 +126,7 @@ class Player{
 				$packet->mcpeBuffer = $pk->buffer;
 				$this->client->sendDataPacket($packet);
 		}
+		$timings->stopTiming();
 	}
 
 	public function getIp(){
@@ -179,7 +187,10 @@ class Player{
 	}
 
 	public function sendDataPacket(DataPacket $pk, $direct = false, $needACK = false){
+		$timings = Timings::getPlayerSendDataPacketTimings($pk);
+		$timings->startTiming();
 		$this->interface->putPacket($this, $pk, $needACK, $direct);
+		$timings->stopTiming();
 	}
 
 	public function close(string $reason = "Generic reason"){
@@ -197,5 +208,12 @@ class Player{
 		}
 		
 		$this->getServer()->removePlayer($this);
+
+		$this->server->getLogger()->info($this->getServer()->getLanguage()->translateString("synapse.player.logOut", [
+			TextFormat::AQUA . $this->getName() . TextFormat::WHITE,
+			$this->ip,
+			$this->port,
+			$this->getServer()->getLanguage()->translateString($reason)
+		]));
 	}
 }
