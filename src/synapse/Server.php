@@ -437,6 +437,14 @@ class Server{
 			$this->hasStopped = true;
 
 			$this->shutdown();
+
+			foreach($this->clients as $client){
+				foreach($client->getPlayers() as $player){
+					$player->close($this->getConfig("shutdown-message", "Server closed"));
+				}
+				$client->close("Synapse server closed");
+			}
+
 			if($this->rcon instanceof RCON){
 				$this->rcon->stop();
 			}
@@ -444,11 +452,6 @@ class Server{
 			$this->getLogger()->debug("Disabling all plugins");
 			$this->pluginManager->disablePlugins();
 
-			foreach($this->clients as $client){
-				foreach($client->getPlayers() as $player){
-					$player->close($this->getConfig("shutdown-message", "Server closed"));
-				}
-			}
 
 			$this->getLogger()->debug("Removing event handlers");
 			HandlerList::unregisterAll();

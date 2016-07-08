@@ -74,6 +74,15 @@ class ClientManager{
 				$this->server->addClientOpenRequest($client->getHash());
 			}
 
+			while(strlen($data = $this->server->readMainToThreadPacket()) > 0){
+				$tmp = explode("|", $data, 2);
+				if(count($tmp) == 2){
+					if(isset($this->client[$tmp[0]])){
+						$this->client[$tmp[0]]->writePacket($tmp[1]);
+					}
+				}
+			}
+
 			foreach($this->client as $client){
 				if($client->update()){
 					while(($data = $client->readPacket()) !== null){
@@ -82,15 +91,6 @@ class ClientManager{
 				}else{
 					$this->server->addInternalClientCloseRequest($client->getHash());
 					unset($this->client[$client->getHash()]);
-				}
-			}
-
-			while(strlen($data = $this->server->readMainToThreadPacket()) > 0){
-				$tmp = explode("|", $data, 2);
-				if(count($tmp) == 2){
-					if(isset($this->client[$tmp[0]])){
-						$this->client[$tmp[0]]->writePacket($tmp[1]);
-					}
 				}
 			}
 			

@@ -37,7 +37,7 @@ use synapse\utils\TextFormat;
 
 class Player{
 	/** @var DataPacket */
-	private $cachedLoginPacket;
+	private $cachedLoginPacket = null;
 	private $name;
 	private $ip;
 	private $port;
@@ -55,6 +55,7 @@ class Player{
 	private $rawUUID;
 	private $isFirstTimeLogin = true;
 	private $lastUpdate;
+	private $closed = false;
 
 	public function __construct(SourceInterface $interface, $clientId, $ip, int $port){
 		$this->interface = $interface;
@@ -79,6 +80,9 @@ class Player{
 	}
 
 	public function handleDataPacket(DataPacket $pk){
+		if($this->closed){
+			return;
+		}
 		$timings = Timings::getPlayerReceiveDataPacketTimings($pk);
 
 		$timings->startTiming();
@@ -87,8 +91,12 @@ class Player{
 
 		switch($pk::NETWORK_ID){
 			case Info::BATCH_PACKET:
-				/** @var BatchPacket $pk */
-				$this->getServer()->getNetwork()->processBatch($pk, $this);
+				if($this->cachedLoginPacket == null){
+					/** @var BatchPacket $pk */
+					$this->getServer()->getNetwork()->processBatch($pk, $this);
+				}else{
+					$this->redirectPacket($pk->buffer);
+				}
 				break;
 			case Info::LOGIN_PACKET:
 				$this->cachedLoginPacket = $pk->buffer;
@@ -113,13 +121,17 @@ class Player{
 				}
 				break;
 			default:
-				$packet = new RedirectPacket();
-				$packet->uuid = $this->uuid;
-				$packet->direct = false;
-				$packet->mcpeBuffer = $pk->buffer;
-				$this->client->sendDataPacket($packet);
+				$this->redirectPacket($pk->buffer);
 		}
 		$timings->stopTiming();
+	}
+
+	public function redirectPacket(string $buffer){
+		$packet = new RedirectPacket();
+		$packet->uuid = $this->uuid;
+		$packet->direct = false;
+		$packet->mcpeBuffer = $buffer;
+		$this->client->sendDataPacket($packet);
 	}
 
 	public function getIp(){
@@ -187,26 +199,29 @@ class Player{
 	}
 
 	public function close(string $reason = "Generic reason"){
-		$pk = new DisconnectPacket();
-		$pk->message = $reason;
-		$this->sendDataPacket($pk, true);
-		$this->interface->close($this, $reason);
+		if(!$this->closed){
+			$pk = new DisconnectPacket();
+			$pk->message = $reason;
+			$this->sendDataPacket($pk, true);
 
-		if($this->client instanceof Client){
-			$pk = new PlayerLogoutPacket();
-			$pk->uuid = $this->uuid;
-			$pk->reason = $reason;
-			$this->client->sendDataPacket($pk);
-			$this->client->removePlayer($this);
+			$this->closed = true;
+
+			if($this->client instanceof Client){
+				$pk = new PlayerLogoutPacket();
+				$pk->uuid = $this->uuid;
+				$pk->reason = $reason;
+				$this->client->sendDataPacket($pk);
+				$this->client->removePlayer($this);
+			}
+
+			$this->server->getLogger()->info($this->getServer()->getLanguage()->translateString("synapse.player.logOut", [
+				TextFormat::AQUA . $this->getName() . TextFormat::WHITE,
+				$this->ip,
+				$this->port,
+				$this->getServer()->getLanguage()->translateString($reason)
+			]));
+
+			$this->getServer()->removePlayer($this);
 		}
-		
-		$this->getServer()->removePlayer($this);
-
-		$this->server->getLogger()->info($this->getServer()->getLanguage()->translateString("synapse.player.logOut", [
-			TextFormat::AQUA . $this->getName() . TextFormat::WHITE,
-			$this->ip,
-			$this->port,
-			$this->getServer()->getLanguage()->translateString($reason)
-		]));
 	}
 }
