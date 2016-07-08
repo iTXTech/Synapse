@@ -62,7 +62,9 @@ class ClientConnection{
 			return false;
 		}else{
 			$data = @socket_read($this->socket, 65535, PHP_BINARY_READ);
-			$this->receiveBuffer .= $data;
+			if($data != ""){
+				$this->receiveBuffer .= $data;
+			}
 			if($this->sendBuffer != ""){
 				socket_write($this->socket, $this->sendBuffer);
 				$this->sendBuffer = "";
