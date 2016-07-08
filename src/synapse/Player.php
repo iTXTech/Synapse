@@ -21,13 +21,15 @@
 
 namespace synapse;
 
+use synapse\event\player\PlayerLoginEvent;
+use synapse\event\player\PlayerLogoutEvent;
+use synapse\event\player\PlayerTransferEvent;
 use synapse\event\Timings;
 use synapse\network\protocol\mcpe\BatchPacket;
 use synapse\network\protocol\mcpe\DataPacket;
 use synapse\network\protocol\mcpe\DisconnectPacket;
 use synapse\network\protocol\mcpe\Info;
 use synapse\network\protocol\mcpe\PlayerListPacket;
-use synapse\network\protocol\mcpe\PlayStatusPacket;
 use synapse\network\protocol\spp\PlayerLoginPacket;
 use synapse\network\protocol\spp\PlayerLogoutPacket;
 use synapse\network\protocol\spp\RedirectPacket;
@@ -115,10 +117,23 @@ class Player{
 
 				$c = $this->server->getMainClients();
 				if(count($c) > 0){
-					$this->transfer($c[array_rand($c)]);
+					$clientHash = array_rand($c);
 				}else{
-					$this->close("Synapse Server: " . TextFormat::RED . "No server online!");
+					$clientHash = "";
 				}
+
+				$this->server->getPluginManager()->callEvent($ev = new PlayerLoginEvent($this, "Plugin Reason", $clientHash));
+				if($ev->isCancelled()){
+					$this->close($ev->getKickMessage());
+					break;
+				}
+
+				if(!isset($this->server->getClients()[$ev->getClientHash()])){
+					$this->close("Synapse Server: " . TextFormat::RED . "No server online!");
+					break;
+				}
+
+				$this->transfer($this->server->getClients()[$ev->getClientHash()]);
 				break;
 			default:
 				$this->redirectPacket($pk->buffer);
@@ -166,29 +181,32 @@ class Player{
 	}
 
 	public function transfer(Client $client, bool $needDisconnect = false){
-		if($this->client instanceof Client and $needDisconnect){
-			$pk = new PlayerLogoutPacket();
+		$this->server->getPluginManager()->callEvent($ev = new PlayerTransferEvent($this, $client, $needDisconnect));
+		if(!$ev->isCancelled()){
+			if($this->client instanceof Client and $needDisconnect){
+				$pk = new PlayerLogoutPacket();
+				$pk->uuid = $this->uuid;
+				$pk->reason = "Player has been transferred";
+				$this->client->sendDataPacket($pk);
+
+				$this->client->removePlayer($this);
+
+				$this->removeAllPlayer();
+			}
+			$this->client = $ev->getTargetClient();
+			$this->client->addPlayer($this);
+			$pk = new PlayerLoginPacket();
 			$pk->uuid = $this->uuid;
-			$pk->reason = "Player has been transferred";
+			$pk->address = $this->ip;
+			$pk->port = $this->port;
+			$pk->isFirstTime = $this->isFirstTimeLogin;
+			$pk->cachedLoginPacket = $this->cachedLoginPacket;
 			$this->client->sendDataPacket($pk);
 
-			$this->client->removePlayer($this);
+			$this->isFirstTimeLogin = false;
 
-			$this->removeAllPlayer();
+			$this->server->getLogger()->info("{$this->name} has been transferred to {$this->client->getIp()}:{$this->client->getPort()}");
 		}
-		$this->client = $client;
-		$this->client->addPlayer($this);
-		$pk = new PlayerLoginPacket();
-		$pk->uuid = $this->uuid;
-		$pk->address = $this->ip;
-		$pk->port = $this->port;
-		$pk->isFirstTime = $this->isFirstTimeLogin;
-		$pk->cachedLoginPacket = $this->cachedLoginPacket;
-		$this->client->sendDataPacket($pk);
-
-		$this->isFirstTimeLogin = false;
-
-		$this->server->getLogger()->info("{$this->name} has been transferred to {$this->client->getIp()}:{$this->client->getPort()}");
 	}
 
 	public function sendDataPacket(DataPacket $pk, $direct = false, $needACK = false){
@@ -200,6 +218,7 @@ class Player{
 
 	public function close(string $reason = "Generic reason"){
 		if(!$this->closed){
+			$this->server->getPluginManager()->callEvent(new PlayerLogoutEvent($this));
 			$pk = new DisconnectPacket();
 			$pk->message = $reason;
 			$this->sendDataPacket($pk, true);

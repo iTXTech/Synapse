@@ -114,7 +114,7 @@ class Client{
 			case Info::CONNECT_PACKET:
 				/** @var ConnectPacket $packet */
 				if($packet->protocol != Info::CURRENT_PROTOCOL){
-					$this->close("Wrong protocol! Require SPP version: " . Info::CURRENT_PROTOCOL, true, DisconnectPacket::TYPE_WRONG_PROTOCOL);
+					$this->close("Incompatible SPP version! Require SPP version: " . Info::CURRENT_PROTOCOL, true, DisconnectPacket::TYPE_WRONG_PROTOCOL);
 					return;
 				}
 				$pk = new InformationPacket();
@@ -150,9 +150,9 @@ class Client{
 					$pk = new GenericPacket();
 					$pk->buffer = $packet->mcpeBuffer;
 					$this->players[$uuid]->sendDataPacket($pk, $packet->direct);
-				}else{
+				}/*else{
 					$this->server->getLogger()->error("Error RedirectPacket 0x" . bin2hex($packet->buffer));
-				}
+				}*/
 				break;
 			case Info::TRANSFER_PACKET:
 				/** @var TransferPacket $pk */
