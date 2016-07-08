@@ -85,15 +85,8 @@ class Player{
 
 		$this->lastUpdate = microtime(true);
 
-		$packet = new PlayStatusPacket();
-		$packet->status = PlayStatusPacket::LOGIN_SUCCESS;
-
-		$this->sendDataPacket($packet);
 		switch($pk::NETWORK_ID){
 			case Info::BATCH_PACKET:
-				$packet = new PlayStatusPacket();
-				$packet->status = PlayStatusPacket::LOGIN_SUCCESS;
-				$this->sendDataPacket($packet);
 				/** @var BatchPacket $pk */
 				$this->getServer()->getNetwork()->processBatch($pk, $this);
 				break;
