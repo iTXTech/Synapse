@@ -30,12 +30,15 @@ use synapse\network\protocol\mcpe\DataPacket;
 use synapse\network\protocol\mcpe\DisconnectPacket;
 use synapse\network\protocol\mcpe\Info;
 use synapse\network\protocol\mcpe\PlayerListPacket;
+use synapse\network\protocol\mcpe\TextPacket;
 use synapse\network\protocol\spp\PlayerLoginPacket;
 use synapse\network\protocol\spp\PlayerLogoutPacket;
 use synapse\network\protocol\spp\RedirectPacket;
 use synapse\network\SourceInterface;
 use synapse\utils\UUID;
 use synapse\utils\TextFormat;
+use synapse\event\TextContainer;
+use synapse\event\TranslationContainer;
 
 class Player{
 	/** @var DataPacket */
@@ -245,5 +248,56 @@ class Player{
 			$this->interface->close($this, $notify ? $reason : "");
 			$this->getServer()->removePlayer($this);
 		}
+	}
+	
+	/**
+	 * Sends a direct chat message to a player
+	 *
+	 * @param string|TextContainer $message
+	 */
+	public function sendMessage($message){
+		if($message instanceof TextContainer){
+			if($message instanceof TranslationContainer){
+				$this->sendTranslation($message->getText(), $message->getParameters());
+				return;
+			}
+			$message = $message->getText();
+		}
+
+		$mes = explode("\n", $this->server->getLanguage()->translateString($message));
+		foreach($mes as $m){
+			if($m !== ""){
+				$pk = new TextPacket();
+				$pk->type = TextPacket::TYPE_RAW;
+				$pk->message = $m;
+				$this->sendDataPacket($pk);
+			}
+		}
+	}
+
+	public function sendTranslation($message, array $parameters = []){
+		$pk = new TextPacket();
+		$pk->type = TextPacket::TYPE_TRANSLATION;
+		$pk->message = $this->server->getLanguage()->translateString($message, $parameters, "synapse.");
+		foreach($parameters as $i => $p){
+			$parameters[$i] = $this->server->getLanguage()->translateString($p, $parameters, "synapse.");
+		}
+		$pk->parameters = $parameters;
+		$this->sendDataPacket($pk);
+	}
+
+	public function sendPopup($message, $subtitle = ""){
+		$pk = new TextPacket();
+		$pk->type = TextPacket::TYPE_POPUP;
+		$pk->source = $message;
+		$pk->message = $subtitle;
+		$this->sendDataPacket($pk);
+	}
+
+	public function sendTip($message){
+		$pk = new TextPacket();
+		$pk->type = TextPacket::TYPE_TIP;
+		$pk->message = $message;
+		$this->sendDataPacket($pk);
 	}
 }
