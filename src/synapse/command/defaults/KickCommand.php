@@ -46,7 +46,7 @@ class KickCommand extends VanillaCommand{
 		}
 
 		$name = array_shift($args);
-		$reason = trim(implode(" ", $args));
+		$reason = array_shift($args);
 
 		if(($player = $sender->getServer()->getPlayer($name)) instanceof Player){
 			$player->close($reason);

@@ -188,9 +188,7 @@ class Player{
 				$pk->uuid = $this->uuid;
 				$pk->reason = "Player has been transferred";
 				$this->client->sendDataPacket($pk);
-
 				$this->client->removePlayer($this);
-
 				$this->removeAllPlayer();
 			}
 			$this->client = $ev->getTargetClient();
@@ -210,19 +208,23 @@ class Player{
 	}
 
 	public function sendDataPacket(DataPacket $pk, $direct = false, $needACK = false){
-		$timings = Timings::getPlayerSendDataPacketTimings($pk);
-		$timings->startTiming();
-		$this->interface->putPacket($this, $pk, $needACK, $direct);
-		$timings->stopTiming();
+		if(!$this->closed){
+			$timings = Timings::getPlayerSendDataPacketTimings($pk);
+			$timings->startTiming();
+			$this->interface->putPacket($this, $pk, $needACK, $direct);
+			$timings->stopTiming();
+		}
 	}
 
-	public function close(string $reason = "Generic reason"){
+	public function close(string $reason = "Generic reason", bool $notify = true){
 		if(!$this->closed){
-			$this->server->getPluginManager()->callEvent(new PlayerLogoutEvent($this));
-			$pk = new DisconnectPacket();
-			$pk->message = $reason;
-			$this->sendDataPacket($pk, true);
+			if($notify and strlen($reason) > 0){
+				$pk = new DisconnectPacket();
+				$pk->message = $reason;
+				$this->sendDataPacket($pk, true);
+			}
 
+			$this->server->getPluginManager()->callEvent(new PlayerLogoutEvent($this));
 			$this->closed = true;
 
 			if($this->client instanceof Client){
@@ -240,7 +242,7 @@ class Player{
 				$this->getServer()->getLanguage()->translateString($reason)
 			]));
 
-			$this->interface->close($this, $reason);
+			$this->interface->close($this, $notify ? $reason : "");
 			$this->getServer()->removePlayer($this);
 		}
 	}
