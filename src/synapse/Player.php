@@ -240,6 +240,7 @@ class Player{
 				$this->getServer()->getLanguage()->translateString($reason)
 			]));
 
+			$this->interface->close($this, $reason);
 			$this->getServer()->removePlayer($this);
 		}
 	}
