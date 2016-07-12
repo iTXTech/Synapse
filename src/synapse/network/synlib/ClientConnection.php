@@ -29,6 +29,8 @@ class ClientConnection{
 
 	private $receiveBuffer = "";
 	private $sendBuffer = "";
+	/** @var ClientManager */
+	private $clientManager;
 	/** @var resource */
 	private $socket;
 	private $ip;
