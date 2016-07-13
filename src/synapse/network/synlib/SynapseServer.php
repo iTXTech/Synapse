@@ -87,7 +87,7 @@ class SynapseServer extends Thread{
 
 		try{
 			$socket = new SynapseSocket($this->getLogger(), $this->port, $this->interface);
-			new ClientManager($this, $socket);
+			new SessionManager($this, $socket);
 		}catch(\Throwable $e){
 			$this->logger->logException($e);
 		}

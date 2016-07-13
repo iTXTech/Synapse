@@ -23,26 +23,26 @@ namespace synapse\network\synlib;
 
 use synapse\utils\Binary;
 
-class ClientConnection{
+class Session{
 
 	const MAGIC_BYTES = "\x35\xac\x66\xbf";
 
 	private $receiveBuffer = "";
 	private $sendBuffer = "";
-	/** @var ClientManager */
-	private $clientManager;
+	/** @var SessionManager */
+	private $sessionManager;
 	/** @var resource */
 	private $socket;
 	private $ip;
 	private $port;
 
-	public function __construct(ClientManager $clientManager, $socket){
-		$this->clientManager = $clientManager;
+	public function __construct(SessionManager $sessionManager, $socket){
+		$this->sessionManager = $sessionManager;
 		$this->socket = $socket;
 		socket_getpeername($this->socket, $address, $port);
 		$this->ip = $address;
 		$this->port = $port;
-		$clientManager->getServer()->getLogger()->notice("Client [$address:$port] has connected.");
+		$sessionManager->getServer()->getLogger()->notice("Client [$address:$port] has connected.");
 	}
 
 	public function getHash(){
@@ -59,8 +59,9 @@ class ClientConnection{
 
 	public function update(){
 		$err = socket_last_error($this->socket);
-		if($err == 10057 or $err == 10054){
-			$this->clientManager->getServer()->getLogger()->error("Synapse client [$this->ip:$this->port] has disconnected unexpectedly");
+		socket_clear_error($this->socket);
+		if($err !== 0 && $err !== 35){
+			$this->sessionManager->getServer()->getLogger()->error("Synapse client [$this->ip:$this->port] has disconnected unexpectedly");
 			return false;
 		}else{
 			$data = @socket_read($this->socket, 65535, PHP_BINARY_READ);
