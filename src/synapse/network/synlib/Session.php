@@ -60,7 +60,7 @@ class Session{
 	public function update(){
 		$err = socket_last_error($this->socket);
 		socket_clear_error($this->socket);
-		if($err !== 0 && $err !== 35){
+		if($err == 10057 or $err == 10054){
 			$this->sessionManager->getServer()->getLogger()->error("Synapse client [$this->ip:$this->port] has disconnected unexpectedly");
 			return false;
 		}else{
