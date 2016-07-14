@@ -264,11 +264,7 @@ class Server{
 	}
 
 	public function comparePassword(string $pass) : bool{
-		$rawPass = trim(Utils::aes_decode($pass, ($truePass = $this->getConfig("password", "123456"))));
-		if($rawPass == $truePass){
-			return true;
-		}
-		return false;
+		return password_verify($this->getConfig("password", "123456"), $pass);
 	}
 
 	public function addPlayer($identifier, Player $player){

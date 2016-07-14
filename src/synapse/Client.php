@@ -119,7 +119,7 @@ class Client{
 				}
 				$pk = new InformationPacket();
 				$pk->type = InformationPacket::TYPE_LOGIN;
-				if($this->server->comparePassword(base64_decode($packet->encodedPassword))){
+				if($this->server->comparePassword($packet->encodedPassword)){
 					$this->setVerified();
 					$pk->message = InformationPacket::INFO_LOGIN_SUCCESS;
 					$this->isMainServer = $packet->isMainServer;
