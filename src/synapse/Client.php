@@ -119,7 +119,7 @@ class Client{
 				}
 				$pk = new InformationPacket();
 				$pk->type = InformationPacket::TYPE_LOGIN;
-				if($this->server->comparePassword($packet->encodedPassword)){
+				if($this->server->comparePassword($packet->password)){
 					$this->setVerified();
 					$pk->message = InformationPacket::INFO_LOGIN_SUCCESS;
 					$this->isMainServer = $packet->isMainServer;
@@ -138,7 +138,7 @@ class Client{
 					$this->sendDataPacket($pk);
 					$this->close("Auth failed!");
 				}
-				$this->server->getPluginManager()->callEvent(new ClientAuthEvent($this, $packet->encodedPassword));
+				$this->server->getPluginManager()->callEvent(new ClientAuthEvent($this, $packet->password));
 				break;
 			case Info::DISCONNECT_PACKET:
 				/** @var DisconnectPacket $packet */

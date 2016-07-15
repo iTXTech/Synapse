@@ -264,7 +264,7 @@ class Server{
 	}
 
 	public function comparePassword(string $pass) : bool{
-		return password_verify($this->getConfig("password", "123456"), $pass);
+		return ($this->getConfig("password", "123456") == $pass);
 	}
 
 	public function addPlayer($identifier, Player $player){

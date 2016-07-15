@@ -89,6 +89,7 @@ class SessionManager{
 						$this->server->pushThreadToMainPacket($session->getHash() . "|" . $data);
 					}
 				}else{
+					$session->close();
 					$this->server->addInternalClientCloseRequest($session->getHash());
 					unset($this->sessions[$session->getHash()]);
 				}
