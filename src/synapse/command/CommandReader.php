@@ -13,7 +13,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author synapse Team
+ * @author Synapse Team
  * @link http://www.synapse.net/
  *
  *
@@ -84,6 +84,7 @@ class CommandReader extends Thread{
 
 	public function quit(){
 		$this->shutdown();
+		// Windows sucks
 		if(Utils::getOS() != "win"){
 			parent::quit();
 		}
@@ -91,7 +92,7 @@ class CommandReader extends Thread{
 
 	public function run(){
 		if($this->readline){
-			readline_callback_handler_install("Genisys> ", [$this, "readline_callback"]);
+			readline_callback_handler_install("Synapse> ", [$this, "readline_callback"]);
 			$this->logger->setConsoleCallback("readline_redisplay");
 		}
 
@@ -100,9 +101,14 @@ class CommandReader extends Thread{
 			$w = null;
 			$e = null;
 			if(stream_select($r, $w, $e, 0, 200000) > 0){
+				// PHP on Windows sucks
 				if(feof($this->stdin)){
-					$this->stdin = fopen("php://stdin", "r");
-					if(!is_resource($this->stdin)){
+					if(Utils::getOS() == "win"){
+						$this->stdin = fopen("php://stdin", "r");
+						if(!is_resource($this->stdin)){
+							break;
+						}
+					}else{
 						break;
 					}
 				}
