@@ -1,0 +1,20 @@
+{
+  "name": "iTXTech Synapse",
+  "version": "1.0.0",
+  "api": 6,
+  "description": "High performance load balance server for Minecraft: Bedrock Edition.",
+  "author": "iTX Technologies",
+  "main": "iTXTech\\Synapse\\Loader",
+  "order": 0,
+  "website": "https://github.com/iTXTech/Synapse",
+  "extensions": [
+    {
+      "name": "swoole",
+      "version": "4.2.0"
+    },
+    {
+      "name": "zlib",
+      "version": "1.2.0"
+    }
+  ]
+}
