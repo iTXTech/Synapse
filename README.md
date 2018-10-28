@@ -7,12 +7,14 @@
 * [PHP 7.2](https://secure.php.net/)
 * [SimpleFramework 2.1](https://github.com/iTXTech/SimpleFramework)
 * [Swoole 4.2](https://github.com/swoole/swoole-src)
-* [RakLib](https://github.com/pmmp/RakLib/tree/master/src/protocol) - *Only uses its decoder part*
-* [PocketMine-MP](https://github.com/pmmp/PocketMine-MP/tree/master/src/pocketmine/network/mcpe) - *Only uses its decoder part*
+* [RakLib](https://github.com/pmmp/RakLib/tree/master/src/protocol)
+* [PocketMine-MP](https://github.com/pmmp/PocketMine-MP/tree/master/src/pocketmine/network/mcpe)
 
 ## Roadmap
 
-Status: **Fantasy**
+- [ ] Raknet - Implement MCBE RakNet Protocol
+- [ ] Raknet - Fix swoole ticking bug [swoole issue #2073](https://github.com/swoole/swoole-src/issues/2073)
+- [ ] Kyrios - Implement Synapse Proxy Protocol (SPP) rev9.0
 
 ## License
 
