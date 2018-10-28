@@ -13,7 +13,7 @@
  *
  */
 
-namespace iTXTech\Synapse\RakNet\Protocol;
+namespace iTXTech\Synapse\Raknet\Protocol;
 
 class IncompatibleProtocolVersion extends OfflineMessage{
 	public static $ID = MessageIdentifiers::ID_INCOMPATIBLE_PROTOCOL_VERSION;

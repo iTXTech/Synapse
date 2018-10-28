@@ -13,7 +13,7 @@
  *
  */
 
-namespace iTXTech\Synapse\RakNet\Protocol;
+namespace iTXTech\Synapse\Raknet\Protocol;
 
 class NACK extends AcknowledgePacket{
 	public static $ID = 0xa0;

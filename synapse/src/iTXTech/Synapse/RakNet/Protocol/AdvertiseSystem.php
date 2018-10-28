@@ -13,7 +13,7 @@
  *
  */
 
-namespace iTXTech\Synapse\RakNet\Protocol;
+namespace iTXTech\Synapse\Raknet\Protocol;
 
 class AdvertiseSystem extends Packet{
 	public static $ID = MessageIdentifiers::ID_ADVERTISE_SYSTEM;

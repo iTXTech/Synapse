@@ -21,7 +21,7 @@
  *
  */
 
-namespace iTXTech\Synapse\RakNet;
+namespace iTXTech\Synapse\Raknet;
 
 abstract class Properties{
 	public const DEFAULT_PROTOCOL_VERSION = 6;

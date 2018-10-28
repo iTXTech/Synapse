@@ -13,23 +13,23 @@
  *
  */
 
-namespace iTXTech\Synapse\RakNet;
+namespace iTXTech\Synapse\Raknet;
 
-use iTXTech\Synapse\RakNet\Properties;
+use iTXTech\Synapse\Raknet\Properties;
 use iTXTech\SimpleFramework\Console\Logger;
-use iTXTech\Synapse\RakNet\Protocol\ACK;
-use iTXTech\Synapse\RakNet\Protocol\ConnectedPing;
-use iTXTech\Synapse\RakNet\Protocol\ConnectedPong;
-use iTXTech\Synapse\RakNet\Protocol\ConnectionRequest;
-use iTXTech\Synapse\RakNet\Protocol\ConnectionRequestAccepted;
-use iTXTech\Synapse\RakNet\Protocol\Datagram;
-use iTXTech\Synapse\RakNet\Protocol\DisconnectionNotification;
-use iTXTech\Synapse\RakNet\Protocol\EncapsulatedPacket;
-use iTXTech\Synapse\RakNet\Protocol\MessageIdentifiers;
-use iTXTech\Synapse\RakNet\Protocol\NACK;
-use iTXTech\Synapse\RakNet\Protocol\NewIncomingConnection;
-use iTXTech\Synapse\RakNet\Protocol\Packet;
-use iTXTech\Synapse\RakNet\Protocol\PacketReliability;
+use iTXTech\Synapse\Raknet\Protocol\ACK;
+use iTXTech\Synapse\Raknet\Protocol\ConnectedPing;
+use iTXTech\Synapse\Raknet\Protocol\ConnectedPong;
+use iTXTech\Synapse\Raknet\Protocol\ConnectionRequest;
+use iTXTech\Synapse\Raknet\Protocol\ConnectionRequestAccepted;
+use iTXTech\Synapse\Raknet\Protocol\Datagram;
+use iTXTech\Synapse\Raknet\Protocol\DisconnectionNotification;
+use iTXTech\Synapse\Raknet\Protocol\EncapsulatedPacket;
+use iTXTech\Synapse\Raknet\Protocol\MessageIdentifiers;
+use iTXTech\Synapse\Raknet\Protocol\NACK;
+use iTXTech\Synapse\Raknet\Protocol\NewIncomingConnection;
+use iTXTech\Synapse\Raknet\Protocol\Packet;
+use iTXTech\Synapse\Raknet\Protocol\PacketReliability;
 use iTXTech\Synapse\Util\InternetAddress;
 
 class Session{
@@ -178,8 +178,8 @@ class Session{
 		}
 
 		if($this->state === self::STATE_DISCONNECTING and (
-			(empty($this->ACKQueue) and empty($this->NACKQueue) and empty($this->packetToSend) and empty($this->recoveryQueue)) or
-			$this->disconnectionTime + 10 < $time)
+				(empty($this->ACKQueue) and empty($this->NACKQueue) and empty($this->packetToSend) and empty($this->recoveryQueue)) or
+				$this->disconnectionTime + 10 < $time)
 		){
 			$this->close();
 			return;
@@ -299,7 +299,7 @@ class Session{
 
 	/**
 	 * @param EncapsulatedPacket $pk
-	 * @param int                $flags
+	 * @param int $flags
 	 */
 	private function addToQueue(EncapsulatedPacket $pk, int $flags = Properties::PRIORITY_NORMAL) : void{
 		$priority = $flags & 0b00000111;
@@ -327,7 +327,7 @@ class Session{
 
 	/**
 	 * @param EncapsulatedPacket $packet
-	 * @param int                $flags
+	 * @param int $flags
 	 */
 	public function addEncapsulatedToQueue(EncapsulatedPacket $packet, int $flags = Properties::PRIORITY_NORMAL) : void{
 

@@ -13,7 +13,7 @@
  *
  */
 
-namespace iTXTech\Synapse\RakNet\Protocol;
+namespace iTXTech\Synapse\Raknet\Protocol;
 
 interface MessageIdentifiers{
 	//From https://github.com/OculusVR/RakNet/blob/master/Source/MessageIdentifiers.h

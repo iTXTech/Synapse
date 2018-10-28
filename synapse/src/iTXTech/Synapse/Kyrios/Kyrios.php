@@ -23,6 +23,32 @@
 
 namespace iTXTech\Synapse\Kyrios;
 
-class Kyrios{
+use Swoole\Channel;
 
+class Kyrios{
+	private $host;
+	private $port;
+
+	/** @var Channel */
+	private $rChan;
+	/** @var Channel */
+	private $kChan;
+
+	public function __construct(string $host, int $port){
+		$this->host = $host;
+		$this->port = $port;
+	}
+
+	public function channel(Channel $rChan, Channel $kChan){
+		$this->rChan = $rChan;
+		$this->kChan = $kChan;
+	}
+
+	public function launch(){
+
+	}
+
+	public function shutdown(){
+
+	}
 }

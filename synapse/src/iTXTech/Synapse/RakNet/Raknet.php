@@ -21,7 +21,7 @@
  *
  */
 
-namespace iTXTech\Synapse\RakNet;
+namespace iTXTech\Synapse\Raknet;
 
 use Co\Server;
 use iTXTech\SimpleFramework\Console\Logger;
@@ -30,7 +30,7 @@ use iTXTech\Synapse\Util\InternetAddress;
 use Swoole\Channel;
 use Swoole\Process;
 
-class RakNet{
+class Raknet{
 	/** @var Process */
 	private $proc;
 

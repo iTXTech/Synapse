@@ -13,7 +13,7 @@
  *
  */
 
-namespace iTXTech\Synapse\RakNet\Protocol;
+namespace iTXTech\Synapse\Raknet\Protocol;
 
 class ConnectionRequest extends Packet{
 	public static $ID = MessageIdentifiers::ID_CONNECTION_REQUEST;

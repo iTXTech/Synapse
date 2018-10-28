@@ -13,7 +13,7 @@
  *
  */
 
-namespace iTXTech\Synapse\RakNet\Protocol;
+namespace iTXTech\Synapse\Raknet\Protocol;
 
 class ConnectedPing extends Packet{
 	public static $ID = MessageIdentifiers::ID_CONNECTED_PING;

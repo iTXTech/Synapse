@@ -13,9 +13,9 @@
  *
  */
 
-namespace iTXTech\Synapse\RakNet\Protocol;
+namespace iTXTech\Synapse\Raknet\Protocol;
 
-use iTXTech\Synapse\RakNet\Properties;
+use iTXTech\Synapse\Raknet\Properties;
 use iTXTech\Synapse\Util\InternetAddress;
 
 class ConnectionRequestAccepted extends Packet{

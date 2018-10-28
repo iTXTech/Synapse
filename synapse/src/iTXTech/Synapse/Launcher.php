@@ -24,7 +24,7 @@
 namespace iTXTech\Synapse;
 
 use iTXTech\Synapse\Kyrios\Kyrios;
-use iTXTech\Synapse\RakNet\RakNet;
+use iTXTech\Synapse\Raknet\Raknet;
 
 class Launcher{
 	private $kHost;
@@ -83,8 +83,8 @@ class Launcher{
 	}
 
 	public function build(): Synapse{
-		$kyrios = new Kyrios();
-		$raknet = new RakNet($this->rHost, $this->rPort, $this->rSwOpts, $this->rMaxMtuSize,
+		$kyrios = new Kyrios($this->kHost, $this->kPort);
+		$raknet = new Raknet($this->rHost, $this->rPort, $this->rSwOpts, $this->rMaxMtuSize,
 			$this->rServerName, $this->rServerId);
 		return new Synapse($kyrios, $raknet);
 	}

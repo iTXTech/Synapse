@@ -13,17 +13,17 @@
  *
  */
 
-namespace iTXTech\Synapse\RakNet;
+namespace iTXTech\Synapse\Raknet;
 
 use iTXTech\SimpleFramework\Console\Logger;
-use iTXTech\Synapse\RakNet\Protocol\IncompatibleProtocolVersion;
-use iTXTech\Synapse\RakNet\Protocol\OfflineMessage;
-use iTXTech\Synapse\RakNet\Protocol\OpenConnectionReply1;
-use iTXTech\Synapse\RakNet\Protocol\OpenConnectionReply2;
-use iTXTech\Synapse\RakNet\Protocol\OpenConnectionRequest1;
-use iTXTech\Synapse\RakNet\Protocol\OpenConnectionRequest2;
-use iTXTech\Synapse\RakNet\Protocol\UnconnectedPing;
-use iTXTech\Synapse\RakNet\Protocol\UnconnectedPong;
+use iTXTech\Synapse\Raknet\Protocol\IncompatibleProtocolVersion;
+use iTXTech\Synapse\Raknet\Protocol\OfflineMessage;
+use iTXTech\Synapse\Raknet\Protocol\OpenConnectionReply1;
+use iTXTech\Synapse\Raknet\Protocol\OpenConnectionReply2;
+use iTXTech\Synapse\Raknet\Protocol\OpenConnectionRequest1;
+use iTXTech\Synapse\Raknet\Protocol\OpenConnectionRequest2;
+use iTXTech\Synapse\Raknet\Protocol\UnconnectedPing;
+use iTXTech\Synapse\Raknet\Protocol\UnconnectedPong;
 use iTXTech\Synapse\Util\InternetAddress;
 
 class OfflineMessageHandler{

@@ -13,7 +13,7 @@
  *
  */
 
-namespace iTXTech\Synapse\RakNet\Protocol;
+namespace iTXTech\Synapse\Raknet\Protocol;
 
 class UnconnectedPingOpenConnections extends UnconnectedPing{
 	public static $ID = MessageIdentifiers::ID_UNCONNECTED_PING_OPEN_CONNECTIONS;

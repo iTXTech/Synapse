@@ -13,7 +13,7 @@
  *
  */
 
-namespace iTXTech\Synapse\RakNet\Protocol;
+namespace iTXTech\Synapse\Raknet\Protocol;
 
 class DisconnectionNotification extends Packet{
 	public static $ID = MessageIdentifiers::ID_DISCONNECTION_NOTIFICATION;

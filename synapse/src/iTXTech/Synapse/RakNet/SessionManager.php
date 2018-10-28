@@ -13,26 +13,26 @@
  *
  */
 
-namespace iTXTech\Synapse\RakNet;
+namespace iTXTech\Synapse\Raknet;
 
 use Co\Server;
 use iTXTech\SimpleFramework\Console\Logger;
 use iTXTech\Synapse\Util\Binary;
 use iTXTech\Synapse\Util\InternetAddress;
-use iTXTech\Synapse\RakNet\Protocol\ACK;
-use iTXTech\Synapse\RakNet\Protocol\AdvertiseSystem;
-use iTXTech\Synapse\RakNet\Protocol\Datagram;
-use iTXTech\Synapse\RakNet\Protocol\EncapsulatedPacket;
-use iTXTech\Synapse\RakNet\Protocol\NACK;
-use iTXTech\Synapse\RakNet\Protocol\OfflineMessage;
-use iTXTech\Synapse\RakNet\Protocol\OpenConnectionReply1;
-use iTXTech\Synapse\RakNet\Protocol\OpenConnectionReply2;
-use iTXTech\Synapse\RakNet\Protocol\OpenConnectionRequest1;
-use iTXTech\Synapse\RakNet\Protocol\OpenConnectionRequest2;
-use iTXTech\Synapse\RakNet\Protocol\Packet;
-use iTXTech\Synapse\RakNet\Protocol\UnconnectedPing;
-use iTXTech\Synapse\RakNet\Protocol\UnconnectedPingOpenConnections;
-use iTXTech\Synapse\RakNet\Protocol\UnconnectedPong;
+use iTXTech\Synapse\Raknet\Protocol\ACK;
+use iTXTech\Synapse\Raknet\Protocol\AdvertiseSystem;
+use iTXTech\Synapse\Raknet\Protocol\Datagram;
+use iTXTech\Synapse\Raknet\Protocol\EncapsulatedPacket;
+use iTXTech\Synapse\Raknet\Protocol\NACK;
+use iTXTech\Synapse\Raknet\Protocol\OfflineMessage;
+use iTXTech\Synapse\Raknet\Protocol\OpenConnectionReply1;
+use iTXTech\Synapse\Raknet\Protocol\OpenConnectionReply2;
+use iTXTech\Synapse\Raknet\Protocol\OpenConnectionRequest1;
+use iTXTech\Synapse\Raknet\Protocol\OpenConnectionRequest2;
+use iTXTech\Synapse\Raknet\Protocol\Packet;
+use iTXTech\Synapse\Raknet\Protocol\UnconnectedPing;
+use iTXTech\Synapse\Raknet\Protocol\UnconnectedPingOpenConnections;
+use iTXTech\Synapse\Raknet\Protocol\UnconnectedPong;
 use Swoole\Channel;
 
 class SessionManager{
@@ -110,26 +110,27 @@ class SessionManager{
 
 	/**
 	 * Returns the time in milliseconds since server start.
+	 *
 	 * @return int
 	 */
-	public function getRakNetTimeMS(): int{
+	public function getRakNetTimeMS() : int{
 		return ((int) (microtime(true) * 1000)) - $this->startTimeMS;
 	}
 
-	public function getPort(): int{
+	public function getPort() : int{
 		return $this->reusableAddress->port;
 	}
 
-	public function getMaxMtuSize(): int{
+	public function getMaxMtuSize() : int{
 		return $this->maxMtuSize;
 	}
 
-	public function getProtocolVersion(): int{
+	public function getProtocolVersion() : int{
 		return $this->protocolVersion;
 	}
 
-	public function tick(): void{
-		while($this->receiveStream());
+	public function tick() : void{
+		while($this->receiveStream()) ;
 
 		$time = microtime(true);
 		foreach($this->sessions as $session){
@@ -163,7 +164,7 @@ class SessionManager{
 	}
 
 
-	public function receivePacket(string $addr, int $port, string $buffer): bool{
+	public function receivePacket(string $addr, int $port, string $buffer) : bool{
 		$this->reusableAddress->ip = $addr;
 		$this->reusableAddress->port = $port;
 		$address = $this->reusableAddress;
@@ -239,40 +240,40 @@ class SessionManager{
 		return true;
 	}
 
-	public function sendPacket(Packet $packet, InternetAddress $address): void{
+	public function sendPacket(Packet $packet, InternetAddress $address) : void{
 		$packet->encode();
 		$this->server->sendto($address->ip, $address->port, $packet->buffer);
 	}
 
-	public function streamEncapsulated(Session $session, EncapsulatedPacket $packet, int $flags = Properties::PRIORITY_NORMAL): void{
+	public function streamEncapsulated(Session $session, EncapsulatedPacket $packet, int $flags = Properties::PRIORITY_NORMAL) : void{
 		$id = $session->getAddress()->toString();
 		$buffer = chr(Properties::PACKET_ENCAPSULATED) . chr(strlen($id)) . $id . chr($flags) . $packet->toInternalBinary();
 		$this->rChan->push($buffer);
 	}
 
-	public function streamRaw(InternetAddress $source, string $payload): void{
+	public function streamRaw(InternetAddress $source, string $payload) : void{
 		$buffer = chr(Properties::PACKET_RAW) . chr(strlen($source->ip)) . $source->ip . Binary::writeShort($source->port) . $payload;
 		$this->rChan->push($buffer);
 	}
 
-	protected function streamClose(string $identifier, string $reason): void{
+	protected function streamClose(string $identifier, string $reason) : void{
 		$buffer = chr(Properties::PACKET_CLOSE_SESSION) . chr(strlen($identifier)) . $identifier . chr(strlen($reason)) . $reason;
 		$this->rChan->push($buffer);
 	}
 
-	protected function streamInvalid(string $identifier): void{
+	protected function streamInvalid(string $identifier) : void{
 		$buffer = chr(Properties::PACKET_INVALID_SESSION) . chr(strlen($identifier)) . $identifier;
 		$this->rChan->push($buffer);
 	}
 
-	protected function streamOpen(Session $session): void{
+	protected function streamOpen(Session $session) : void{
 		$address = $session->getAddress();
 		$identifier = $address->toString();
 		$buffer = chr(Properties::PACKET_OPEN_SESSION) . chr(strlen($identifier)) . $identifier . chr(strlen($address->ip)) . $address->ip . Binary::writeShort($address->port) . Binary::writeLong($session->getID());
 		$this->rChan->push($buffer);
 	}
 
-	protected function streamACK(string $identifier, int $identifierACK): void{
+	protected function streamACK(string $identifier, int $identifierACK) : void{
 		$buffer = chr(Properties::PACKET_ACK_NOTIFICATION) . chr(strlen($identifier)) . $identifier . Binary::writeInt($identifierACK);
 		$this->rChan->push($buffer);
 	}
@@ -281,18 +282,18 @@ class SessionManager{
 	 * @param string $name
 	 * @param mixed $value
 	 */
-	protected function streamOption(string $name, $value): void{
+	protected function streamOption(string $name, $value) : void{
 		$buffer = chr(Properties::PACKET_SET_OPTION) . chr(strlen($name)) . $name . $value;
 		$this->rChan->push($buffer);
 	}
 
-	public function streamPingMeasure(Session $session, int $pingMS): void{
+	public function streamPingMeasure(Session $session, int $pingMS) : void{
 		$identifier = $session->getAddress()->toString();
 		$buffer = chr(Properties::PACKET_REPORT_PING) . chr(strlen($identifier)) . $identifier . Binary::writeInt($pingMS);
 		$this->rChan->push($buffer);
 	}
 
-	public function receiveStream(): bool{
+	public function receiveStream() : bool{
 		if(($packet = $this->kChan->pop()) !== false){
 			$id = ord($packet{0});
 			$offset = 1;
@@ -375,7 +376,7 @@ class SessionManager{
 		return false;
 	}
 
-	public function blockAddress(string $address, int $timeout = 300): void{
+	public function blockAddress(string $address, int $timeout = 300) : void{
 		$final = time() + $timeout;
 		if(!isset($this->block[$address]) or $timeout === -1){
 			if($timeout === -1){
@@ -389,7 +390,7 @@ class SessionManager{
 		}
 	}
 
-	public function unblockAddress(string $address): void{
+	public function unblockAddress(string $address) : void{
 		unset($this->block[$address]);
 		Logger::debug("Unblocked $address");
 	}
@@ -399,15 +400,15 @@ class SessionManager{
 	 *
 	 * @return Session|null
 	 */
-	public function getSession(InternetAddress $address): ?Session{
+	public function getSession(InternetAddress $address) : ?Session{
 		return $this->sessions[$address->toString()] ?? null;
 	}
 
-	public function sessionExists(InternetAddress $address): bool{
+	public function sessionExists(InternetAddress $address) : bool{
 		return isset($this->sessions[$address->toString()]);
 	}
 
-	public function createSession(InternetAddress $address, int $clientId, int $mtuSize): Session{
+	public function createSession(InternetAddress $address, int $clientId, int $mtuSize) : Session{
 		$this->checkSessions();
 
 		$this->sessions[$address->toString()] = $session = new Session($this, clone $address, $clientId, $mtuSize);
@@ -416,7 +417,7 @@ class SessionManager{
 		return $session;
 	}
 
-	public function removeSession(Session $session, string $reason = "unknown"): void{
+	public function removeSession(Session $session, string $reason = "unknown") : void{
 		$id = $session->getAddress()->toString();
 		if(isset($this->sessions[$id])){
 			$this->sessions[$id]->close();
@@ -425,15 +426,15 @@ class SessionManager{
 		}
 	}
 
-	public function removeSessionInternal(Session $session): void{
+	public function removeSessionInternal(Session $session) : void{
 		unset($this->sessions[$session->getAddress()->toString()]);
 	}
 
-	public function openSession(Session $session): void{
+	public function openSession(Session $session) : void{
 		$this->streamOpen($session);
 	}
 
-	private function checkSessions(): void{
+	private function checkSessions() : void{
 		if(count($this->sessions) > 4096){
 			foreach($this->sessions as $i => $s){
 				if($s->isTemporal()){
@@ -446,15 +447,15 @@ class SessionManager{
 		}
 	}
 
-	public function notifyACK(Session $session, int $identifierACK): void{
+	public function notifyACK(Session $session, int $identifierACK) : void{
 		$this->streamACK($session->getAddress()->toString(), $identifierACK);
 	}
 
-	public function getName(): string{
+	public function getName() : string{
 		return $this->name;
 	}
 
-	public function getId(): int{
+	public function getId() : int{
 		return $this->id;
 	}
 
@@ -462,7 +463,7 @@ class SessionManager{
 	 * @param int $id
 	 * @param string $class
 	 */
-	private function registerPacket(int $id, string $class): void{
+	private function registerPacket(int $id, string $class) : void{
 		$this->packetPool[$id] = new $class;
 	}
 
@@ -472,7 +473,7 @@ class SessionManager{
 	 *
 	 * @return Packet|null
 	 */
-	public function getPacketFromPool(int $id, string $buffer = ""): ?Packet{
+	public function getPacketFromPool(int $id, string $buffer = "") : ?Packet{
 		$pk = $this->packetPool[$id];
 		if($pk !== null){
 			$pk = clone $pk;
@@ -483,7 +484,7 @@ class SessionManager{
 		return null;
 	}
 
-	private function registerPackets(): void{
+	private function registerPackets() : void{
 		$this->packetPool = new \SplFixedArray(256);
 
 		$this->registerPacket(UnconnectedPing::$ID, UnconnectedPing::class);
