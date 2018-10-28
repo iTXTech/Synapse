@@ -21,8 +21,11 @@
  *
  */
 
-namespace iTXTech\Synapse\Kyrios;
+require_once "env.php";
 
-class Launcher{
+use iTXTech\Synapse\Launcher;
 
-}
+$launcher = (new Launcher())
+	->rListen("0.0.0.0", 19133);
+
+load($launcher);

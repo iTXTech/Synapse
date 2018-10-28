@@ -23,6 +23,26 @@
 
 namespace iTXTech\Synapse;
 
-class Synapse{
+use iTXTech\Synapse\Kyrios\Kyrios;
+use iTXTech\Synapse\RakNet\RakNet;
 
+class Synapse{
+	/** @var RakNet */
+	private $raknet;
+	/** @var Kyrios */
+	private $kyrios;
+
+	public function __construct(Kyrios $kyrios, RakNet $raknet){
+		$this->kyrios = $kyrios;
+		$this->raknet = $raknet;
+		return $this;
+	}
+
+	public function launch(){
+		$this->raknet->launch();
+	}
+
+	public function shutdown(){
+		$this->raknet->shutdown();
+	}
 }

@@ -23,6 +23,54 @@
 
 namespace iTXTech\Synapse;
 
-class Launcher{
+use iTXTech\Synapse\Kyrios\Kyrios;
+use iTXTech\Synapse\RakNet\RakNet;
 
+class Launcher{
+	private $kHost;
+	private $kPort;
+
+	private $rHost;
+	private $rPort;
+	private $rMaxMtuSize = 1492;
+	private $rSwOpts = [
+		"worker_num" => 8
+	];
+
+	public function __construct(){
+	}
+
+	public function kListen(string $host, int $port){
+		$this->kHost = $host;
+		$this->kPort = $port;
+		return $this;
+	}
+
+	public function rListen(string $host, int $port){
+		$this->rHost = $host;
+		$this->rPort = $port;
+		return $this;
+	}
+
+	public function rMaxMtuSize(int $size){
+		$this->rMaxMtuSize = $size;
+		return $this;
+	}
+
+	public function rSwOpts(array $opts){
+		$this->rSwOpts = array_merge($this->rSwOpts, $opts);
+		return $this;
+	}
+
+	public function build(): Synapse{
+		$kyrios = new Kyrios();
+		$raknet = new RakNet($this->rHost, $this->rPort, $this->rSwOpts, $this->rMaxMtuSize);
+		return new Synapse($kyrios, $raknet);
+	}
+
+	public function launch(): Synapse{
+		$synapse = $this->build();
+		$synapse->launch();
+		return $synapse;
+	}
 }

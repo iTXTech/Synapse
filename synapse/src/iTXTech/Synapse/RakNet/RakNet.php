@@ -23,6 +23,67 @@
 
 namespace iTXTech\Synapse\RakNet;
 
-class RakNet{
+use Co\Server;
+use iTXTech\SimpleFramework\Console\Logger;
+use iTXTech\SimpleFramework\Console\TextFormat;
+use iTXTech\Synapse\Util\InternetAddress;
+use Swoole\Coroutine\Channel;
+use Swoole\Process;
 
+class RakNet{
+	/** @var Process */
+	private $proc;
+
+	private $host;
+	private $port;
+	private $swOpts;
+	private $maxMtuSize;
+
+	/** @var Channel */
+	private $rChan;
+	/** @var Channel */
+	private $kChan;
+
+	public function __construct(string $host, int $port, array $swOpts, int $maxMtuSize){
+		$this->host = $host;
+		$this->port = $port;
+		$this->swOpts = $swOpts;
+		$this->maxMtuSize = $maxMtuSize;
+	}
+
+	public function channel(Channel $rChan, Channel $kChan){
+		$this->rChan = $rChan;
+		$this->kChan = $kChan;
+	}
+
+	public function launch(){
+		$host = $this->host;
+		$port = $this->port;
+		$swOpts = $this->swOpts;
+		$maxMtuSize = $this->maxMtuSize;
+		$rChan = $this->rChan;
+		$kChan = $this->kChan;
+
+		$this->proc = new Process(function(Process $process) use ($host, $port, $swOpts, $maxMtuSize, $rChan, $kChan){
+
+			$server = new Server($host, $port, SWOOLE_PROCESS, SWOOLE_SOCK_UDP);
+			$server->set($swOpts);
+
+			$sessionManager = new SessionManager($maxMtuSize, new InternetAddress($host, $port, 4), $rChan, $kChan);//TODO: 6
+
+			$server->on("start", function(Server $server){
+				Logger::info(TextFormat::GREEN . "iTXTech Synapse RakNet is listening on " . $server->host . ":" . $server->port);
+			});
+			$server->on("packet", function(Server $server, $data, $clientInfo){
+				var_dump($data, $clientInfo);
+			});
+
+			$server->start();
+		});
+		$this->proc->start();
+	}
+
+	public function shutdown(){
+		$this->proc->close();
+	}
 }
