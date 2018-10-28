@@ -25,16 +25,27 @@ namespace iTXTech\Synapse;
 
 use iTXTech\Synapse\Kyrios\Kyrios;
 use iTXTech\Synapse\RakNet\RakNet;
+use Swoole\Channel;
 
 class Synapse{
 	/** @var RakNet */
 	private $raknet;
 	/** @var Kyrios */
 	private $kyrios;
+	/** @var Channel */
+	private $rChan;
+	/** @var Channel */
+	private $kChan;
 
 	public function __construct(Kyrios $kyrios, RakNet $raknet){
 		$this->kyrios = $kyrios;
 		$this->raknet = $raknet;
+
+		$this->rChan = new Channel(1024 * 1024 * 1024);//1GB
+		$this->kChan = new Channel(1024 * 1024 * 1024);
+
+		$this->raknet->channel($this->rChan, $this->kChan);
+
 		return $this;
 	}
 
@@ -44,5 +55,13 @@ class Synapse{
 
 	public function shutdown(){
 		$this->raknet->shutdown();
+	}
+
+	public function getRaknet(): RakNet{
+		return $this->raknet;
+	}
+
+	public function getKyrios(): Kyrios{
+		return $this->kyrios;
 	}
 }

@@ -43,8 +43,7 @@ try{
 function load(Launcher $launcher){
 	Logger::info("Launching");
 	$time = microtime(true);
-	$launcher->launch();
+	$syn = $launcher->launch();
 	Logger::info("Launched " . round((microtime(true) - $time) * 1000, 2) . " ms");
-
-	while(true) ;
+	return $syn;
 }

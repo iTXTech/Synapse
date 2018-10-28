@@ -27,7 +27,7 @@ use Co\Server;
 use iTXTech\SimpleFramework\Console\Logger;
 use iTXTech\SimpleFramework\Console\TextFormat;
 use iTXTech\Synapse\Util\InternetAddress;
-use Swoole\Coroutine\Channel;
+use Swoole\Channel;
 use Swoole\Process;
 
 class RakNet{
@@ -44,11 +44,16 @@ class RakNet{
 	/** @var Channel */
 	private $kChan;
 
-	public function __construct(string $host, int $port, array $swOpts, int $maxMtuSize){
+	private $serverName;
+	private $serverId;
+
+	public function __construct(string $host, int $port, array $swOpts, int $maxMtuSize, string $serverName, int $serverId){
 		$this->host = $host;
 		$this->port = $port;
 		$this->swOpts = $swOpts;
 		$this->maxMtuSize = $maxMtuSize;
+		$this->serverName = $serverName;
+		$this->serverId = $serverId;
 	}
 
 	public function channel(Channel $rChan, Channel $kChan){
@@ -63,19 +68,25 @@ class RakNet{
 		$maxMtuSize = $this->maxMtuSize;
 		$rChan = $this->rChan;
 		$kChan = $this->kChan;
+		$serverName = $this->serverName;
+		$serverId = $this->serverId;
 
-		$this->proc = new Process(function(Process $process) use ($host, $port, $swOpts, $maxMtuSize, $rChan, $kChan){
-
+		$this->proc = new Process(function(Process $process) use ($host, $port, $swOpts, $maxMtuSize, $rChan, $kChan, $serverName, $serverId){
 			$server = new Server($host, $port, SWOOLE_PROCESS, SWOOLE_SOCK_UDP);
 			$server->set($swOpts);
 
-			$sessionManager = new SessionManager($maxMtuSize, new InternetAddress($host, $port, 4), $rChan, $kChan);//TODO: 6
+			$sessionManager = new SessionManager(new InternetAddress($host, $port, 4),
+				$rChan, $kChan,
+				$server, $serverName, $serverId);//TODO: 6
 
-			$server->on("start", function(Server $server){
+			$server->on("start", function(Server $server) use ($sessionManager){
 				Logger::info(TextFormat::GREEN . "iTXTech Synapse RakNet is listening on " . $server->host . ":" . $server->port);
+				$server->tick(10, function() use ($sessionManager){
+					$sessionManager->tick();
+				});
 			});
-			$server->on("packet", function(Server $server, $data, $clientInfo){
-				var_dump($data, $clientInfo);
+			$server->on("packet", function(Server $server, $data, $clientInfo) use ($sessionManager){
+				$sessionManager->receivePacket($clientInfo["address"], $clientInfo["port"], $data);
 			});
 
 			$server->start();
@@ -85,5 +96,10 @@ class RakNet{
 
 	public function shutdown(){
 		$this->proc->close();
+	}
+
+	public function setServerName(string $serverName): void{
+		$this->serverName = $serverName;
+		$this->kChan->push(chr(Properties::PACKET_SET_OPTION) . chr(strlen("name")) . "name" . $serverName);
 	}
 }

@@ -15,7 +15,7 @@
 
 namespace iTXTech\Synapse\RakNet\Protocol;
 
-use iTXTech\RakNet\Properties;
+use iTXTech\Synapse\RakNet\Properties;
 
 abstract class OfflineMessage extends Packet{
 	/** @var string */

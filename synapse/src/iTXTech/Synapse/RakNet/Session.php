@@ -15,7 +15,7 @@
 
 namespace iTXTech\Synapse\RakNet;
 
-use iTXTech\RakNet\Properties;
+use iTXTech\Synapse\RakNet\Properties;
 use iTXTech\SimpleFramework\Console\Logger;
 use iTXTech\Synapse\RakNet\Protocol\ACK;
 use iTXTech\Synapse\RakNet\Protocol\ConnectedPing;

@@ -27,5 +27,11 @@ use iTXTech\Synapse\Launcher;
 
 $launcher = (new Launcher())
 	->rListen("0.0.0.0", 19133);
+$launcher->rServerName("MCPE;NMSL;291;1.5.0;23;666;" . $launcher->getRServerId() . ";Synapse;Creative;");
 
-load($launcher);
+$syn = load($launcher);
+
+while(true){
+	$syn->getRaknet()->setServerName("MCPE;NMSL;291;1.5.0;" . mt_rand(0, 666). ";666;" . $launcher->getRServerId() . ";Synapse;Creative;");
+	sleep(1);
+}

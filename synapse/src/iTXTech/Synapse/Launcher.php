@@ -33,11 +33,21 @@ class Launcher{
 	private $rHost;
 	private $rPort;
 	private $rMaxMtuSize = 1492;
+	private $rServerName;
+	private $rServerId;
 	private $rSwOpts = [
 		"worker_num" => 8
 	];
 
+	/**
+	 * @return int
+	 */
+	public function getRServerId(): int{
+		return $this->rServerId;
+	}
+
 	public function __construct(){
+		$this->rServerId = mt_rand(0, PHP_INT_MAX);
 	}
 
 	public function kListen(string $host, int $port){
@@ -62,9 +72,20 @@ class Launcher{
 		return $this;
 	}
 
+	public function rServerName(string $serverName){
+		$this->rServerName = $serverName;
+		return $this;
+	}
+
+	public function rServerId(string $id){
+		$this->rServerId = $id;
+		return $this;
+	}
+
 	public function build(): Synapse{
 		$kyrios = new Kyrios();
-		$raknet = new RakNet($this->rHost, $this->rPort, $this->rSwOpts, $this->rMaxMtuSize);
+		$raknet = new RakNet($this->rHost, $this->rPort, $this->rSwOpts, $this->rMaxMtuSize,
+			$this->rServerName, $this->rServerId);
 		return new Synapse($kyrios, $raknet);
 	}
 

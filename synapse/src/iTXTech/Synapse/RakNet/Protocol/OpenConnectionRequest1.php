@@ -15,7 +15,7 @@
 
 namespace iTXTech\Synapse\RakNet\Protocol;
 
-use iTXTech\RakNet\Properties;
+use iTXTech\Synapse\RakNet\Properties;
 
 class OpenConnectionRequest1 extends OfflineMessage{
 	public static $ID = MessageIdentifiers::ID_OPEN_CONNECTION_REQUEST_1;
