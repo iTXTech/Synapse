@@ -29,8 +29,13 @@ use iTXTech\SimpleFramework\Console\TextFormat;
 use iTXTech\Synapse\Util\InternetAddress;
 use Swoole\Channel;
 use Swoole\Process;
+use Swoole\Table;
 
 class Raknet{
+	public const TABLE_MAIN_KEY = 0;
+	public const TABLE_SERVER_NAME = "sn";
+	public const TABLE_SERVER_ID = "sid";
+
 	/** @var Process */
 	private $proc;
 
@@ -44,16 +49,22 @@ class Raknet{
 	/** @var Channel */
 	private $kChan;
 
-	private $serverName;
-	private $serverId;
+	/** @var Table */
+	private $table;
 
 	public function __construct(string $host, int $port, array $swOpts, int $maxMtuSize, string $serverName, int $serverId){
 		$this->host = $host;
 		$this->port = $port;
 		$this->swOpts = $swOpts;
 		$this->maxMtuSize = $maxMtuSize;
-		$this->serverName = $serverName;
-		$this->serverId = $serverId;
+		$this->table = new Table(1024);//1KB
+		$this->table->column(self::TABLE_SERVER_NAME, Table::TYPE_STRING, 256);
+		$this->table->column(self::TABLE_SERVER_ID, Table::TYPE_INT);
+		$this->table->create();
+		$this->table->set(self::TABLE_MAIN_KEY, [
+			self::TABLE_SERVER_ID => $serverId,
+			self::TABLE_SERVER_NAME => $serverName
+		]);
 	}
 
 	public function channel(Channel $rChan, Channel $kChan){
@@ -68,16 +79,15 @@ class Raknet{
 		$maxMtuSize = $this->maxMtuSize;
 		$rChan = $this->rChan;
 		$kChan = $this->kChan;
-		$serverName = $this->serverName;
-		$serverId = $this->serverId;
+		$table = $this->table;
 
-		$this->proc = new Process(function(Process $process) use ($host, $port, $swOpts, $maxMtuSize, $rChan, $kChan, $serverName, $serverId){
+		$this->proc = new Process(function(Process $process) use ($host, $port, $swOpts, $maxMtuSize, $rChan, $kChan, $table){
 			$server = new Server($host, $port, SWOOLE_PROCESS, SWOOLE_SOCK_UDP);
 			$server->set($swOpts);
 
 			$sessionManager = new SessionManager(new InternetAddress($host, $port, 4),
 				$rChan, $kChan,
-				$server, $serverName, $serverId);//TODO: 6
+				$server, $table);//TODO: 6
 
 			$server->on("start", function(Server $server) use ($sessionManager){
 				Logger::info(TextFormat::GREEN . "iTXTech Synapse RakNet is listening on " . $server->host . ":" . $server->port);
@@ -99,7 +109,8 @@ class Raknet{
 	}
 
 	public function setServerName(string $serverName): void{
-		$this->serverName = $serverName;
-		$this->kChan->push(chr(Properties::PACKET_SET_OPTION) . chr(strlen("name")) . "name" . $serverName);
+		$this->table->set(self::TABLE_MAIN_KEY, [
+			self::TABLE_SERVER_NAME => $serverName
+		]);
 	}
 }

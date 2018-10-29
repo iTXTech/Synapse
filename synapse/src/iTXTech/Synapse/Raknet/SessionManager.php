@@ -34,6 +34,7 @@ use iTXTech\Synapse\Raknet\Protocol\UnconnectedPing;
 use iTXTech\Synapse\Raknet\Protocol\UnconnectedPingOpenConnections;
 use iTXTech\Synapse\Raknet\Protocol\UnconnectedPong;
 use Swoole\Channel;
+use Swoole\Table;
 
 class SessionManager{
 
@@ -50,8 +51,6 @@ class SessionManager{
 
 	/** @var OfflineMessageHandler */
 	protected $offlineMessageHandler;
-	/** @var string */
-	protected $name;
 
 	/** @var int */
 	protected $packetLimit = 200;
@@ -88,10 +87,11 @@ class SessionManager{
 	private $protocolVersion;
 	/** @var Server */
 	private $server;
-	private $id;
+	/** @var Table */
+	private $table;
 
 	public function __construct(InternetAddress $address, Channel $rChan, Channel $kChan, Server $server,
-	                            string $serverName, int $serverId, int $maxMtuSize = 1492,
+	                            Table $table, int $maxMtuSize = 1492,
 	                            int $protocolVersion = Properties::DEFAULT_PROTOCOL_VERSION){
 		$this->rChan = $rChan;
 		$this->kChan = $kChan;
@@ -102,8 +102,7 @@ class SessionManager{
 
 		$this->protocolVersion = $protocolVersion;
 		$this->server = $server;
-		$this->name = $serverName;
-		$this->id = $serverId;
+		$this->table = $table;
 
 		$this->registerPackets();
 	}
@@ -452,11 +451,11 @@ class SessionManager{
 	}
 
 	public function getName() : string{
-		return $this->name;
+		return $this->table->get(Raknet::TABLE_MAIN_KEY, Raknet::TABLE_SERVER_NAME);
 	}
 
 	public function getId() : int{
-		return $this->id;
+		return $this->table->get(Raknet::TABLE_MAIN_KEY, Raknet::TABLE_SERVER_ID);
 	}
 
 	/**

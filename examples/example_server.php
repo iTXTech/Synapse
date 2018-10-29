@@ -26,6 +26,7 @@ require_once "env.php";
 use iTXTech\Synapse\Launcher;
 
 $launcher = (new Launcher())
+	->kListen("0.0.0.0", 10305)
 	->rListen("0.0.0.0", 19133);
 $launcher->rServerName("MCPE;NMSL;291;1.5.0;23;666;" . $launcher->getRServerId() . ";Synapse;Creative;");
 
