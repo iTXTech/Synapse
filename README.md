@@ -13,7 +13,6 @@
 ## Roadmap
 
 - [ ] Raknet - Implement MCBE RakNet Protocol
-- [ ] Raknet - Fix swoole ticking bug [swoole issue #2073](https://github.com/swoole/swoole-src/issues/2073)
 - [ ] Kyrios - Implement Synapse Proxy Protocol (SPP) rev9.0
 
 ## License

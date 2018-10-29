@@ -242,6 +242,7 @@ class SessionManager{
 	public function sendPacket(Packet $packet, InternetAddress $address) : void{
 		$packet->encode();
 		$this->server->sendto($address->ip, $address->port, $packet->buffer);
+		$this->table->incr(Raknet::TABLE_MAIN_KEY, Raknet::TABLE_SEND_BYTES, strlen($packet->buffer));
 	}
 
 	public function streamEncapsulated(Session $session, EncapsulatedPacket $packet, int $flags = Properties::PRIORITY_NORMAL) : void{
