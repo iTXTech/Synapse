@@ -63,7 +63,7 @@ class OfflineMessageHandler{
 			case OpenConnectionRequest2::$ID:
 				/** @var OpenConnectionRequest2 $packet */
 
-				if($packet->serverAddress->port === $this->sessionManager->getPort() or !$this->sessionManager->portChecking){
+				if($packet->serverAddress->port === $this->sessionManager->getPort() or !$this->sessionManager->isPortChecking()){
 					$mtuSize = min(abs($packet->mtuSize), $this->sessionManager->getMaxMtuSize()); //Max size, do not allow creating large buffers to fill server memory
 					$pk = new OpenConnectionReply2();
 					$pk->mtuSize = $mtuSize;

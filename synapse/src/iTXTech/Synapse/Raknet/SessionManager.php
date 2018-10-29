@@ -34,17 +34,14 @@ use iTXTech\Synapse\Raknet\Protocol\UnconnectedPing;
 use iTXTech\Synapse\Raknet\Protocol\UnconnectedPingOpenConnections;
 use iTXTech\Synapse\Raknet\Protocol\UnconnectedPong;
 use Swoole\Channel;
+use Swoole\Serialize;
 use Swoole\Table;
 
 class SessionManager{
+	private const TABLE_BLOCK_TIMEOUT = "to";
 
 	/** @var \SplFixedArray<Packet|null> */
 	protected $packetPool;
-
-	/** @var int */
-	protected $receiveBytes = 0;
-	/** @var int */
-	protected $sendBytes = 0;
 
 	/** @var Session[] */
 	protected $sessions = [];
@@ -52,23 +49,8 @@ class SessionManager{
 	/** @var OfflineMessageHandler */
 	protected $offlineMessageHandler;
 
-	/** @var int */
-	protected $packetLimit = 200;
-
 	/** @var bool */
 	protected $shutdown = false;
-
-	/** @var int */
-	protected $ticks = 0;
-	/** @var float */
-	protected $lastMeasure;
-
-	/** @var int[] string (address) => int (unblock time) */
-	protected $block = [];
-	/** @var int[] string (address) => int (number of packets) */
-	protected $ipSec = [];
-
-	public $portChecking = false;
 
 	/** @var int */
 	protected $startTimeMS;
@@ -77,7 +59,7 @@ class SessionManager{
 	protected $maxMtuSize;
 
 	/** @var InternetAddress */
-	protected $reusableAddress;
+	protected $serverAddr;
 
 	/** @var Channel */
 	private $rChan;
@@ -89,6 +71,8 @@ class SessionManager{
 	private $server;
 	/** @var Table */
 	private $table;
+	/** @var Table */
+	private $block;
 
 	public function __construct(InternetAddress $address, Channel $rChan, Channel $kChan, Server $server,
 	                            Table $table, int $maxMtuSize = 1492,
@@ -98,13 +82,36 @@ class SessionManager{
 		$this->startTimeMS = (int) (microtime(true) * 1000);
 		$this->maxMtuSize = $maxMtuSize;
 		$this->offlineMessageHandler = new OfflineMessageHandler($this);
-		$this->reusableAddress = $address;
+		$this->serverAddr = $address;
 
 		$this->protocolVersion = $protocolVersion;
 		$this->server = $server;
 		$this->table = $table;
+		$this->block = new Table(2048);//2048 Blocked address
+		$this->block->column(self::TABLE_BLOCK_TIMEOUT, Table::TYPE_INT);
+		$this->block->create();
 
 		$this->registerPackets();
+	}
+
+	private function getFromTable(string $key){
+		return $this->table->get(Raknet::TABLE_MAIN_KEY, $key);
+	}
+
+	private function setToTable(array $arr){
+		$this->table->set(Raknet::TABLE_MAIN_KEY, $arr);
+	}
+
+	private function getArrFromTable(string $key) : array {
+		return Serialize::unpack($this->getFromTable($key));
+	}
+
+	private function setArrToTable(string $key, array $arr){
+		$this->setToTable([$key => Serialize::pack($arr)]);
+	}
+
+	public function isPortChecking() : bool {
+		return $this->getFromTable(Raknet::TABLE_PORT_CHECKING) === 0 ? false : true;
 	}
 
 	/**
@@ -117,7 +124,7 @@ class SessionManager{
 	}
 
 	public function getPort() : int{
-		return $this->reusableAddress->port;
+		return $this->serverAddr->port;
 	}
 
 	public function getMaxMtuSize() : int{
@@ -136,27 +143,24 @@ class SessionManager{
 			$session->update($time);
 		}
 
-		$this->ipSec = [];
+		$this->setArrToTable(Raknet::TABLE_IP_SEC, []);
 
-		if($this->sendBytes > 0 or $this->receiveBytes > 0){
-			$diff = max(0.005, $time - $this->lastMeasure);
+		if($this->getFromTable(Raknet::TABLE_SEND_BYTES) > 0 or
+			$this->getFromTable(Raknet::TABLE_RECEIVE_BYTES) > 0){
+			$diff = max(0.005, $time - $this->getFromTable(Raknet::TABLE_LAST_MEASURE));
 			$this->streamOption("bandwidth", serialize([
-				"up" => $this->sendBytes / $diff,
-				"down" => $this->receiveBytes / $diff
+				"up" => $this->getFromTable(Raknet::TABLE_SEND_BYTES) / $diff,
+				"down" => $this->getFromTable(Raknet::TABLE_RECEIVE_BYTES) / $diff
 			]));
-			$this->sendBytes = 0;
-			$this->receiveBytes = 0;
+			$this->setToTable([Raknet::TABLE_SEND_BYTES => 0, Raknet::TABLE_RECEIVE_BYTES => 0]);
 		}
-		$this->lastMeasure = $time;
+		$this->setToTable([Raknet::TABLE_LAST_MEASURE => $time]);
 
-		if(count($this->block) > 0){
-			asort($this->block);
+		if($this->block->count() > 0){
 			$now = time();
-			foreach($this->block as $address => $timeout){
-				if($timeout <= $now){
-					unset($this->block[$address]);
-				}else{
-					break;
+			foreach($this->block as $address => $value){
+				if($value[self::TABLE_BLOCK_TIMEOUT] <= $now){
+					$this->block->del($address);
 				}
 			}
 		}
@@ -164,27 +168,23 @@ class SessionManager{
 
 
 	public function receivePacket(string $addr, int $port, string $buffer) : bool{
-		$this->reusableAddress->ip = $addr;
-		$this->reusableAddress->port = $port;
-		$address = $this->reusableAddress;
+		$address = new InternetAddress($addr, $port, 4);
 
-		//$this->receiveBytes += $len;
+		$this->table->incr(Raknet::TABLE_MAIN_KEY, Raknet::TABLE_RECEIVE_BYTES, strlen($buffer));
 		if(isset($this->block[$address->ip])){
 			return true;
 		}
 
-		if(isset($this->ipSec[$address->ip])){
-			if(++$this->ipSec[$address->ip] >= $this->packetLimit){
+		$ipSec = $this->getArrFromTable(Raknet::TABLE_IP_SEC);
+		if(isset($ipSec[$address->ip])){
+			if(++$ipSec[$address->ip] >= $this->getFromTable(Raknet::TABLE_PACKET_LIMIT)){
 				$this->blockAddress($address->ip);
 				return true;
 			}
 		}else{
-			$this->ipSec[$address->ip] = 1;
+			$ipSec[$address->ip] = 1;
 		}
-
-		/*if($len < 1){
-			return true;
-		}*/
+		$this->setArrToTable(Raknet::TABLE_IP_SEC, $ipSec);
 
 		try{
 			$pid = ord($buffer{0});
@@ -337,13 +337,13 @@ class SessionManager{
 				$value = substr($packet, $offset);
 				switch($name){
 					case "name":
-						$this->name = $value;
+						$this->setToTable([Raknet::TABLE_SERVER_NAME => $name]);
 						break;
 					case "portChecking":
-						$this->portChecking = (bool) $value;
+						$this->setToTable([Raknet::TABLE_PORT_CHECKING => ((bool) $value) ? 1 : 0]);
 						break;
 					case "packetLimit":
-						$this->packetLimit = (int) $value;
+						$this->setToTable([Raknet::TABLE_PACKET_LIMIT => (int) $value]);
 						break;
 				}
 			}elseif($id === Properties::PACKET_BLOCK_ADDRESS){
@@ -377,20 +377,20 @@ class SessionManager{
 
 	public function blockAddress(string $address, int $timeout = 300) : void{
 		$final = time() + $timeout;
-		if(!isset($this->block[$address]) or $timeout === -1){
+		if(!$this->block->exist($address) or $timeout === -1){
 			if($timeout === -1){
 				$final = PHP_INT_MAX;
 			}else{
 				Logger::notice("Blocked $address for $timeout seconds");
 			}
-			$this->block[$address] = $final;
-		}elseif($this->block[$address] < $final){
-			$this->block[$address] = $final;
+			$this->block->set($address, [self::TABLE_BLOCK_TIMEOUT => $final]);
+		}elseif($this->block->get($address, self::TABLE_BLOCK_TIMEOUT) < $final){
+			$this->block->set($address, [self::TABLE_BLOCK_TIMEOUT => $final]);
 		}
 	}
 
 	public function unblockAddress(string $address) : void{
-		unset($this->block[$address]);
+		$this->block->del($address);
 		Logger::debug("Unblocked $address");
 	}
 

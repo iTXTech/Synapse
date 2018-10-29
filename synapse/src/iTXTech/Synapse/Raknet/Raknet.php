@@ -29,12 +29,19 @@ use iTXTech\SimpleFramework\Console\TextFormat;
 use iTXTech\Synapse\Util\InternetAddress;
 use Swoole\Channel;
 use Swoole\Process;
+use Swoole\Serialize;
 use Swoole\Table;
 
 class Raknet{
 	public const TABLE_MAIN_KEY = 0;
 	public const TABLE_SERVER_NAME = "sn";
 	public const TABLE_SERVER_ID = "sid";
+	public const TABLE_PORT_CHECKING = "pc";
+	public const TABLE_PACKET_LIMIT = "pl";
+	public const TABLE_LAST_MEASURE = "lm";
+	public const TABLE_RECEIVE_BYTES = "rb";
+	public const TABLE_SEND_BYTES = "sb";
+	public const TABLE_IP_SEC = "ic";
 
 	/** @var Process */
 	private $proc;
@@ -57,13 +64,25 @@ class Raknet{
 		$this->port = $port;
 		$this->swOpts = $swOpts;
 		$this->maxMtuSize = $maxMtuSize;
-		$this->table = new Table(1024);//1KB
+		$this->table = new Table(1024);
 		$this->table->column(self::TABLE_SERVER_NAME, Table::TYPE_STRING, 256);
 		$this->table->column(self::TABLE_SERVER_ID, Table::TYPE_INT);
+		$this->table->column(self::TABLE_PORT_CHECKING, Table::TYPE_INT);
+		$this->table->column(self::TABLE_PACKET_LIMIT, Table::TYPE_INT);
+		$this->table->column(self::TABLE_LAST_MEASURE, Table::TYPE_INT);
+		$this->table->column(self::TABLE_RECEIVE_BYTES, Table::TYPE_INT);
+		$this->table->column(self::TABLE_SEND_BYTES, Table::TYPE_INT);
+		$this->table->column(self::TABLE_IP_SEC, Table::TYPE_STRING, PHP_INT_MAX);
 		$this->table->create();
 		$this->table->set(self::TABLE_MAIN_KEY, [
 			self::TABLE_SERVER_ID => $serverId,
-			self::TABLE_SERVER_NAME => $serverName
+			self::TABLE_SERVER_NAME => $serverName,
+			self::TABLE_PORT_CHECKING => 1,//true
+			self::TABLE_PACKET_LIMIT => 200,
+			self::TABLE_LAST_MEASURE => 0,
+			self::TABLE_RECEIVE_BYTES => 0,
+			self::TABLE_SEND_BYTES => 0,
+			self::TABLE_IP_SEC => Serialize::pack([])
 		]);
 	}
 

@@ -503,7 +503,7 @@ class Session{
 					$dataPacket = new NewIncomingConnection($packet->buffer);
 					$dataPacket->decode();
 
-					if($dataPacket->address->port === $this->sessionManager->getPort() or !$this->sessionManager->portChecking){
+					if($dataPacket->address->port === $this->sessionManager->getPort() or !$this->sessionManager->isPortChecking()){
 						$this->state = self::STATE_CONNECTED; //FINALLY!
 						$this->isTemporal = false;
 						$this->sessionManager->openSession($this);
