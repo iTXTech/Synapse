@@ -33,6 +33,7 @@ use iTXTech\Synapse\Raknet\Protocol\Packet;
 use iTXTech\Synapse\Raknet\Protocol\UnconnectedPing;
 use iTXTech\Synapse\Raknet\Protocol\UnconnectedPingOpenConnections;
 use iTXTech\Synapse\Raknet\Protocol\UnconnectedPong;
+use iTXTech\Synapse\Util\TableHelper;
 use Swoole\Channel;
 use Swoole\Serialize;
 use Swoole\Table;
@@ -43,14 +44,8 @@ class SessionManager{
 	/** @var \SplFixedArray<Packet|null> */
 	protected $packetPool;
 
-	/** @var Session[] */
-	protected $sessions = [];
-
 	/** @var OfflineMessageHandler */
 	protected $offlineMessageHandler;
-
-	/** @var bool */
-	protected $shutdown = false;
 
 	/** @var int */
 	protected $startTimeMS;
@@ -73,6 +68,8 @@ class SessionManager{
 	private $table;
 	/** @var Table */
 	private $block;
+	/** @var Table */
+	private $sessions;
 
 	public function __construct(InternetAddress $address, Channel $rChan, Channel $kChan, Server $server,
 	                            Table $table, int $maxMtuSize = 1492,
@@ -87,9 +84,12 @@ class SessionManager{
 		$this->protocolVersion = $protocolVersion;
 		$this->server = $server;
 		$this->table = $table;
+
 		$this->block = new Table(2048);//2048 Blocked address
 		$this->block->column(self::TABLE_BLOCK_TIMEOUT, Table::TYPE_INT);
 		$this->block->create();
+
+		$this->sessions = TableHelper::createTable(1024 * 128, Session::getStructure());
 
 		$this->registerPackets();
 	}
@@ -139,8 +139,9 @@ class SessionManager{
 		while($this->receiveStream()) ;
 
 		$time = microtime(true);
-		foreach($this->sessions as $session){
-			$session->update($time);
+		foreach($this->sessions as $k => $v){
+			Session::update($k, $this->sessions);
+			//$session->update($time);
 		}
 
 		$this->setArrToTable(Raknet::TABLE_IP_SEC, []);
@@ -189,15 +190,15 @@ class SessionManager{
 		try{
 			$pid = ord($buffer{0});
 
-			$session = $this->getSession($address);
-			if($session !== null){
+			$k = $address->toString();
+			if($this->sessions->exist($k) !== null){
 				if(($pid & Datagram::BITFLAG_VALID) !== 0){
 					if($pid & Datagram::BITFLAG_ACK){
-						$session->handlePacket(new ACK($buffer));
+						Session::handlePacket($k, $this->sessions, new ACK($buffer));
 					}elseif($pid & Datagram::BITFLAG_NAK){
-						$session->handlePacket(new NACK($buffer));
+						Session::handlePacket($k, $this->sessions, new NACK($buffer));
 					}else{
-						$session->handlePacket(new Datagram($buffer));
+						Session::handlePacket($k, $this->sessions, new Datagram($buffer));
 					}
 				}else{
 					Logger::debug("Ignored unconnected packet from $address due to session already opened (0x" . dechex($pid) . ")");
@@ -245,9 +246,8 @@ class SessionManager{
 		$this->table->incr(Raknet::TABLE_MAIN_KEY, Raknet::TABLE_SEND_BYTES, strlen($packet->buffer));
 	}
 
-	public function streamEncapsulated(Session $session, EncapsulatedPacket $packet, int $flags = Properties::PRIORITY_NORMAL) : void{
-		$id = $session->getAddress()->toString();
-		$buffer = chr(Properties::PACKET_ENCAPSULATED) . chr(strlen($id)) . $id . chr($flags) . $packet->toInternalBinary();
+	public function streamEncapsulated(string $k, EncapsulatedPacket $packet, int $flags = Properties::PRIORITY_NORMAL) : void{
+		$buffer = chr(Properties::PACKET_ENCAPSULATED) . chr(strlen($k)) . $k . chr($flags) . $packet->toInternalBinary();
 		$this->rChan->push($buffer);
 	}
 
@@ -266,10 +266,10 @@ class SessionManager{
 		$this->rChan->push($buffer);
 	}
 
-	protected function streamOpen(Session $session) : void{
-		$address = $session->getAddress();
+	protected function streamOpen(InternetAddress $address) : void{
 		$identifier = $address->toString();
-		$buffer = chr(Properties::PACKET_OPEN_SESSION) . chr(strlen($identifier)) . $identifier . chr(strlen($address->ip)) . $address->ip . Binary::writeShort($address->port) . Binary::writeLong($session->getID());
+		$buffer = chr(Properties::PACKET_OPEN_SESSION) . chr(strlen($identifier)) . $identifier . chr(strlen($address->ip)) .
+			$address->ip . Binary::writeShort($address->port) . Binary::writeLong(Session::getId($address->toString(), $this->sessions));
 		$this->rChan->push($buffer);
 	}
 
@@ -287,9 +287,8 @@ class SessionManager{
 		$this->rChan->push($buffer);
 	}
 
-	public function streamPingMeasure(Session $session, int $pingMS) : void{
-		$identifier = $session->getAddress()->toString();
-		$buffer = chr(Properties::PACKET_REPORT_PING) . chr(strlen($identifier)) . $identifier . Binary::writeInt($pingMS);
+	public function streamPingMeasure(string $k, int $pingMS) : void{
+		$buffer = chr(Properties::PACKET_REPORT_PING) . chr(strlen($k)) . $k . Binary::writeInt($pingMS);
 		$this->rChan->push($buffer);
 	}
 
@@ -301,11 +300,11 @@ class SessionManager{
 				$len = ord($packet{$offset++});
 				$identifier = substr($packet, $offset, $len);
 				$offset += $len;
-				$session = $this->sessions[$identifier] ?? null;
-				if($session !== null and $session->isConnected()){
+				if($this->sessionExists($identifier) and Session::isConnected($identifier, $this->sessions)){
 					$flags = ord($packet{$offset++});
 					$buffer = substr($packet, $offset);
-					$session->addEncapsulatedToQueue(EncapsulatedPacket::fromInternalBinary($buffer), $flags);
+					Session::addEncapsulatedToQueue($identifier, $this->sessions,
+						EncapsulatedPacket::fromInternalBinary($buffer), $flags);
 				}else{
 					$this->streamInvalid($identifier);
 				}
@@ -320,8 +319,8 @@ class SessionManager{
 			}elseif($id === Properties::PACKET_CLOSE_SESSION){
 				$len = ord($packet{$offset++});
 				$identifier = substr($packet, $offset, $len);
-				if(isset($this->sessions[$identifier])){
-					$this->sessions[$identifier]->flagForDisconnection();
+				if($this->sessionExists($identifier)){
+					Session::flagForDisconnection($identifier, $this->sessions);
 				}else{
 					$this->streamInvalid($identifier);
 				}
@@ -358,14 +357,9 @@ class SessionManager{
 				$address = substr($packet, $offset, $len);
 				$this->unblockAddress($address);
 			}elseif($id === Properties::PACKET_SHUTDOWN){
-				foreach($this->sessions as $session){
-					$this->removeSession($session);
+				foreach($this->sessions as $k => $v){
+					$this->removeSession($k);
 				}
-
-				//$this->socket->close();
-				$this->shutdown = true;
-			}elseif($id === Properties::PACKET_EMERGENCY_SHUTDOWN){
-				$this->shutdown = true;
 			}else{
 				Logger::debug("Unknown RakLib internal packet (ID 0x" . dechex($id) . ") received from main thread");
 			}
@@ -395,60 +389,33 @@ class SessionManager{
 		Logger::debug("Unblocked $address");
 	}
 
-	/**
-	 * @param InternetAddress $address
-	 *
-	 * @return Session|null
-	 */
-	public function getSession(InternetAddress $address) : ?Session{
-		return $this->sessions[$address->toString()] ?? null;
+	public function sessionExists(string $k) : bool{
+		return $this->sessions->exist($k);
 	}
 
-	public function sessionExists(InternetAddress $address) : bool{
-		return isset($this->sessions[$address->toString()]);
-	}
-
-	public function createSession(InternetAddress $address, int $clientId, int $mtuSize) : Session{
-		$this->checkSessions();
-
-		$this->sessions[$address->toString()] = $session = new Session($this, clone $address, $clientId, $mtuSize);
+	public function createSession(InternetAddress $address, int $clientId, int $mtuSize){
+		TableHelper::initializeDefaultValue($this->sessions, $address->toString(), Session::getStructure($clientId, $mtuSize));
 		Logger::debug("Created session for $address with MTU size $mtuSize");
-
-		return $session;
 	}
 
-	public function removeSession(Session $session, string $reason = "unknown") : void{
-		$id = $session->getAddress()->toString();
-		if(isset($this->sessions[$id])){
-			$this->sessions[$id]->close();
-			$this->removeSessionInternal($session);
-			$this->streamClose($id, $reason);
+	public function removeSession(string $k, string $reason = "unknown") : void{
+		if($this->sessions->exist($k)){
+			Session::close($k, $this->sessions);
+			$this->removeSessionInternal($k);
+			$this->streamClose($k, $reason);
 		}
 	}
 
-	public function removeSessionInternal(Session $session) : void{
-		unset($this->sessions[$session->getAddress()->toString()]);
+	public function removeSessionInternal(string $k) : void{
+		$this->sessions->del($k);
 	}
 
-	public function openSession(Session $session) : void{
-		$this->streamOpen($session);
+	public function openSession(InternetAddress $address) : void{
+		$this->streamOpen($address);
 	}
 
-	private function checkSessions() : void{
-		if(count($this->sessions) > 4096){
-			foreach($this->sessions as $i => $s){
-				if($s->isTemporal()){
-					unset($this->sessions[$i]);
-					if(count($this->sessions) <= 4096){
-						break;
-					}
-				}
-			}
-		}
-	}
-
-	public function notifyACK(Session $session, int $identifierACK) : void{
-		$this->streamACK($session->getAddress()->toString(), $identifierACK);
+	public function notifyACK(string $k, int $identifierACK) : void{
+		$this->streamACK($k, $identifierACK);
 	}
 
 	public function getName() : string{

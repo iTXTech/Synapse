@@ -31,8 +31,9 @@ use iTXTech\Synapse\Raknet\Protocol\NewIncomingConnection;
 use iTXTech\Synapse\Raknet\Protocol\Packet;
 use iTXTech\Synapse\Raknet\Protocol\PacketReliability;
 use iTXTech\Synapse\Util\InternetAddress;
+use Swoole\Table;
 
-class Session{
+abstract class Session{
 	public const STATE_CONNECTING = 0;
 	public const STATE_CONNECTED = 1;
 	public const STATE_DISCONNECTING = 2;
@@ -43,88 +44,72 @@ class Session{
 
 	private const CHANNEL_COUNT = 32;
 
-	public static $WINDOW_SIZE = 2048;
+	public const WINDOW_SIZE = 2048;
 
-	/** @var int */
-	private $messageIndex = 0;
+	public const TABLE_MESSAGE_INDEX = "mi";
+	public const TABLE_SEND_ORDERED_INDEX = "soi";
+	public const TABLE_SEND_SEQUENCED_INDEX = "ssi";
+	public const TABLE_RECEIVE_ORDERED_INDEX = "roi";
+	public const TABLE_RECEIVE_SEQUENCED_HIGHEST_INDEX = "rshi";
+	public const TABLE_RECEIVE_ORDERED_PACKETS = "rop";
+	public const TABLE_SESSION_MANAGER = "sm";
+	public const TABLE_ADDRESS = "a";
+	public const TABLE_STATE = "s";
+	public const TABLE_MTU_SIZE = "ms";
+	public const TABLE_ID = "i";
+	public const TABLE_SPLIT_I_D = "sid";
+	public const TABLE_SEND_SEQ_NUMBER = "ssn";
+	public const TABLE_LAST_UPDATE = "lu";
+	public const TABLE_DISCONNECTION_TIME = "dt";
+	public const TABLE_IS_TEMPORAL = "it";
+	public const TABLE_PACKET_TO_SEND = "pts";
+	public const TABLE_IS_ACTIVE = "ia";
+	public const TABLE_ACK_QUEUE = "aq";
+	public const TABLE_NACK_QUEUE = "nq";
+	public const TABLE_RECOVERY_QUEUE = "rq";
+	public const TABLE_SPLIT_PACKETS = "sp";
+	public const TABLE_NEED_ACK = "na";
+	public const TABLE_SEND_QUEUE = "sq";
+	public const TABLE_WINDOW_START = "ws";
+	public const TABLE_WINDOW_END = "we";
+	public const TABLE_HIGHEST_SEQ_NUMBER_THIS_TICK = "hsntt";
+	public const TABLE_RELIABLE_WINDOW_START = "rws";
+	public const TABLE_RELIABLE_WINDOW_END = "rwe";
+	public const TABLE_RELIABLE_WINDOW = "rw";
+	public const TABLE_LAST_PING_TIME = "lpt";
+	public const TABLE_LAST_PING_MEASURE = "lpm";
 
-	/** @var int[] */
-	private $sendOrderedIndex;
-	/** @var int[] */
-	private $sendSequencedIndex;
-	/** @var int[] */
-	private $receiveOrderedIndex;
-	/** @var int[] */
-	private $receiveSequencedHighestIndex;
-	/** @var EncapsulatedPacket[][] */
-	private $receiveOrderedPackets;
+	public static function getStructure(int $clientId = 0, int $mtuSize = 1492) : array {
+		return [];
+	}
 
-	/** @var SessionManager */
-	private $sessionManager;
+	public static function update(string $key, Table $table){
 
-	/** @var InternetAddress */
-	private $address;
+	}
 
-	/** @var int */
-	private $state = self::STATE_CONNECTING;
-	/** @var int */
-	private $mtuSize;
-	/** @var int */
-	private $id;
-	/** @var int */
-	private $splitID = 0;
+	public static function close(string $key, Table $table){
 
-	/** @var int */
-	private $sendSeqNumber = 0;
+	}
 
-	/** @var float */
-	private $lastUpdate;
-	/** @var float|null */
-	private $disconnectionTime;
+	public static function handlePacket(string $key, Table $table, Packet $packet){
+	}
 
-	/** @var bool */
-	private $isTemporal = true;
+	public static function isConnected(string $key, Table $table) : bool {
 
-	/** @var Datagram[] */
-	private $packetToSend = [];
-	/** @var bool */
-	private $isActive = false;
+	}
 
-	/** @var int[] */
-	private $ACKQueue = [];
-	/** @var int[] */
-	private $NACKQueue = [];
+	public static function addEncapsulatedToQueue(string $key, Table $table,
+	                                              EncapsulatedPacket $packet, int $flags = Properties::PRIORITY_NORMAL){
 
-	/** @var Datagram[] */
-	private $recoveryQueue = [];
+	}
 
-	/** @var Datagram[][] */
-	private $splitPackets = [];
+	public static function flagForDisconnection(string $key, Table $table){
 
-	/** @var int[][] */
-	private $needACK = [];
+	}
 
-	/** @var Datagram */
-	private $sendQueue;
+	public static function getId(string $key, Table $table) : int{
 
-	/** @var int */
-	private $windowStart;
-	/** @var int */
-	private $windowEnd;
-	/** @var int */
-	private $highestSeqNumberThisTick = -1;
-
-	/** @var int */
-	private $reliableWindowStart;
-	/** @var int */
-	private $reliableWindowEnd;
-	/** @var bool[] */
-	private $reliableWindow = [];
-
-	/** @var float */
-	private $lastPingTime = -1;
-	/** @var int */
-	private $lastPingMeasure = 1;
+	}
 
 	public function __construct(SessionManager $sessionManager, InternetAddress $address, int $clientId, int $mtuSize){
 		$this->sessionManager = $sessionManager;
@@ -134,10 +119,10 @@ class Session{
 
 		$this->lastUpdate = microtime(true);
 		$this->windowStart = 0;
-		$this->windowEnd = self::$WINDOW_SIZE;
+		$this->windowEnd = self::WINDOW_SIZE;
 
 		$this->reliableWindowStart = 0;
-		$this->reliableWindowEnd = self::$WINDOW_SIZE;
+		$this->reliableWindowEnd = self::WINDOW_SIZE;
 
 		$this->sendOrderedIndex = array_fill(0, self::CHANNEL_COUNT, 0);
 		$this->sendSequencedIndex = array_fill(0, self::CHANNEL_COUNT, 0);
@@ -223,7 +208,7 @@ class Session{
 				}
 			}
 
-			if(count($this->packetToSend) > self::$WINDOW_SIZE){
+			if(count($this->packetToSend) > self::WINDOW_SIZE){
 				$this->packetToSend = [];
 			}
 		}
