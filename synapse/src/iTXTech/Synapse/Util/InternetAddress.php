@@ -71,4 +71,9 @@ class InternetAddress{
 	public function equals(InternetAddress $address) : bool{
 		return $this->ip === $address->ip and $this->port === $address->port and $this->version === $address->version;
 	}
+
+	public static function from(string $id){
+		$parts = explode(" ", $id);
+		return new InternetAddress($parts[0], $parts[1], 4);
+	}
 }

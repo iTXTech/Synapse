@@ -31,9 +31,11 @@ use iTXTech\Synapse\Raknet\Protocol\NewIncomingConnection;
 use iTXTech\Synapse\Raknet\Protocol\Packet;
 use iTXTech\Synapse\Raknet\Protocol\PacketReliability;
 use iTXTech\Synapse\Util\InternetAddress;
+use iTXTech\Synapse\Util\TableHelper;
+use Swoole\Lock;
 use Swoole\Table;
 
-abstract class Session{
+class Session{
 	public const STATE_CONNECTING = 0;
 	public const STATE_CONNECTED = 1;
 	public const STATE_DISCONNECTING = 2;
@@ -46,78 +48,158 @@ abstract class Session{
 
 	public const WINDOW_SIZE = 2048;
 
-	public const TABLE_MESSAGE_INDEX = "mi";
-	public const TABLE_SEND_ORDERED_INDEX = "soi";
-	public const TABLE_SEND_SEQUENCED_INDEX = "ssi";
-	public const TABLE_RECEIVE_ORDERED_INDEX = "roi";
-	public const TABLE_RECEIVE_SEQUENCED_HIGHEST_INDEX = "rshi";
-	public const TABLE_RECEIVE_ORDERED_PACKETS = "rop";
-	public const TABLE_SESSION_MANAGER = "sm";
+	public const TABLE_SESSION_OBJECT = "obj";
+	public const TABLE_SESSION_USING = "su";
 	public const TABLE_ADDRESS = "a";
 	public const TABLE_STATE = "s";
 	public const TABLE_MTU_SIZE = "ms";
 	public const TABLE_ID = "i";
-	public const TABLE_SPLIT_I_D = "sid";
-	public const TABLE_SEND_SEQ_NUMBER = "ssn";
-	public const TABLE_LAST_UPDATE = "lu";
-	public const TABLE_DISCONNECTION_TIME = "dt";
-	public const TABLE_IS_TEMPORAL = "it";
-	public const TABLE_PACKET_TO_SEND = "pts";
 	public const TABLE_IS_ACTIVE = "ia";
-	public const TABLE_ACK_QUEUE = "aq";
-	public const TABLE_NACK_QUEUE = "nq";
-	public const TABLE_RECOVERY_QUEUE = "rq";
-	public const TABLE_SPLIT_PACKETS = "sp";
-	public const TABLE_NEED_ACK = "na";
-	public const TABLE_SEND_QUEUE = "sq";
-	public const TABLE_WINDOW_START = "ws";
-	public const TABLE_WINDOW_END = "we";
-	public const TABLE_HIGHEST_SEQ_NUMBER_THIS_TICK = "hsntt";
-	public const TABLE_RELIABLE_WINDOW_START = "rws";
-	public const TABLE_RELIABLE_WINDOW_END = "rwe";
-	public const TABLE_RELIABLE_WINDOW = "rw";
-	public const TABLE_LAST_PING_TIME = "lpt";
-	public const TABLE_LAST_PING_MEASURE = "lpm";
+	public const TABLE_IS_TEMPORAL = "it";
+	public const TABLE_LOCK_ID = "lid";
+	public const TABLE_LAST_UPDATE = "lu";
 
-	public static function getStructure(int $clientId = 0, int $mtuSize = 1492) : array {
-		return [];
+	/** @var int */
+	private $messageIndex = 0;
+
+	/** @var int[] */
+	private $sendOrderedIndex;
+	/** @var int[] */
+	private $sendSequencedIndex;
+	/** @var int[] */
+	private $receiveOrderedIndex;
+	/** @var int[] */
+	private $receiveSequencedHighestIndex;
+	/** @var EncapsulatedPacket[][] */
+	private $receiveOrderedPackets;
+
+	/** @var InternetAddress */
+	private $address;
+
+	/** @var int */
+	private $state = self::STATE_CONNECTING;
+	/** @var int */
+	private $mtuSize;
+	/** @var int */
+	private $splitID = 0;
+
+	/** @var int */
+	private $sendSeqNumber = 0;
+
+	/** @var float */
+	private $lastReceive;
+	/** @var float|null */
+	private $disconnectionTime;
+
+	/** @var Datagram[] */
+	private $packetToSend = [];
+
+	/** @var int[] */
+	private $ACKQueue = [];
+	/** @var int[] */
+	private $NACKQueue = [];
+
+	/** @var Datagram[] */
+	private $recoveryQueue = [];
+
+	/** @var Datagram[][] */
+	private $splitPackets = [];
+
+	/** @var int[][] */
+	private $needACK = [];
+
+	/** @var Datagram */
+	private $sendQueue;
+
+	/** @var int */
+	private $windowStart;
+	/** @var int */
+	private $windowEnd;
+	/** @var int */
+	private $highestSeqNumberThisTick = -1;
+
+	/** @var int */
+	private $reliableWindowStart;
+	/** @var int */
+	private $reliableWindowEnd;
+	/** @var bool[] */
+	private $reliableWindow = [];
+
+	/** @var float */
+	private $lastPingTime = -1;
+	/** @var int */
+	private $lastPingMeasure = 1;
+
+	public static function getStructure(int $clientId = 0){
+		return [
+			self::TABLE_ADDRESS => [Table::TYPE_STRING, "", 128],
+			self::TABLE_STATE => [Table::TYPE_INT, self::STATE_CONNECTING],
+			self::TABLE_ID => [Table::TYPE_INT, $clientId],
+			self::TABLE_IS_TEMPORAL => [Table::TYPE_INT, 1],//true
+			self::TABLE_IS_ACTIVE => [Table::TYPE_INT, 0],//false
+			self::TABLE_SESSION_OBJECT => [Table::TYPE_STRING, "", PHP_INT_MAX],
+			self::TABLE_SESSION_USING => [Table::TYPE_INT, 0],//false
+			self::TABLE_LOCK_ID => [Table::TYPE_INT, 0],
+			self::TABLE_LAST_UPDATE => [Table::TYPE_FLOAT, microtime(true)],
+		];
 	}
 
-	public static function update(string $key, Table $table){
-
+	public static function createObject(SessionManager $manager, InternetAddress $address, int $mtuSize){
+		$manager->assignLock($address->toString());
+		TableHelper::putObject($manager->sessions, $address->toString(),
+			self::TABLE_SESSION_OBJECT, new Session($address, $mtuSize));
 	}
 
-	public static function close(string $key, Table $table){
-
+	public static function getLock(SessionManager $manager, string $k) : ?Lock{
+		return $manager->getLock($manager->sessions->get($k, self::TABLE_LOCK_ID));
 	}
 
-	public static function handlePacket(string $key, Table $table, Packet $packet){
+	public static function getId(Table $table, string $k) : int{
+		return $table->get($k, self::TABLE_ID);
 	}
 
-	public static function isConnected(string $key, Table $table) : bool {
-
+	public static function isTemporal(Table $table, string $k) : bool {
+		return TableHelper::getBool($table, $k, self::TABLE_IS_TEMPORAL);
 	}
 
-	public static function addEncapsulatedToQueue(string $key, Table $table,
-	                                              EncapsulatedPacket $packet, int $flags = Properties::PRIORITY_NORMAL){
-
+	public static function isConnected(Table $table, string $k) : bool {
+		$state = $table->get($k, self::TABLE_STATE);
+		return $state !== self::STATE_DISCONNECTING and $state !== self::STATE_DISCONNECTED;
 	}
 
-	public static function flagForDisconnection(string $key, Table $table){
-
+	public static function getAddress(Table $table, string $k) : InternetAddress{
+		return TableHelper::getObject($table, $k, self::TABLE_ADDRESS);
 	}
 
-	public static function getId(string $key, Table $table) : int{
-
+	public static function getLastUpdate(Table $table, string $k) : float {
+		return $table->get($k, self::TABLE_LAST_UPDATE);
 	}
 
-	public function __construct(SessionManager $sessionManager, InternetAddress $address, int $clientId, int $mtuSize){
-		$this->sessionManager = $sessionManager;
-		$this->address = $address;
-		$this->id = $clientId;
+	public static function prepareSession(SessionManager $manager, string $k) : ?Session{
+		$lock = self::getLock($manager, $k);
+		if($lock === null){
+			return null;
+		}
+		$lock->lock();
+		return TableHelper::getObject($manager->sessions, $k, self::TABLE_SESSION_OBJECT);
+	}
+
+	public static function storeSession(SessionManager $manager, Session $session) : bool {
+		if($session->state !== self::STATE_DISCONNECTED){
+			$lock = self::getLock($manager, $session->getIdentifier());
+			if($lock === null){
+				return false;
+			}
+			$lock->unlock();
+			TableHelper::putObject($manager->sessions, $session->getIdentifier(), self::TABLE_SESSION_OBJECT, $session);
+			return true;
+		}
+		return false;
+	}
+
+	public function __construct(InternetAddress $address, int $mtuSize = 0){
 		$this->sendQueue = new Datagram();
 
-		$this->lastUpdate = microtime(true);
 		$this->windowStart = 0;
 		$this->windowEnd = self::WINDOW_SIZE;
 
@@ -133,31 +215,18 @@ abstract class Session{
 		$this->receiveOrderedPackets = array_fill(0, self::CHANNEL_COUNT, []);
 
 		$this->mtuSize = $mtuSize;
+		$this->address = $address;
+		$this->lastReceive = 0;
 	}
 
-	public function getAddress() : InternetAddress{
-		return $this->address;
+	public function getIdentifier() : string{
+		return $this->address->toString();
 	}
 
-	public function getID() : int{
-		return $this->id;
-	}
-
-	public function getState() : int{
-		return $this->state;
-	}
-
-	public function isTemporal() : bool{
-		return $this->isTemporal;
-	}
-
-	public function isConnected() : bool{
-		return $this->state !== self::STATE_DISCONNECTING and $this->state !== self::STATE_DISCONNECTED;
-	}
-
-	public function update(float $time) : void{
-		if(!$this->isActive and ($this->lastUpdate + 10) < $time){
-			$this->disconnect("timeout");
+	public function update(SessionManager $manager, float $time) : void{
+		if(!TableHelper::getBool($manager->sessions, $this->getIdentifier(), self::TABLE_IS_ACTIVE)
+			and ($this->lastReceive + 10) < $time){
+			$manager->removeSession($this, "timeout");
 
 			return;
 		}
@@ -166,11 +235,12 @@ abstract class Session{
 				(empty($this->ACKQueue) and empty($this->NACKQueue) and empty($this->packetToSend) and empty($this->recoveryQueue)) or
 				$this->disconnectionTime + 10 < $time)
 		){
-			$this->close();
+			$this->close($manager);
 			return;
 		}
 
-		$this->isActive = false;
+		$manager->sessions->set($this->getIdentifier(), [self::TABLE_LAST_UPDATE => microtime(true)]);
+		TableHelper::putBool($manager->sessions, $this->getIdentifier(), self::TABLE_IS_ACTIVE, false);
 
 		$diff = $this->highestSeqNumberThisTick - $this->windowStart + 1;
 		assert($diff >= 0);
@@ -186,21 +256,21 @@ abstract class Session{
 		if(count($this->ACKQueue) > 0){
 			$pk = new ACK();
 			$pk->packets = $this->ACKQueue;
-			$this->sendPacket($pk);
+			$this->sendPacket($manager, $pk);
 			$this->ACKQueue = [];
 		}
 
 		if(count($this->NACKQueue) > 0){
 			$pk = new NACK();
 			$pk->packets = $this->NACKQueue;
-			$this->sendPacket($pk);
+			$this->sendPacket($manager, $pk);
 			$this->NACKQueue = [];
 		}
 
 		if(count($this->packetToSend) > 0){
 			$limit = 16;
 			foreach($this->packetToSend as $k => $pk){
-				$this->sendDatagram($pk);
+				$this->sendDatagram($manager, $pk);
 				unset($this->packetToSend[$k]);
 
 				if(--$limit <= 0){
@@ -217,7 +287,7 @@ abstract class Session{
 			foreach($this->needACK as $identifierACK => $indexes){
 				if(count($indexes) === 0){
 					unset($this->needACK[$identifierACK]);
-					$this->sessionManager->notifyACK($this, $identifierACK);
+					$manager->notifyACK($this, $identifierACK);
 				}
 			}
 		}
@@ -233,28 +303,25 @@ abstract class Session{
 		}
 
 		if($this->lastPingTime + 5 < $time){
-			$this->sendPing();
+			$this->sendPing($manager);
 			$this->lastPingTime = $time;
 		}
 
-		$this->sendQueue();
+		$this->sendQueue($manager);
 	}
 
-	public function disconnect(string $reason = "unknown") : void{
-		$this->sessionManager->removeSession($this, $reason);
-	}
-
-	private function sendDatagram(Datagram $datagram) : void{
+	private function sendDatagram(SessionManager $manager, Datagram $datagram) : void{
 		if($datagram->seqNumber !== null){
 			unset($this->recoveryQueue[$datagram->seqNumber]);
 		}
 		$datagram->seqNumber = $this->sendSeqNumber++;
 		$datagram->sendTime = microtime(true);
 		$this->recoveryQueue[$datagram->seqNumber] = $datagram;
-		$this->sendPacket($datagram);
+		$this->sendPacket($manager, $datagram);
 	}
 
-	private function queueConnectedPacket(Packet $packet, int $reliability, int $orderChannel, int $flags = Properties::PRIORITY_NORMAL) : void{
+	private function queueConnectedPacket(SessionManager $manager, Packet $packet, int $reliability,
+	                                      int $orderChannel, int $flags = Properties::PRIORITY_NORMAL) : void{
 		$packet->encode();
 
 		$encapsulated = new EncapsulatedPacket();
@@ -262,31 +329,27 @@ abstract class Session{
 		$encapsulated->orderChannel = $orderChannel;
 		$encapsulated->buffer = $packet->buffer;
 
-		$this->addEncapsulatedToQueue($encapsulated, $flags);
+		$this->addEncapsulatedToQueue($manager, $encapsulated, $flags);
 	}
 
-	private function sendPacket(Packet $packet) : void{
-		$this->sessionManager->sendPacket($packet, $this->address);
+	private function sendPacket(SessionManager $manager, Packet $packet) : void{
+		$manager->sendPacket($packet, $this->address);
 	}
 
-	public function sendQueue() : void{
+	public function sendQueue(SessionManager $manager) : void{
 		if(count($this->sendQueue->packets) > 0){
-			$this->sendDatagram($this->sendQueue);
+			$this->sendDatagram($manager, $this->sendQueue);
 			$this->sendQueue = new Datagram();
 		}
 	}
 
-	private function sendPing(int $reliability = PacketReliability::UNRELIABLE) : void{
+	private function sendPing(SessionManager $manager, int $reliability = PacketReliability::UNRELIABLE) : void{
 		$pk = new ConnectedPing();
-		$pk->sendPingTime = $this->sessionManager->getRakNetTimeMS();
-		$this->queueConnectedPacket($pk, $reliability, 0, Properties::PRIORITY_IMMEDIATE);
+		$pk->sendPingTime = $manager->getRakNetTimeMS();
+		$this->queueConnectedPacket($manager, $pk, $reliability, 0, Properties::PRIORITY_IMMEDIATE);
 	}
 
-	/**
-	 * @param EncapsulatedPacket $pk
-	 * @param int $flags
-	 */
-	private function addToQueue(EncapsulatedPacket $pk, int $flags = Properties::PRIORITY_NORMAL) : void{
+	private function addToQueue(SessionManager $manager, EncapsulatedPacket $pk, int $flags = Properties::PRIORITY_NORMAL) : void{
 		$priority = $flags & 0b00000111;
 		if($pk->needACK and $pk->messageIndex !== null){
 			$this->needACK[$pk->identifierACK][$pk->messageIndex] = $pk->messageIndex;
@@ -294,7 +357,7 @@ abstract class Session{
 
 		$length = $this->sendQueue->length();
 		if($length + $pk->getTotalLength() > $this->mtuSize - 36){ //IP header (20 bytes) + UDP header (8 bytes) + RakNet weird (8 bytes) = 36 bytes
-			$this->sendQueue();
+			$this->sendQueue($manager);
 		}
 
 		if($pk->needACK){
@@ -306,16 +369,11 @@ abstract class Session{
 
 		if($priority === Properties::PRIORITY_IMMEDIATE){
 			// Forces pending sends to go out now, rather than waiting to the next update interval
-			$this->sendQueue();
+			$this->sendQueue($manager);
 		}
 	}
 
-	/**
-	 * @param EncapsulatedPacket $packet
-	 * @param int $flags
-	 */
-	public function addEncapsulatedToQueue(EncapsulatedPacket $packet, int $flags = Properties::PRIORITY_NORMAL) : void{
-
+	public function addEncapsulatedToQueue(SessionManager $manager, EncapsulatedPacket $packet, int $flags = Properties::PRIORITY_NORMAL) : void{
 		if(($packet->needACK = ($flags & Properties::FLAG_NEED_ACK) > 0) === true){
 			$this->needACK[$packet->identifierACK] = [];
 		}
@@ -352,13 +410,13 @@ abstract class Session{
 				$pk->orderChannel = $packet->orderChannel;
 				$pk->orderIndex = $packet->orderIndex;
 
-				$this->addToQueue($pk, $flags | Properties::PRIORITY_IMMEDIATE);
+				$this->addToQueue($manager, $pk, $flags | Properties::PRIORITY_IMMEDIATE);
 			}
 		}else{
 			if(PacketReliability::isReliable($packet->reliability)){
 				$packet->messageIndex = $this->messageIndex++;
 			}
-			$this->addToQueue($packet, $flags);
+			$this->addToQueue($manager, $packet, $flags);
 		}
 	}
 
@@ -410,7 +468,7 @@ abstract class Session{
 		return null;
 	}
 
-	private function handleEncapsulatedPacket(EncapsulatedPacket $packet) : void{
+	private function handleEncapsulatedPacket(SessionManager $manager, EncapsulatedPacket $packet) : void{
 		if($packet->messageIndex !== null){
 			//check for duplicates or out of range
 			if($packet->messageIndex < $this->reliableWindowStart or $packet->messageIndex > $this->reliableWindowEnd or isset($this->reliableWindow[$packet->messageIndex])){
@@ -438,7 +496,7 @@ abstract class Session{
 			}
 
 			$this->receiveSequencedHighestIndex[$packet->orderChannel] = $packet->sequenceIndex + 1;
-			$this->handleEncapsulatedPacketRoute($packet);
+			$this->handleEncapsulatedPacketRoute($manager, $packet);
 		}elseif(PacketReliability::isOrdered($packet->reliability)){
 			if($packet->orderIndex === $this->receiveOrderedIndex[$packet->orderChannel]){
 				//this is the packet we expected to get next
@@ -448,9 +506,9 @@ abstract class Session{
 				$this->receiveSequencedHighestIndex[$packet->orderIndex] = 0;
 				$this->receiveOrderedIndex[$packet->orderChannel] = $packet->orderIndex + 1;
 
-				$this->handleEncapsulatedPacketRoute($packet);
+				$this->handleEncapsulatedPacketRoute($manager, $packet);
 				for($i = $this->receiveOrderedIndex[$packet->orderChannel]; isset($this->receiveOrderedPackets[$packet->orderChannel][$i]); ++$i){
-					$this->handleEncapsulatedPacketRoute($this->receiveOrderedPackets[$packet->orderChannel][$i]);
+					$this->handleEncapsulatedPacketRoute($manager, $this->receiveOrderedPackets[$packet->orderChannel][$i]);
 					unset($this->receiveOrderedPackets[$packet->orderChannel][$i]);
 				}
 
@@ -462,16 +520,12 @@ abstract class Session{
 			}*/
 		}else{
 			//not ordered or sequenced
-			$this->handleEncapsulatedPacketRoute($packet);
+			$this->handleEncapsulatedPacketRoute($manager, $packet);
 		}
 	}
 
 
-	private function handleEncapsulatedPacketRoute(EncapsulatedPacket $packet) : void{
-		if($this->sessionManager === null){
-			return;
-		}
-
+	private function handleEncapsulatedPacketRoute(SessionManager $manager, EncapsulatedPacket $packet) : void{
 		$id = ord($packet->buffer{0});
 		if($id < MessageIdentifiers::ID_USER_PACKET_ENUM){ //internal data packet
 			if($this->state === self::STATE_CONNECTING){
@@ -482,57 +536,53 @@ abstract class Session{
 					$pk = new ConnectionRequestAccepted;
 					$pk->address = $this->address;
 					$pk->sendPingTime = $dataPacket->sendPingTime;
-					$pk->sendPongTime = $this->sessionManager->getRakNetTimeMS();
-					$this->queueConnectedPacket($pk, PacketReliability::UNRELIABLE, 0, Properties::PRIORITY_IMMEDIATE);
+					$pk->sendPongTime = $manager->getRakNetTimeMS();
+					$this->queueConnectedPacket($manager, $pk, PacketReliability::UNRELIABLE, 0, Properties::PRIORITY_IMMEDIATE);
 				}elseif($id === NewIncomingConnection::$ID){
 					$dataPacket = new NewIncomingConnection($packet->buffer);
 					$dataPacket->decode();
 
-					if($dataPacket->address->port === $this->sessionManager->getPort() or !$this->sessionManager->isPortChecking()){
+					if($dataPacket->address->port === $manager->getPort() or !$manager->isPortChecking()){
 						$this->state = self::STATE_CONNECTED; //FINALLY!
-						$this->isTemporal = false;
-						$this->sessionManager->openSession($this);
+						TableHelper::putBool($manager->sessions, $this->getIdentifier(), self::TABLE_IS_TEMPORAL, false);
+						$manager->openSession($this->address);
 
 						//$this->handlePong($dataPacket->sendPingTime, $dataPacket->sendPongTime); //can't use this due to system-address count issues in MCPE >.<
-						$this->sendPing();
+						$this->sendPing($manager);
 					}
 				}
 			}elseif($id === DisconnectionNotification::$ID){
 				//TODO: we're supposed to send an ACK for this, but currently we're just deleting the session straight away
-				$this->disconnect("client disconnect");
+				$manager->removeSession($this, "client disconnect");
 			}elseif($id === ConnectedPing::$ID){
 				$dataPacket = new ConnectedPing($packet->buffer);
 				$dataPacket->decode();
 
 				$pk = new ConnectedPong;
 				$pk->sendPingTime = $dataPacket->sendPingTime;
-				$pk->sendPongTime = $this->sessionManager->getRakNetTimeMS();
-				$this->queueConnectedPacket($pk, PacketReliability::UNRELIABLE, 0);
+				$pk->sendPongTime = $manager->getRakNetTimeMS();
+				$this->queueConnectedPacket($manager, $pk, PacketReliability::UNRELIABLE, 0);
 			}elseif($id === ConnectedPong::$ID){
 				$dataPacket = new ConnectedPong($packet->buffer);
 				$dataPacket->decode();
 
-				$this->handlePong($dataPacket->sendPingTime, $dataPacket->sendPongTime);
+				$this->handlePong($manager, $dataPacket->sendPingTime, $dataPacket->sendPongTime);
 			}
 		}elseif($this->state === self::STATE_CONNECTED){
-			$this->sessionManager->streamEncapsulated($this, $packet);
+			$manager->streamEncapsulated($this, $packet);
 		}/*else{
 			//$this->sessionManager->getLogger()->notice("Received packet before connection: " . bin2hex($packet->buffer));
 		}*/
 	}
 
-	/**
-	 * @param int $sendPingTime
-	 * @param int $sendPongTime TODO: clock differential stuff
-	 */
-	private function handlePong(int $sendPingTime, int $sendPongTime) : void{
-		$this->lastPingMeasure = $this->sessionManager->getRakNetTimeMS() - $sendPingTime;
-		$this->sessionManager->streamPingMeasure($this, $this->lastPingMeasure);
+	private function handlePong(SessionManager $manager, int $sendPingTime, int $sendPongTime) : void{
+		$this->lastPingMeasure = $manager->getRakNetTimeMS() - $sendPingTime;
+		$manager->streamPingMeasure($this, $this->lastPingMeasure);
 	}
 
-	public function handlePacket(Packet $packet) : void{
-		$this->isActive = true;
-		$this->lastUpdate = microtime(true);
+	public function handlePacket(SessionManager $manager, Packet $packet) : void{
+		TableHelper::putBool($manager->sessions, $this->getIdentifier(), self::TABLE_IS_ACTIVE, true);
+		$this->lastReceive = microtime(true);
 
 		if($packet instanceof Datagram){ //In reality, ALL of these packets are datagrams.
 			$packet->decode();
@@ -569,7 +619,7 @@ abstract class Session{
 			}
 
 			foreach($packet->packets as $pk){
-				$this->handleEncapsulatedPacket($pk);
+				$this->handleEncapsulatedPacket($manager, $pk);
 			}
 		}else{
 			if($packet instanceof ACK){
@@ -601,16 +651,17 @@ abstract class Session{
 		$this->disconnectionTime = microtime(true);
 	}
 
-	public function close() : void{
+	public function close(SessionManager $manager) : void{
+		$manager->freeLock($this->getIdentifier());
 		if($this->state !== self::STATE_DISCONNECTED){
 			$this->state = self::STATE_DISCONNECTED;
 
 			//TODO: the client will send an ACK for this, but we aren't handling it (debug spam)
-			$this->queueConnectedPacket(new DisconnectionNotification(), PacketReliability::RELIABLE_ORDERED, 0, Properties::PRIORITY_IMMEDIATE);
+			$this->queueConnectedPacket($manager, new DisconnectionNotification(),
+				PacketReliability::RELIABLE_ORDERED, 0, Properties::PRIORITY_IMMEDIATE);
 
 			Logger::debug("Closed session for $this->address");
-			$this->sessionManager->removeSessionInternal($this);
-			$this->sessionManager = null;
+			$manager->removeSessionInternal($this);
 		}
 	}
 }

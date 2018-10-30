@@ -23,6 +23,7 @@
 
 namespace iTXTech\Synapse\Util;
 
+use Swoole\Serialize;
 use Swoole\Table;
 
 abstract class TableHelper{
@@ -54,5 +55,21 @@ abstract class TableHelper{
 			$defaultValues[$k] = $v[1];
 		}
 		$table->set($key, $defaultValues);
+	}
+
+	public static function getBool(Table $table, string $k, string $f) : bool {
+		return $table->get($k, $f) === 0 ? false : true;
+	}
+
+	public static function putBool(Table $table, string $k, string $f, bool $b){
+		$table->set($k, [$f => ($b ? 1 : 0)]);
+	}
+
+	public static function getObject(Table $table, string $k, string $f){
+		return Serialize::unpack($table->get($k, $f));
+	}
+
+	public static function putObject(Table $table, string $k, string $f, $obj){
+		$table->set($k, [$f => Serialize::pack($obj)]);
 	}
 }

@@ -21,6 +21,26 @@
  *
  */
 
+ini_set("memory_limit", -1);
+
+use Swoole\Channel;
+use Swoole\Lock;
+
+const TABLE_SESSION_LIMIT = 1024 * 128;
+
+$ts = microtime(true);
+$locks = [];
+$lockQueue = new Channel(TABLE_SESSION_LIMIT * 4);
+
+for($i = 0; $i < TABLE_SESSION_LIMIT; $i++){
+	$locks[$i] = new Lock(SWOOLE_MUTEX);
+	$lockQueue->push($i);
+}
+$tu = (microtime(true) - $ts) * 1000;
+echo TABLE_SESSION_LIMIT . " locks in $tu ms" . PHP_EOL;
+
+while(true);
+
 $t = new \Swoole\Table(65536);
 $t->column("a", \Swoole\Table::TYPE_STRING, PHP_INT_MAX);
 $t->create();
@@ -34,25 +54,26 @@ $proc = new \Swoole\Process(function(\Swoole\Process $process) use ($t){
 		$ts = microtime(true);
 		$a = \Swoole\Serialize::unpack($t->get(0, "a"));
 		$tu = (microtime(true) - $ts) * 1000;
-		$response->end("Time used: " . $tu . " ms");
+		$response->write("Time used: " . $tu . " ms " . count($a));
+		$response->end();
 	});
 	$s->start();
 });
 $proc->start();
 
 class Something{
-	public $buffer;
+	private $buffer;
 
 	public function __construct(){
-		$this->buffer = str_repeat(mt_rand(0, 9), 1000);
+		$this->buffer = str_repeat(mt_rand(0, 9), 10000);
 	}
 }
 
 while(true){
 	$a = [];
-	for($i = 0; $i < 100; $i++){
-		//$a[] = new Something();
-		$a[] = str_repeat(mt_rand(0, 9), 1000);
+	for($i = 0; $i < 32768; $i++){
+		$a[] = new Something();
+		//$a[] = str_repeat(mt_rand(0, 9), 1000);
 	}
 	$ts = microtime(true);
 	$a = \Swoole\Serialize::pack($a);
