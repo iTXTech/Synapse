@@ -108,13 +108,18 @@ class Raknet{
 				$rChan, $kChan, $server, $table);//TODO: 6
 
 			$server->on("start", function(Server $server) use ($sessionManager){
-				Logger::info(TextFormat::GREEN . "iTXTech Synapse RakNet is listening on " . $server->host . ":" . $server->port);
+				Logger::info(TextFormat::GREEN . "iTXTech Synapse Raknet Server is listening on " . $server->host . ":" . $server->port);
 				$server->tick(10, function() use ($sessionManager){
 					$sessionManager->tick();
 				});
 			});
 			$server->on("packet", function(Server $server, $data, $clientInfo) use ($sessionManager){
 				$sessionManager->receivePacket($clientInfo["address"], $clientInfo["port"], $data);
+			});
+			$server->on("task", function(Server $server, $taskId, $fromId, $data) use ($sessionManager){
+				$sessionManager->task($data);
+			});
+			$server->on("finish", function(Server $server, $taskId, $data){
 			});
 
 			$server->start();

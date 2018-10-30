@@ -41,6 +41,10 @@ use Swoole\Table;
 class SessionManager{
 	private const TABLE_SESSION_LIMIT = 1024 * 128;
 	private const TABLE_BLOCK_TIMEOUT = "to";
+
+	public const TASK_PROCESS_STREAM = 0;
+	public const TASK_UPDATE_SESSION = 1;
+
 	private const SESSION_UPDATE_INTERVAL = 0.01;
 
 	/** @var \SplFixedArray<Packet|null> */
@@ -155,23 +159,35 @@ class SessionManager{
 		return $this->protocolVersion;
 	}
 
+	public function task($data){
+		switch($data[0]){
+			case self::TASK_PROCESS_STREAM:
+				$this->receiveStream($data[1]);
+				break;
+			case self::TASK_UPDATE_SESSION:
+				if(Session::getLastUpdate($this->sessions, $data[1]) < (microtime(true) + self::SESSION_UPDATE_INTERVAL)){
+					$session = Session::prepareSession($this, $data[1]);
+					if($session !== null){
+						$session->update($this, microtime(true));
+						Session::storeSession($this, $session);
+					}
+				}
+				break;
+		}
+	}
+
 	public function tick() : void{
 		while(($packet = $this->kChan->pop()) !== false){
-			$this->receiveStream($packet);
+			$this->server->task([self::TASK_PROCESS_STREAM, $packet]);
 		}
 
-		$time = microtime(true);
 		foreach($this->sessions as $k => $v){
-			if(Session::getLastUpdate($this->sessions, $k) < (microtime(true) + self::TABLE_SESSION_LIMIT)){
-				$session = Session::prepareSession($this, $k);
-				if($session !== null){
-					$session->update($this, microtime(true));
-				}
-			}
+			$this->server->task([self::TASK_UPDATE_SESSION, $k]);
 		}
 
 		TableHelper::putObject($this->table, Raknet::TABLE_MAIN_KEY, Raknet::TABLE_IP_SEC, []);
 
+		$time = microtime(true);
 		if($this->getFromTable(Raknet::TABLE_SEND_BYTES) > 0 or
 			$this->getFromTable(Raknet::TABLE_RECEIVE_BYTES) > 0){
 			$diff = max(0.005, $time - $this->getFromTable(Raknet::TABLE_LAST_MEASURE));

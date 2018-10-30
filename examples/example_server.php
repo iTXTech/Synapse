@@ -34,6 +34,7 @@ $launcher->rServerName("MCPE;" . TextFormat::LIGHT_PURPLE . "iTXTech Synapse;291
 $syn = load($launcher);
 
 while(true){
-	$syn->getRaknet()->setServerName("MCPE;" . TextFormat::LIGHT_PURPLE . "iTXTech Synapse;291;1.7.0;23;666;" . $launcher->getRServerId() . ";Synapse;Creative;");
+	$syn->getRaknet()->setServerName("MCPE;" . TextFormat::LIGHT_PURPLE . "iTXTech Synapse;291;1.7.0;" . mt_rand(0, 666) . ";666;" .
+		$launcher->getRServerId() . ";Synapse;Creative;");
 	sleep(1);
 }

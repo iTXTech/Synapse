@@ -36,7 +36,8 @@ class Launcher{
 	private $rServerName;
 	private $rServerId;
 	private $rSwOpts = [
-		"worker_num" => 8
+		"worker_num" => 8,
+		"task_worker_num" => 16
 	];
 
 	/**
