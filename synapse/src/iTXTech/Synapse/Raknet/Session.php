@@ -181,7 +181,11 @@ class Session{
 			return null;
 		}
 		$lock->lock();
-		return TableHelper::getObject($manager->sessions, $k, self::TABLE_SESSION_OBJECT);
+		$session = TableHelper::getObject($manager->sessions, $k, self::TABLE_SESSION_OBJECT);
+		if(!$session instanceof Session){
+			return null;
+		}
+		return $session;
 	}
 
 	public static function storeSession(SessionManager $manager, Session $session) : bool {
