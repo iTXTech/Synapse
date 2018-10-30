@@ -23,16 +23,17 @@
 
 require_once "env.php";
 
+use iTXTech\SimpleFramework\Console\TextFormat;
 use iTXTech\Synapse\Launcher;
 
 $launcher = (new Launcher())
 	->kListen("0.0.0.0", 10305)
 	->rListen("0.0.0.0", 19133);
-$launcher->rServerName("MCPE;NMSL;291;1.5.0;23;666;" . $launcher->getRServerId() . ";Synapse;Creative;");
+$launcher->rServerName("MCPE;" . TextFormat::LIGHT_PURPLE . "iTXTech Synapse;291;1.7.0;23;666;" . $launcher->getRServerId() . ";Synapse;Creative;");
 
 $syn = load($launcher);
 
 while(true){
-	$syn->getRaknet()->setServerName("MCPE;NMSL;291;1.5.0;" . mt_rand(0, 666). ";666;" . $launcher->getRServerId() . ";Synapse;Creative;");
+	$syn->getRaknet()->setServerName("MCPE;" . TextFormat::LIGHT_PURPLE . "iTXTech Synapse;291;1.7.0;23;666;" . $launcher->getRServerId() . ";Synapse;Creative;");
 	sleep(1);
 }

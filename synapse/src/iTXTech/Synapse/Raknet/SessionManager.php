@@ -433,6 +433,8 @@ class SessionManager{
 	}
 
 	public function createSession(InternetAddress $address, int $clientId, int $mtuSize){
+		$this->checkSessions();
+
 		TableHelper::initializeDefaultValue($this->sessions, $address->toString(), Session::getStructure($clientId));
 		Session::createObject($this, $address, $mtuSize);
 		Logger::debug("Created session for $address with MTU size $mtuSize");
@@ -450,6 +452,19 @@ class SessionManager{
 
 	public function openSession(InternetAddress $address) : void{
 		$this->streamOpen($address);
+	}
+
+	private function checkSessions() : void{
+		if($this->sessions->count() > 4096){
+			foreach($this->sessions as $k => $s){
+				if(Session::isTemporal($this->sessions, $k)){
+					$this->sessions->del($k);
+					if($this->sessions->count() <= 4096){
+						break;
+					}
+				}
+			}
+		}
 	}
 
 	public function notifyACK(string $k, int $identifierACK) : void{
