@@ -80,6 +80,8 @@ class SessionManager{
 	private $lockQueue;
 	/** @var Lock[] */
 	private $locks = [];
+	/** @var Lock[] */
+	private $packetLocks = [];
 
 	public function __construct(InternetAddress $address, Channel $rChan, Channel $kChan, Server $server,
 	                            Table $table, int $maxMtuSize = 1492,
@@ -100,10 +102,11 @@ class SessionManager{
 		$this->block->create();
 
 		$this->sessions = TableHelper::createTable(self::TABLE_SESSION_LIMIT, Session::getStructure());
-		$this->lockQueue = new Channel(self::TABLE_SESSION_LIMIT * 4);
+		$this->lockQueue = new Channel(self::TABLE_SESSION_LIMIT * 24);
 
 		for($i = 0; $i < self::TABLE_SESSION_LIMIT; $i++){
 			$this->locks[$i] = new Lock(SWOOLE_MUTEX);
+			$this->packetLocks[$i] = new Lock(SWOOLE_MUTEX);
 			$this->lockQueue->push($i);
 		}
 
@@ -114,6 +117,10 @@ class SessionManager{
 		return $this->locks[$id] ?? null;
 	}
 
+	public function getPacketLock(int $id) : ?Lock{
+		return $this->packetLocks[$id] ?? null;
+	}
+
 	public function assignLock(string $k){
 		$lockId = $this->lockQueue->pop();
 		$this->sessions->set($k, [Session::TABLE_LOCK_ID => $lockId]);
@@ -122,6 +129,7 @@ class SessionManager{
 	public function freeLock(string $k){
 		$lockId = $this->sessions->get($k, Session::TABLE_LOCK_ID);
 		$this->getLock($lockId)->unlock();
+		$this->getPacketLock($lockId)->unlock();
 		$this->lockQueue->push($lockId);
 		$this->sessions->set($k, [Session::TABLE_LOCK_ID => -1]);
 	}
@@ -178,7 +186,8 @@ class SessionManager{
 
 	public function tick() : void{
 		while(($packet = $this->kChan->pop()) !== false){
-			$this->server->task([self::TASK_PROCESS_STREAM, $packet]);
+			$this->receiveStream($packet);
+			//$this->server->task([self::TASK_PROCESS_STREAM, $packet]);
 		}
 
 		foreach($this->sessions as $k => $v){
@@ -348,12 +357,16 @@ class SessionManager{
 			$len = ord($packet{$offset++});
 			$identifier = substr($packet, $offset, $len);
 			$offset += $len;
-			if($this->sessionExists($identifier) and Session::isConnected($this->sessions, $identifier) and
-				($session = Session::prepareSession($this, $identifier)) != null){
+			if($this->sessionExists($identifier) and Session::isConnected($this->sessions, $identifier)){
 				$flags = ord($packet{$offset++});
 				$buffer = substr($packet, $offset);
-				$session->addEncapsulatedToQueue($this, EncapsulatedPacket::fromInternalBinary($buffer), $flags);
-				Session::storeSession($this, $session);
+				$lock = Session::getPacketLock($this, $identifier);
+				$lock->lock();
+				$packets = TableHelper::getObject($this->sessions, $identifier, Session::TABLE_SEND_QUEUE);
+				$packets[] = [$buffer, $flags];
+				TableHelper::putObject($this->sessions, $identifier, Session::TABLE_SEND_QUEUE, $packets);
+				$lock->unlock();
+				//$session->addEncapsulatedToQueue($this, EncapsulatedPacket::fromInternalBinary($buffer), $flags);
 			}else{
 				$this->streamInvalid($identifier);
 			}
@@ -420,6 +433,7 @@ class SessionManager{
 					$this->sessions->del($session);
 				}
 			}
+			$this->server->shutdown();
 		}else{
 			Logger::debug("Unknown RakLib internal packet (ID 0x" . dechex($id) . ") received from main thread");
 		}

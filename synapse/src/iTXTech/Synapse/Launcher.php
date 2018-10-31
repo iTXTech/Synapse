@@ -29,6 +29,10 @@ use iTXTech\Synapse\Raknet\Raknet;
 class Launcher{
 	private $kHost;
 	private $kPort;
+	private $kSwOpts = [
+		"worker_num" => 8,
+		"task_worker_num" => 16
+	];
 
 	private $rHost;
 	private $rPort;
@@ -40,9 +44,7 @@ class Launcher{
 		"task_worker_num" => 16
 	];
 
-	/**
-	 * @return int
-	 */
+
 	public function getRServerId(): int{
 		return $this->rServerId;
 	}
@@ -51,11 +53,20 @@ class Launcher{
 		$this->rServerId = mt_rand(0, PHP_INT_MAX);
 	}
 
+	//settings for Kyrios
+
 	public function kListen(string $host, int $port){
 		$this->kHost = $host;
 		$this->kPort = $port;
 		return $this;
 	}
+
+	public function kSwOpts(array $opts){
+		$this->kSwOpts = array_merge($this->kSwOpts, $opts);
+		return $this;
+	}
+
+	//settings for Raknet
 
 	public function rListen(string $host, int $port){
 		$this->rHost = $host;
@@ -84,7 +95,7 @@ class Launcher{
 	}
 
 	public function build(): Synapse{
-		$kyrios = new Kyrios($this->kHost, $this->kPort);
+		$kyrios = new Kyrios($this->kHost, $this->kPort, $this->kSwOpts);
 		$raknet = new Raknet($this->rHost, $this->rPort, $this->rSwOpts, $this->rMaxMtuSize,
 			$this->rServerName, $this->rServerId);
 		return new Synapse($kyrios, $raknet);

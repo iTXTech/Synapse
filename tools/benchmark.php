@@ -25,22 +25,22 @@ ini_set("memory_limit", -1);
 
 use Swoole\Channel;
 use Swoole\Lock;
-
+/*
 const TABLE_SESSION_LIMIT = 1024 * 128;
 
 $ts = microtime(true);
 $locks = [];
-$lockQueue = new Channel(TABLE_SESSION_LIMIT * 4);
+$lockQueue = new Channel(TABLE_SESSION_LIMIT * 24);
 
 for($i = 0; $i < TABLE_SESSION_LIMIT; $i++){
 	$locks[$i] = new Lock(SWOOLE_MUTEX);
-	$lockQueue->push($i);
+	echo $i . PHP_EOL;
 }
 $tu = (microtime(true) - $ts) * 1000;
 echo TABLE_SESSION_LIMIT . " locks in $tu ms" . PHP_EOL;
 
 while(true);
-
+*/
 $t = new \Swoole\Table(65536);
 $t->column("a", \Swoole\Table::TYPE_STRING, PHP_INT_MAX);
 $t->create();
@@ -65,20 +65,21 @@ class Something{
 	private $buffer;
 
 	public function __construct(){
-		$this->buffer = str_repeat(mt_rand(0, 9), 10000);
+		//global $ggg;
+		$this->buffer = str_repeat("0", 1024 * 1024);
 	}
 }
 
 while(true){
 	$a = [];
-	for($i = 0; $i < 32768; $i++){
+	for($i = 0; $i < 1024; $i++){
 		$a[] = new Something();
-		//$a[] = str_repeat(mt_rand(0, 9), 1000);
 	}
+	echo "done";
 	$ts = microtime(true);
-	$a = \Swoole\Serialize::pack($a);
+	$b = \Swoole\Serialize::pack($a);
 	$tu = (microtime(true) - $ts) * 1000;
-	$t->set(0, ["a" => $a]);
-	sleep(1);
 	echo "Generated in $tu ms" . PHP_EOL;
+	$t->set(0, ["a" => $b]);
+	sleep(1);
 }

@@ -15,7 +15,6 @@
 
 namespace iTXTech\Synapse\Raknet;
 
-use iTXTech\Synapse\Raknet\Properties;
 use iTXTech\SimpleFramework\Console\Logger;
 use iTXTech\Synapse\Raknet\Protocol\ACK;
 use iTXTech\Synapse\Raknet\Protocol\ConnectedPing;
@@ -58,6 +57,7 @@ class Session{
 	public const TABLE_IS_TEMPORAL = "it";
 	public const TABLE_LOCK_ID = "lid";
 	public const TABLE_LAST_UPDATE = "lu";
+	public const TABLE_SEND_QUEUE = "sq";
 
 	/** @var int */
 	private $messageIndex = 0;
@@ -141,6 +141,7 @@ class Session{
 			self::TABLE_SESSION_USING => [Table::TYPE_INT, 0],//false
 			self::TABLE_LOCK_ID => [Table::TYPE_INT, 0],
 			self::TABLE_LAST_UPDATE => [Table::TYPE_FLOAT, microtime(true)],
+			self::TABLE_SEND_QUEUE => [Table::TYPE_STRING, "", PHP_INT_MAX],
 		];
 	}
 
@@ -152,6 +153,10 @@ class Session{
 
 	public static function getLock(SessionManager $manager, string $k) : ?Lock{
 		return $manager->getLock($manager->sessions->get($k, self::TABLE_LOCK_ID));
+	}
+
+	public static function getPacketLock(SessionManager $manager, string $k) : Lock{
+		return $manager->getPacketLock($manager->sessions->get($k, self::TABLE_LOCK_ID));
 	}
 
 	public static function getId(Table $table, string $k) : int{
@@ -189,13 +194,13 @@ class Session{
 	}
 
 	public static function storeSession(SessionManager $manager, Session $session) : bool {
-		if($session->state !== self::STATE_DISCONNECTED){
+		if($manager->sessionExists($session->getIdentifier())){
 			$lock = self::getLock($manager, $session->getIdentifier());
 			if($lock === null){
 				return false;
 			}
-			$lock->unlock();
 			TableHelper::putObject($manager->sessions, $session->getIdentifier(), self::TABLE_SESSION_OBJECT, $session);
+			$lock->unlock();
 			return true;
 		}
 		return false;
@@ -233,6 +238,15 @@ class Session{
 			$manager->removeSession($this, "timeout");
 
 			return;
+		}
+
+		$packetLock = self::getPacketLock($manager, $this->getIdentifier());
+		$packetLock->lock();
+		$packets = TableHelper::getObject($manager->sessions, $this->getIdentifier(), self::TABLE_SEND_QUEUE);
+		TableHelper::putObject($manager->sessions, $this->getIdentifier(), self::TABLE_SEND_QUEUE, []);
+		$packetLock->unlock();
+		foreach($packets as $packet){
+			$this->addEncapsulatedToQueue($manager, EncapsulatedPacket::fromBinary($packet[0]), $packet[1]);
 		}
 
 		if($this->state === self::STATE_DISCONNECTING and (

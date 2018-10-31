@@ -41,21 +41,23 @@ class Synapse{
 		$this->kyrios = $kyrios;
 		$this->raknet = $raknet;
 
-		$this->rChan = new Channel(1024 * 1024 * 1024);//1GB
-		$this->kChan = new Channel(1024 * 1024 * 1024);
+		$this->rChan = new Channel(1024 * 1024 * 1024 * 4);
+		$this->kChan = new Channel(1024 * 1024 * 1024 * 4);
 
-		$this->raknet->channel($this->rChan, $this->kChan);
-		$this->kyrios->channel($this->rChan, $this->kChan);
+		$this->raknet->init($this->rChan, $this->kChan, $this->kyrios);
+		$this->kyrios->init($this->rChan, $this->kChan, $this->raknet);
 
 		return $this;
 	}
 
 	public function launch(){
 		$this->raknet->launch();
+		$this->kyrios->launch();
 	}
 
 	public function shutdown(){
 		$this->raknet->shutdown();
+		$this->kyrios->shutdown();
 	}
 
 	public function getRaknet() : Raknet{

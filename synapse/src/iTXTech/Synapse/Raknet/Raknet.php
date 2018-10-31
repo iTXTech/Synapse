@@ -26,6 +26,7 @@ namespace iTXTech\Synapse\Raknet;
 use Co\Server;
 use iTXTech\SimpleFramework\Console\Logger;
 use iTXTech\SimpleFramework\Console\TextFormat;
+use iTXTech\Synapse\Kyrios\Kyrios;
 use iTXTech\Synapse\Util\InternetAddress;
 use iTXTech\Synapse\Util\TableHelper;
 use Swoole\Channel;
@@ -57,6 +58,8 @@ class Raknet{
 	private $swOpts;
 	private $maxMtuSize;
 
+	/** @var Kyrios */
+	private $kyrios;
 	/** @var Channel */
 	private $rChan;
 	/** @var Channel */
@@ -64,6 +67,14 @@ class Raknet{
 
 	/** @var Table */
 	private $table;
+
+	public function getKChan() : Channel{
+		return $this->kChan;
+	}
+
+	public function getRChan() : Channel{
+		return $this->rChan;
+	}
 
 	public function __construct(string $host, int $port, array $swOpts, int $maxMtuSize, string $serverName, int $serverId){
 		$this->host = $host;
@@ -86,9 +97,10 @@ class Raknet{
 		TableHelper::initializeDefaultValue($this->table, self::TABLE_MAIN_KEY, $structure);
 	}
 
-	public function channel(Channel $rChan, Channel $kChan){
+	public function init(Channel $rChan, Channel $kChan, Kyrios $kyrios){
 		$this->rChan = $rChan;
 		$this->kChan = $kChan;
+		$this->kyrios = $kyrios;
 	}
 
 	public function launch(){
